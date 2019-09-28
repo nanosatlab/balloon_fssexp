@@ -1,0 +1,100 @@
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481669371]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 13, PHY RX packets: 0, LL TX packets: 13, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 25.375, Internal Temperature: 24.80078125, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 0
+###############################################################
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 0
+[1542481669599]Transmission Status -> Boot count: 41, TX Power: 33, PHY TX packets: 13, LL TX packets: 14, TX Queue: 0, PHY TX failed packets: 0
+###############################################################
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481670201]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 14, PHY RX packets: 0, LL TX packets: 14, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 25.375, Internal Temperature: 23.84765625, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481670803]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 14, PHY RX packets: 0, LL TX packets: 14, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 25.4375, Internal Temperature: 24.984375, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481671404]Telemetry Packet -> Boot count: 41, Actual RSSI: -111.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 14, PHY RX packets: 0, LL TX packets: 14, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 25.4375, Internal Temperature: 27.69921875, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481672006]Telemetry Packet -> Boot count: 41, Actual RSSI: -111.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 14, PHY RX packets: 0, LL TX packets: 14, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 25.4375, Internal Temperature: 25.68359375, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481672608]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 14, PHY RX packets: 0, LL TX packets: 14, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.5, Internal Temperature: 24.80078125, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 1
+###############################################################
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 1
+[1542481672827]Transmission Status -> Boot count: 41, TX Power: 33, PHY TX packets: 14, LL TX packets: 15, TX Queue: 0, PHY TX failed packets: 0
+###############################################################
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481673429]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 15, PHY RX packets: 0, LL TX packets: 15, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.5, Internal Temperature: 27.69921875, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481674031]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 15, PHY RX packets: 0, LL TX packets: 15, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.5625, Internal Temperature: 21.5625, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481674632]Telemetry Packet -> Boot count: 41, Actual RSSI: -108.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 15, PHY RX packets: 0, LL TX packets: 15, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.5625, Internal Temperature: 24.984375, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481675234]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 15, PHY RX packets: 0, LL TX packets: 15, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.625, Internal Temperature: 24.80078125, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481675836]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 33, PHY TX packets: 15, PHY RX packets: 0, LL TX packets: 15, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.625, Internal Temperature: 24.5546875, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 2
+###############################################################
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 2
+[1542481676056]Transmission Status -> Boot count: 41, TX Power: 33, PHY TX packets: 15, LL TX packets: 16, TX Queue: 0, PHY TX failed packets: 0
+###############################################################
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481676657]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 2, PHY TX packets: 16, PHY RX packets: 0, LL TX packets: 16, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.625, Internal Temperature: 25.68359375, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481677259]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 2, PHY TX packets: 16, PHY RX packets: 0, LL TX packets: 16, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.6875, Internal Temperature: 25.68359375, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481677861]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 2, PHY TX packets: 16, PHY RX packets: 0, LL TX packets: 16, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.75, Internal Temperature: 22.73828125, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481678462]Telemetry Packet -> Boot count: 41, Actual RSSI: -109.0, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 2, PHY TX packets: 16, PHY RX packets: 0, LL TX packets: 16, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.75, Internal Temperature: 22.625, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+=========================================================================
+Getting telemetry
+Telemetry Packet Size 51 Bytes
+[1542481679064]Telemetry Packet -> Boot count: 41, Actual RSSI: -108.5, Last RSSI: -109.0, Last LQI: 42.51968503937008, TX Power: 2, PHY TX packets: 16, PHY RX packets: 0, LL TX packets: 16, LL RX packets: 0, PHY TX failed packets: 0, PHY RX errors packets: 1, External Temperature: 24.8125, Internal Temperature: 21.85546875, Frequency: 4.37350016E8, RX Queue: 0, TX Queue: 0, Free Stack: 93 181 191 208, User Stack: 163 587 65 48
+=========================================================================
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 3
+###############################################################
+Sending Packet with 197 Bytes of content: RICARD ETS LA CANYA! A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... 3
+[1542481679283]Transmission Status -> Boot count: 41, TX Power: 2, PHY TX packets: 16, LL TX packets: 17, TX Queue: 0, PHY TX failed packets: 0
+###############################################################

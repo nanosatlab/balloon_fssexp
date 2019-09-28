@@ -1,0 +1,9 @@
+[1540540985604]Received Packet -> Boot count: 129, Actual RSSI: -97.0, Last RSSI: -97.5, SNR: -0.5, Last LQI: 11.023622047244096, PHY RX packets: 1, LL RX packets: 1, PHY RX errors packets: 0, RX Queue: 116
+Received 22 Bytes Content: RICARD ETS LA CANYA! 0
+---------------------------------------------------------------------
+[1540540994725]Received Packet -> Boot count: 129, Actual RSSI: -110.5, Last RSSI: -97.5, SNR: 13.0, Last LQI: 43.30708661417323, PHY RX packets: 2, LL RX packets: 2, PHY RX errors packets: 0, RX Queue: 116
+Received 22 Bytes Content: RICARD ETS LA CANYA! 3
+---------------------------------------------------------------------
+[1540541014054]Received Packet -> Boot count: 129, Actual RSSI: -110.0, Last RSSI: -97.5, SNR: 12.5, Last LQI: 18.89763779527559, PHY RX packets: 3, LL RX packets: 3, PHY RX errors packets: 3, RX Queue: 116
+Received 22 Bytes Content: RICARD ETS LA CANYA! 9
+---------------------------------------------------------------------
