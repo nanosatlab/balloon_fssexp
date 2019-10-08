@@ -6,12 +6,10 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-/* Golbriak libraries */
-import space.golbriak.io.File;
-import space.golbriak.io.FileInputStream;
-import space.golbriak.io.FileOutputStream;
-import space.golbriak.io.FileWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 
 /* Internal libraries */
 import Common.Constants;
@@ -27,7 +25,7 @@ public class Log {
     private long m_last_flush;
     private int m_flush_period; 
     
-    public Log(TimeUtils timer) {
+    public Log(TimeUtils timer) throws IOException {
         m_file_path = Constants.log_file;
         m_file = new File(m_file_path);
         m_time = timer;
@@ -89,7 +87,7 @@ public class Log {
     	}
     }
     
-    public synchronized void resetLog() {
+    public synchronized void resetLog() throws IOException {
     	
     	/* Flush if there is log */
     	if(m_data_to_flush > 0) {

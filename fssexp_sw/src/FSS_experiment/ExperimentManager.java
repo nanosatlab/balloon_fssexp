@@ -38,16 +38,10 @@ import Configuration.ExperimentConf;
 import FSS_protocol.FSSProtocol;
 
 /* When working in Linux Computer */
-/*
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-*/
 
-/* When working in OISL */
-import space.golbriak.io.File;
-import space.golbriak.io.FileInputStream;
-import space.golbriak.io.FileOutputStream;
 import IPCStack.SimpleLinkProtocol;
 import IPCStack.UartInterface;
 import Lockers.UartBuffer;
@@ -128,7 +122,7 @@ public class ExperimentManager extends Thread{
     	m_fss_buffer = new FSSDataBuffer(m_logger, m_conf);
     	m_uart_rx_buffer = new UartBuffer(m_logger, "rx_buffer");
     	m_uart_tx_buffer = new UartBuffer(m_logger, "tx_buffer");
-    	m_uart_driver = new UartInterface(m_logger, m_uart_tx_buffer, m_uart_rx_buffer, m_time);
+    	m_uart_driver = new UartInterface(m_logger, m_uart_tx_buffer, m_uart_rx_buffer, m_time, m_conf);
     	m_ipc_stack = new SimpleLinkProtocol(m_logger, m_conf, m_time, m_uart_tx_buffer, m_uart_rx_buffer);
     	m_generator = new DataGenerator(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
     	m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_ipc_stack, m_time);
@@ -493,7 +487,7 @@ public class ExperimentManager extends Thread{
         byte data[] = new byte[2048];
         for(File f : folder.listFiles()){
             if(f.getName().contains(".data")) {
-                tar_stream.putNextEntry(new TarEntry(f, f.getName()));
+                //tar_stream.putNextEntry(new TarEntry(f, f.getName()));
                 BufferedInputStream origin = new BufferedInputStream(new FileInputStream(f));
                 while((count = origin.read(data)) != -1) {
                     tar_stream.write(data, 0, count);

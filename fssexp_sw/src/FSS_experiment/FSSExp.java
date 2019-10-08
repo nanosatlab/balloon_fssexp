@@ -1,12 +1,13 @@
 package FSS_experiment;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class FSSExp {
 
 	private static String TAG = "[FSSExp] ";
     
-    public static void main(String args[]) throws FileNotFoundException, InterruptedException {
+    public static void main(String args[]) throws InterruptedException, IOException {
 	
     	TCPInterface tcp_interface = new TCPInterface();
     	tcp_interface.start();

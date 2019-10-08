@@ -1,5 +1,6 @@
 package FSS_experiment;
 
+/* External libraries */
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -7,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import CBOR.CborConstants;
 import CBOR.CborDecoder;
@@ -14,19 +17,6 @@ import CBOR.CborEncoder;
 import Common.Constants;
 import Common.TimeUtils;
 import Storage.Log;
-
-//import space.golbriak.io.Serial;
-
-/* With OISL payload */
-
-import space.golbriak.net.ServerSocket;
-import space.golbriak.net.Socket;
-
-/* With Linux computer */
-/*
-import java.net.ServerSocket;
-import java.net.Socket;
-*/
 
 public class TCPInterface extends Thread{
 	
@@ -51,7 +41,7 @@ public class TCPInterface extends Thread{
 	
     private static String TAG = "[TCPInterface] ";
     
-	public TCPInterface() {
+	public TCPInterface() throws IOException {
 		m_time_utils = new TimeUtils();
 		m_logger = new Log(m_time_utils);
 		m_exit = false;
@@ -60,8 +50,6 @@ public class TCPInterface extends Thread{
     	m_waiting_command = false;
 		m_length_field_converter = ByteBuffer.allocate(Constants.LENGHT_FIELD_SIZE);
     	
-    	
-		
 		try {
 			m_experiment = new ExperimentManager(m_logger, m_time_utils);
 		} catch (FileNotFoundException e) {
@@ -258,7 +246,6 @@ public class TCPInterface extends Thread{
 	                	/* Reading the 'timestamp' field - the UNIX timestamp value in seconds */
 	                	platform_timestamp = (int)(m_cbor_decoder.readInt32());
 	                	m_logger.info(TAG + "Received Plaftorm TIME: " + ((long)(platform_timestamp) * 1000));
-	                	m_time_utils.setTimeMillis((long)(platform_timestamp) * 1000); // Parse to milliseconds
 	                } else {
 	                	m_logger.error(TAG + "Bad Platform command: with key - " + map_key + " and the value type is " 
 	                					+ m_cbor_decoder.peekType().getMajorType());

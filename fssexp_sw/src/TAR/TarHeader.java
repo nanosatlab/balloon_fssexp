@@ -17,8 +17,7 @@
 
 package TAR;
 
-//import java.io.File;
-import space.golbriak.io.File;
+import java.io.File;
 
 /**
  * Header

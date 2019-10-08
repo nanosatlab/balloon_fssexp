@@ -17,9 +17,9 @@ package Configuration;
 
 /* External imports */
 import java.io.BufferedReader;
-import space.golbriak.io.File;
+import java.io.File;
 import java.io.FileNotFoundException;
-import space.golbriak.io.FileReader;
+import java.io.FileReader;
 import java.io.IOException;
 
 import Common.Constants;
@@ -60,6 +60,8 @@ public class ExperimentConf {
     public boolean download_experiment_activated;
     public int download_start;
     public int download_end;
+    
+    public String port_desc;
     
     public int download_rate;
     
@@ -114,6 +116,9 @@ public class ExperimentConf {
         /* RF ISL */
         rf_isl_redundancy = 0;
         rf_isl_freq = 435.35e6f;
+        
+        /* UART port */
+        port_desc = "/tty/USB0";
     }
     
     public void parseConf() {
