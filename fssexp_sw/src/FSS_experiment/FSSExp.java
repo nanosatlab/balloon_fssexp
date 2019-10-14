@@ -9,6 +9,7 @@ public class FSSExp {
     
     public static void main(String args[]) throws InterruptedException, IOException {
 	
+    	/* This interface is just used to retrieve status and to stop the software */
     	TCPInterface tcp_interface = new TCPInterface();
     	tcp_interface.start();
     	tcp_interface.join();

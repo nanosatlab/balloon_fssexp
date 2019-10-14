@@ -12,4 +12,8 @@ public class TimeUtils {
 		return System.currentTimeMillis();
 	}
 	
+	public double getTime() {
+		return System.currentTimeMillis() / 1000.0;
+	}
+	
 }

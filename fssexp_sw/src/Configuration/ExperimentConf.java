@@ -60,6 +60,10 @@ public class ExperimentConf {
     public boolean download_experiment_activated;
     public int download_start;
     public int download_end;
+    public double cntct_max_duration;
+    public double cntct_min_duration;
+    public double cntct_max_period; 
+    public double cntct_min_period; 
     
     public String port_desc;
     
@@ -119,6 +123,12 @@ public class ExperimentConf {
         
         /* UART port */
         port_desc = "/tty/USB0";
+        
+        /* Dwn contacts */
+        cntct_min_period = 5 * 60;
+        cntct_max_period = 10 * 60;
+        cntct_max_duration = 2 * 60;
+        cntct_min_duration = 30;
     }
     
     public void parseConf() {

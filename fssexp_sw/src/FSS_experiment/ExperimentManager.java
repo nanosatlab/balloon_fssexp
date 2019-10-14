@@ -286,16 +286,6 @@ public class ExperimentManager extends Thread{
         return true;
     }
     
-    private boolean transitFromFinishedToRunning() {
-    	m_logger.info(TAG + "Transition from FINISHED to RUNNING");
-    	
-    	/** HK **/
-    	// TODO: This shall be solved!!!
-    	m_hk_buffer.resetBuffer();
-    	
-    	return transitFromReadyToRunning();
-    }
-    
     private void transitFromRunningToFinished() throws IOException {
     	m_logger.info(TAG + "Transition from RUNNING to FINISHED");
     	/* Close the Threads */
@@ -355,79 +345,6 @@ public class ExperimentManager extends Thread{
 		}
     	
     	m_err_finished = true;
-    }
-    
-    
-    private void transitFromReadyToFinished() throws IOException {
-    	m_logger.info(TAG + "Transition from READY to FINISHED");
-    	/* Close the Threads */
-    	stopChilds();
-   
-        /** Retrieve the final HK **/
-    	storeHK();
-        m_logger.info(TAG + "Final HK buffered");
-        
-    	/* Store the resulting files */
-        /** Include Footer in the HK file **/
-        ByteBuffer footer = ByteBuffer.allocate(Integer.SIZE / 8);
-        footer.putInt(m_fss_protocol.getDuration());
-        footer.flip();
-        m_hk_buffer.writeHK(footer.array());
-        footer.clear();
-        m_logger.info(TAG + "Footer HK stored");
-        
-        /** Transfer HK **/
-        m_hk_buffer.moveToDownload();
-        m_logger.info(TAG + "Moved HK buffer to_download folder");
-        
-        /** Transfer Log **/
-        m_logger.moveToDownload();
-        
-        /** Compress **/
-        String name = compressResults();
-        
-        /** Reset Log **/
-        m_logger.resetLog();
-        m_logger.info(TAG + "Moved LOG to_download folder");
-        m_logger.info(TAG + name + " file created to be download");
-        m_logger.info(TAG + "LOG reset done");
-        
-        /** Change status **/
-        m_logger.info(TAG + "Changing status to FINISHED");
-        accessToStatus(true, Constants.REPLY_STATUS_FINISHED);
-    }
-    
-    private void transitFromReadyToExit() throws IOException {
-    	m_logger.info(TAG + "Transition from READY to EXIT");
-    	
-        /** Retrieve the final HK **/
-    	storeHK();
-        m_logger.info(TAG + "Final HK buffered");
-        
-    	/* Store the resulting files */
-        /** Include Footer in the HK file **/
-        ByteBuffer footer = ByteBuffer.allocate(Integer.SIZE / 8);
-        footer.putInt(m_fss_protocol.getDuration());
-        footer.flip();
-        m_hk_buffer.writeHK(footer.array());
-        footer.clear();
-        m_logger.info(TAG + "Footer HK stored");
-        
-        /** Transfer HK **/
-        m_hk_buffer.moveToDownload();
-        m_logger.info(TAG + "Moved HK buffer to_download folder");
-        
-        /** Transfer Log **/
-        m_logger.moveToDownload();
-        m_logger.info(TAG + "Moved LOG to_download folder");
-        
-        /** Compress **/
-        String name = compressResults();
-        m_logger.info(TAG + name + " file created to be download");
-
-        /** Reset Log **/
-        m_logger.resetLog();
-        m_logger.info(TAG + "LOG reset done");
     }
     
     private void stopChilds() {
@@ -615,41 +532,7 @@ public class ExperimentManager extends Thread{
                 		m_command_time = (int)(m_time.getTimeMillis() - m_initial_time);
                 		m_number_sc_commands ++;
                 		
-                		if(command.equals(Constants.COMMAND_START) == true) {
-                			m_command_hk = Constants.COMMAND_PARSED_START;
-                			if(accessToStatus(false, 0) == Constants.REPLY_STATUS_READY) {
-                				if(transitFromReadyToRunning() == true) {
-                					accessToACKReply(true, 1); //GOOD ACK
-                					m_logger.info(TAG + "Everything started nice!");
-                				} else {
-                					accessToACKReply(true, 0); //BAD ACK
-                					m_logger.error(TAG + "Impossible to start the experiment!");
-                				}
-                            } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_FINISHED) {
-                            	if(transitFromFinishedToRunning() == true) {
-                            		accessToACKReply(true, 1); //GOOD ACK
-	                            	m_logger.info(TAG + "Everything started nice!");
-                            	} else {
-                            		accessToACKReply(true, 0); //BAD ACK
-                					m_logger.warning(TAG + "Impossible to start the experiment again!");
-                            	}
-                            } else {
-                            	accessToACKReply(true, 0); //BAD ACK
-                            	m_logger.info(TAG + "I cannot start in this state: " + accessToStatus(false, 0));
-                            }
-                            
-                        } else if(command.equalsIgnoreCase(Constants.COMMAND_STOP) == true) {
-                        	m_command_hk = Constants.COMMAND_PARSED_STOP;
-                            if(accessToStatus(false, 0) == Constants.REPLY_STATUS_READY) {
-	                            accessToACKReply(true, 0); //BAD ACK
-                            } else if(accessToStatus(false, 0) != Constants.REPLY_STATUS_FINISHED) {
-                            	transitFromRunningToFinished();
-                            	accessToACKReply(true, 1); //GOOD ACK
-                            } else {
-                            	accessToACKReply(true, 0); //BAD ACK
-                            }
-                            
-                        } else if(command.equalsIgnoreCase(Constants.COMMAND_EXIT) == true) {
+                		if(command.equalsIgnoreCase(Constants.COMMAND_EXIT) == true) {
                         	m_logger.info(TAG + "EXIT command received!");
                         	m_command_hk = Constants.COMMAND_PARSED_EXIT;
                         	if(accessToStatus(false, 0) == Constants.REPLY_STATUS_FINISHED) {
@@ -660,7 +543,6 @@ public class ExperimentManager extends Thread{
                             } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_READY) {
                             	m_logger.info(TAG + "EXITing from READY");
                             	m_exit = true;
-                            	transitFromReadyToExit();
                             	accessToACKReply(true, 1); //GOOD ACK
                             } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_NEGOTIATION 
                             		|| accessToStatus(false, 0) == Constants.REPLY_STATUS_FEDERATION

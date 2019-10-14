@@ -39,6 +39,7 @@ public class Constants {
     public final static int rf_isl_max_configuration = 5;
     public final static int rf_isl_max_fsspacket = 3;
     public final static int rf_isl_tostorehk_size = 33;
+    public final static long dwn_contact_sleep = 500;       /* ms */
     
     public final static int LENGHT_FIELD_SIZE = 2;	/* in Bytes */
     public final static int COMMAND_ITEMS = 2;
@@ -50,10 +51,6 @@ public class Constants {
     public final static String MODE_KEY = "mode";
     public final static String ERROR_KEY = "error";
     
-    public final static String COMMAND_START = "START";
-    public final static int COMMAND_PARSED_START = 0;
-    public final static String COMMAND_STOP = "STOP";
-    public final static int COMMAND_PARSED_STOP = 1;
     public final static String COMMAND_STATUS = "STATUS";
     public final static int COMMAND_PARSED_STATUS = 2;
     public final static String COMMAND_EXIT = "EXIT";

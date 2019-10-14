@@ -15,6 +15,7 @@ import CBOR.CborConstants;
 import CBOR.CborDecoder;
 import CBOR.CborEncoder;
 import Common.Constants;
+import Common.FolderUtils;
 import Common.TimeUtils;
 import Storage.Log;
 
@@ -29,6 +30,7 @@ public class TCPInterface extends Thread{
     private CborDecoder m_cbor_decoder;
     private CborEncoder m_cbor_encoder;
     private TimeUtils m_time_utils;
+    private FolderUtils m_folder;
     private boolean m_exit;
     private boolean m_waiting_command;
     
@@ -43,7 +45,8 @@ public class TCPInterface extends Thread{
     
 	public TCPInterface() throws IOException {
 		m_time_utils = new TimeUtils();
-		m_logger = new Log(m_time_utils);
+		m_folder = new FolderUtils();
+		m_logger = new Log(m_time_utils, m_folder);
 		m_exit = false;
 		m_length_field_bytes = new byte[Constants.LENGHT_FIELD_SIZE];
 		m_intermediate_output_stream = new ByteArrayOutputStream();
@@ -118,36 +121,6 @@ public class TCPInterface extends Thread{
 	            				writeReply(Constants.GENERIC_REPLY_ITEMS, command, false);
 	            			}
 	            			m_exit = true;
-	            			
-	            		} else if(command.equalsIgnoreCase(Constants.COMMAND_START) 
-	            				|| command.equalsIgnoreCase(Constants.COMMAND_STOP)){
-	            			/* Communicate to ExperimentManager */
-	            			m_experiment.accessToCommand(true, command);
-	            			Thread.sleep(100); // sleep a while to receive a reply
-	            			
-	            			/* Wait reply */
-	            			//TODO: Clean this code
-	            			int j = 0;
-	            			while(j < 20) {
-	            				reply = m_experiment.accessToACKReply(false, -1);
-	            				if(reply == 0) { //BAD REPLY
-	            					writeReply(Constants.GENERIC_REPLY_ITEMS, command, false);
-	            					break;
-	            				} else if(reply == 1) { //GOOD REPLY
-	            					writeReply(Constants.GENERIC_REPLY_ITEMS, command, true);
-	            					break;
-	            				} else {
-	            					m_logger.info(TAG + "Experiment not yet replied");
-	            				}
-	            				Thread.sleep(1000);
-	            				j ++;
-	            			}
-	            			
-	            			if(j == 10) {
-	            				System.out.println(TAG + "Experiment never replied command");
-	            				writeReply(Constants.GENERIC_REPLY_ITEMS, command, false);
-	            				m_logger.info(TAG + "Experiment never replied!");
-	            			}
 	            			
 	            		} else {
 	            			m_logger.warning(TAG + "Unknown received command from the platform: " + command);

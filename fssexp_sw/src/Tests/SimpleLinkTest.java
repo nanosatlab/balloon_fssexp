@@ -9,13 +9,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import Common.Constants;
+import Common.FolderUtils;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
 import IPCStack.UartInterface;
 import Lockers.UartBuffer;
 import Storage.Log;
-import space.golbriak.io.Serial;
+
 
 public class SimpleLinkTest {
 
@@ -125,16 +126,6 @@ public class SimpleLinkTest {
 				}
 			}
 		}
-
-		if(port_arg == false) {
-			Serial.FSSport = Constants.uart_port;
-		} else {
-			Serial.FSSport = port_name;
-		}
-		Serial.FSSport = "/dev/ttyUSB0";
-		
-		Serial.FSSbaudrate = Constants.uart_bps;
-		
 		
 		OutputStreamWriter writer = null;
 		if(file_name.length() > 0) {
@@ -144,13 +135,20 @@ public class SimpleLinkTest {
 		}
 		
 		TimeUtils time = new TimeUtils();
-		Log logger = new Log(time);
+		FolderUtils folder = new FolderUtils();
+		Log logger = new Log(time, folder);
 		ExperimentConf conf = new ExperimentConf(logger);
+		
+		/* Set parameters of Serial configuration */
+		conf.port_desc = "/dev/ttyS1";
+		
+		/* Set parameters of RF ISL */
 		conf.rf_isl_redundancy = redundancy;
+		
 		System.out.println("Redundancy: " + conf.rf_isl_redundancy);
 		UartBuffer tx_buffer = new UartBuffer(logger, "tx_buffer");
 		UartBuffer rx_buffer = new UartBuffer(logger, "rx_buffer");
-		UartInterface uart_interface = new UartInterface(logger, tx_buffer, rx_buffer, time);
+		UartInterface uart_interface = new UartInterface(logger, tx_buffer, rx_buffer, time, conf);
 		SimpleLinkProtocol slp = new SimpleLinkProtocol(logger, conf, time, tx_buffer, rx_buffer);
 		slp.setConfiguration();
 		//slp.open();

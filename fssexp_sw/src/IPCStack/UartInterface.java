@@ -52,10 +52,24 @@ public class UartInterface extends Thread{
 	
 	public boolean open() {
 		/* With Linux Computer uncomment the following two lines */
+		System.out.println("Opening SerialPort " + m_port_desc);
 		m_port = SerialPort.getCommPort(m_port_desc);
+		if(m_port.openPort() == true) {
+			System.out.println("Port " + m_port_desc + " correctly opened");
+		} else {
+			System.out.println("Impossible to open Port " + m_port_desc);
+		}
+		m_port.setBaudRate(Constants.uart_bps);
+		m_port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
 		m_is_open = true;
 		m_input_stream = m_port.getInputStream();
+		if(m_input_stream == null) {
+			System.out.println("Null pointer of InputStream");
+		}
 		m_output_stream = m_port.getOutputStream();
+		if(m_input_stream == null) {
+			System.out.println("Null pointer of OutputStream");
+		}
 		return m_is_open;
 	}
 	

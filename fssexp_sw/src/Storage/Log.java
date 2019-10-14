@@ -13,6 +13,7 @@ import java.io.FileWriter;
 
 /* Internal libraries */
 import Common.Constants;
+import Common.FolderUtils;
 import Common.TimeUtils;
 
 public class Log {
@@ -23,10 +24,10 @@ public class Log {
     private BufferedWriter m_writer;
     private double m_data_to_flush;
     private long m_last_flush;
-    private int m_flush_period; 
+    private int m_flush_period;
     
-    public Log(TimeUtils timer) throws IOException {
-        m_file_path = Constants.log_file;
+    public Log(TimeUtils timer, FolderUtils folder) throws IOException {
+    	m_file_path = folder.home_folder + Constants.log_file;
         m_file = new File(m_file_path);
         m_time = timer;
         m_data_to_flush = 0;
@@ -42,6 +43,9 @@ public class Log {
         }
         
         try {
+        	final String dir = System.getProperty("user.dir");
+            System.out.println("current dir = " + dir);
+            System.out.println(m_file_path);
         	m_writer = new BufferedWriter(new FileWriter(m_file, true));
         } catch(FileNotFoundException e) {
         	e.printStackTrace();
