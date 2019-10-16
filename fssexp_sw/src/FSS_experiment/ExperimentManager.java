@@ -18,24 +18,20 @@ package FSS_experiment;
 
 /* Internal imports */
 import Storage.FSSDataBuffer;
-import Storage.HousekeepingBuffer;
 import Storage.Log;
 import Storage.PacketExchangeBuffer;
-import TAR.TarEntry;
-import TAR.TarOutputStream;
-import jZLib.GZIPOutputStream;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import Common.Constants;
+import Common.FolderUtils;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
-import FSS_protocol.FSSProtocol;
+import Housekeeping.HousekeepingItem;
+import Housekeeping.HousekeepingStorage;
 
 /* When working in Linux Computer */
 import java.io.FileInputStream;
@@ -43,8 +39,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 
 import IPCStack.SimpleLinkProtocol;
-import IPCStack.UartInterface;
+import InterSatelliteCommunications.FSSProtocol;
 import Lockers.UartBuffer;
+import Payload.Payload;
 
 /* External imports */
 
@@ -58,20 +55,18 @@ public class ExperimentManager extends Thread{
 
     private static String TAG = "[ExperimentManager] ";
     
-    
     /* Internal objects */
     private Log m_logger;
     private ExperimentConf m_conf;
     private PacketExchangeBuffer m_hk_packets;
     private FSSDataBuffer m_fss_buffer;
-    private DataGenerator m_generator;
+    private Payload m_generator;
     private FSSProtocol m_fss_protocol;
-    private HousekeepingBuffer m_hk_buffer;
+    private HousekeepingStorage m_hk_buffer;
     private SimpleLinkProtocol m_ipc_stack;
     private TimeUtils m_time;
     private UartBuffer m_uart_rx_buffer;
     private UartBuffer m_uart_tx_buffer;
-    private UartInterface m_uart_driver;
     
     /* Manager attributes */
     private int m_status;                       /**< State of the experiment */
@@ -80,20 +75,18 @@ public class ExperimentManager extends Thread{
     private boolean m_exit;
     private long m_initial_time;
     private int m_exp_number;
-    private int m_command_hk;
-    private int m_hk_timestamp;
     private long m_start_time;
     private boolean m_err_finished;
     private String m_err_message;
     private int m_rf_isl_counter;
     private boolean m_rf_isl_alive;
-    private File m_persistent_file;
+    private String m_persistent_file;
     private FileInputStream m_persistent_reader;
     private FileOutputStream m_persistent_writer;
     
     /* Housekeeping */
     ByteBuffer m_hk_header;
-    ByteBuffer m_hk_item;
+    HousekeepingItem m_hk_item;
     private long m_time_tick;
     private long m_next_hk;
     private int m_data_generator_polling;
@@ -102,33 +95,26 @@ public class ExperimentManager extends Thread{
     private int m_number_sc_commands = 0;
     private byte[] m_rf_isl_hk;
     
-    private int m_uart_driver_counter;
-    private int m_uart_driver_polling;
-    
     private boolean m_data_generator_error_notification;
     private boolean m_fss_protocol_error_notification;
-    private boolean m_uart_driver_error_notification;
     
     private String m_command;
     private int m_ack_reply;
     
-    public ExperimentManager(Log logger, TimeUtils timer) throws FileNotFoundException {
+    public ExperimentManager(Log logger, TimeUtils timer, FolderUtils folder) throws FileNotFoundException {
     	
     	/* Internal objects */
     	m_logger = logger;
     	m_time = timer;
     	m_conf = new ExperimentConf(m_logger);
-    	m_hk_packets = new PacketExchangeBuffer(m_logger);
-    	m_fss_buffer = new FSSDataBuffer(m_logger, m_conf);
-    	m_uart_rx_buffer = new UartBuffer(m_logger, "rx_buffer");
-    	m_uart_tx_buffer = new UartBuffer(m_logger, "tx_buffer");
-    	m_uart_driver = new UartInterface(m_logger, m_uart_tx_buffer, m_uart_rx_buffer, m_time, m_conf);
-    	m_ipc_stack = new SimpleLinkProtocol(m_logger, m_conf, m_time, m_uart_tx_buffer, m_uart_rx_buffer);
-    	m_generator = new DataGenerator(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
+    	m_hk_packets = new PacketExchangeBuffer(m_logger, folder);
+    	m_fss_buffer = new FSSDataBuffer(m_logger, m_conf, folder);
+    	m_ipc_stack = new SimpleLinkProtocol(m_logger, m_conf, m_time);
+    	m_generator = new Payload(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
     	m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_ipc_stack, m_time);
-    	m_hk_buffer = new HousekeepingBuffer(m_logger);
+    	m_hk_buffer = new HousekeepingStorage(folder);
     	m_hk_header = ByteBuffer.allocate(Constants.hk_header_size);
-    	m_hk_item = ByteBuffer.allocate(Constants.hk_item_size);
+    	m_hk_item = new HousekeepingItem();
     	
     	/* Manager attributes */
     	accessToStatus(true, Constants.REPLY_STATUS_ERROR);
@@ -137,26 +123,14 @@ public class ExperimentManager extends Thread{
     	m_exit = false;
     	m_initial_time = 0;
     	m_exp_number = 0;
-    	m_command_hk = 0;
     	m_start_time = 0;
     	m_err_finished = false;
     	m_err_message = "";
     	m_rf_isl_counter = 0;
     	m_rf_isl_alive = true;
-    	m_persistent_file = new File(Constants.persistent_file);
+    	m_persistent_file = folder.prst_name;
         m_persistent_reader = null;
         m_persistent_writer = null;
-        
-        if(m_persistent_file.exists() == false) {
-            try {
-            	m_persistent_file.createNewFile();
-            	m_persistent_reader = new FileInputStream(m_persistent_file);
-            } catch (IOException e) {
-                m_logger.error(e);
-            }
-        } else {
-        	m_persistent_reader = new FileInputStream(m_persistent_file);
-        }
     	
     	/* Housekeeping */
     	m_time_tick = 0;
@@ -164,16 +138,11 @@ public class ExperimentManager extends Thread{
     	m_data_generator_polling = 0;
     	m_fss_protocol_polling = 0;
     	m_command_time = 0;
-    	m_hk_timestamp = 0;
     	m_number_sc_commands = 0;
     	m_rf_isl_hk = new byte[Constants.rf_isl_tostorehk_size];
     	
-    	m_uart_driver_counter = 0;
-    	m_uart_driver_polling = 0;
-    	
     	m_data_generator_error_notification = false;
     	m_fss_protocol_error_notification = false;
-    	m_uart_driver_error_notification = false;
     	
     	/* Interface with TCPInterface */
     	m_command = "";
@@ -213,6 +182,17 @@ public class ExperimentManager extends Thread{
     	return temp_reply;
     }
     
+    private void writeHKFileHeader() 
+    {
+    	String str = "";
+    	str += Constants.sw_version + ",";
+        str += m_exp_number + ",";
+        str += m_conf.satellite_id + ",";
+        str += m_initial_time;
+        str += "\n";
+        m_hk_buffer.writeString(str);
+    }
+    
     private boolean transitFromReadyToRunning() {
     	m_logger.info(TAG + "Transition from READY to RUNNING");    	
     	
@@ -232,11 +212,7 @@ public class ExperimentManager extends Thread{
     	m_fss_protocol.setConfiguration();
     	
     	/* Generate the HK header */
-    	m_hk_header.clear();
-        m_hk_header.put((byte)(Constants.sw_version & 0xFF));
-        m_hk_header.put((byte)((m_exp_number & 0x7F) | ((m_conf.satellite_id & 0x01) << 7)));
-        m_hk_header.putLong(m_initial_time);
-        m_hk_buffer.writeHK(m_hk_header.array());
+    	writeHKFileHeader();
     	
     	
     	/* Configure the RF ISL Module */
@@ -255,7 +231,6 @@ public class ExperimentManager extends Thread{
     		/* Notify the error to the platform */
     		accessToErrorMessage(true, TAG + "Impossible to send the RF ISL Configuration - No communication");
     		accessToError(true, true);
-    		accessToStatus(true, Constants.REPLY_STATUS_FINISHED);
     		return false;
     	}
     	
@@ -273,7 +248,7 @@ public class ExperimentManager extends Thread{
         m_uart_tx_buffer.clear();
         
     	/* Start Threads */
-        m_generator = new DataGenerator(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
+        m_generator = new Payload(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
         m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_ipc_stack, m_time);
         
         m_generator.start();
@@ -292,47 +267,15 @@ public class ExperimentManager extends Thread{
     	stopChilds();
     	
     	/* Close IPC stack */
-    	//m_ipc_stack.close();
+    	m_ipc_stack.close();
     	m_logger.info(TAG + "IPC stack closed");
     	
-        /** Retrieve the final HK **/
+        /* Retrieve the final HK */
         storeHK();
         m_logger.info(TAG + "Final HK buffered");
         
-    	/* Store the resulting files */
-        /** Include Footer in the HK file **/
-        ByteBuffer footer = ByteBuffer.allocate(Integer.SIZE / 8);
-        footer.putInt(m_fss_protocol.getDuration());
-        footer.flip();
-        m_hk_buffer.writeHK(footer.array());
-        footer.clear();
-        m_logger.info(TAG + "Footer HK stored");
-        
-        /** Transfer TX and RX files **/
-        m_fss_buffer.moveToDownload();
-        m_hk_packets.moveToDownload();
-        m_logger.info(TAG + "Moved HK packets to_download folder");
-        m_logger.info(TAG + "Moved FSS buffer to_download folder");
-        
-        /** Transfer HK **/
-        m_hk_buffer.moveToDownload();
-        m_logger.info(TAG + "Moved HK buffer to_download folder");
-        
-        /** Transfer Log **/
-        m_logger.moveToDownload();
-        
-        /** Compress **/
-        String name = compressResults();
-        
-        /** Reset the Log **/
-        m_logger.resetLog();
-        m_logger.info(TAG + "Moved LOG to_download folder");
-        m_logger.info(TAG + name + " file created to be download");
-        
-        
-        /** Change status **/
-        m_logger.info(TAG + "Changing status to FINISHED");
-        accessToStatus(true, Constants.REPLY_STATUS_FINISHED);
+        /* Close the folder system */
+        // TODO:
     }
     
     private void transitToErroneousFinished() {
@@ -387,86 +330,65 @@ public class ExperimentManager extends Thread{
         
     }
     
-    private String compressResults() throws IOException {
-    
-    	/** Compress files **/
-        //String tar_name = Constants.download_path + String.format("%03d", m_exp_number) + "_" + space.golbriak.lang.System.currentTimeMillis() + "_" + Constants.dwn_file_pattern;
-        String tar_name = Constants.download_path + String.format("%03d", m_exp_number) + "_" + m_time.getTimeMillis() + "_" + Constants.dwn_file_pattern;
-        
-        String gzip_name = tar_name + ".gz";
-        File tar_file = new File(tar_name);
-        File gzip_file = new File(gzip_name);
-
-        /*** TAR file ***/
-        TarOutputStream tar_stream = new TarOutputStream(new BufferedOutputStream(new FileOutputStream(tar_file)));
-        File folder = new File(Constants.download_path);
-        int count;
-        byte data[] = new byte[2048];
-        for(File f : folder.listFiles()){
-            if(f.getName().contains(".data")) {
-                //tar_stream.putNextEntry(new TarEntry(f, f.getName()));
-                BufferedInputStream origin = new BufferedInputStream(new FileInputStream(f));
-                while((count = origin.read(data)) != -1) {
-                    tar_stream.write(data, 0, count);
-                    //tar_stream.flush();
-                }
-                origin.close();
-                f.delete();
-            }
-        }
-        tar_stream.close();
-        
-        /*** GZIP file ***/
-        GZIPOutputStream gzip_stream = new GZIPOutputStream(new FileOutputStream(gzip_file));
-        FileInputStream tar_input_stream = new FileInputStream(tar_name);
-        while((count = tar_input_stream.read(data)) != -1){
-            gzip_stream.write(data, 0, count);
-            //gzip_stream.flush();
-        }
-        gzip_stream.close();
-        tar_input_stream.close();
-        tar_file.delete();
-        
-        return gzip_name;
+    private void storeHK()
+    {
+    	m_hk_item.timestamp = m_time.getTimeMillis();
+    	m_hk_item.exec_status = m_status;
+    	m_hk_item.payload_poll = m_data_generator_polling;
+    	m_hk_item.fss_poll = m_fss_protocol_polling;
+    	m_hk_item.payload_generated_items = m_generator.getGenerated();
+    	m_hk_item.fss_status = m_fss_protocol.getFederationStatus();
+    	m_hk_item.fss_role = m_fss_protocol.getFederationRole();
+    	m_hk_item.fss_tx = m_fss_protocol.getTXs();
+    	m_hk_item.fss_rx = m_fss_protocol.getRXs();
+    	m_hk_item.fss_err_rx = m_fss_protocol.getErrRXs();
+    	m_hk_item.isl_buffer_size = m_fss_buffer.getSize();
+    	m_hk_item.isl_buffer_drops = m_fss_buffer.getDrops();
+    	if(m_rf_isl_hk != null) {
+    		m_hk_item.rf_isl_hk.parseFromBytes(m_rf_isl_hk);
+    	}
+        m_hk_buffer.writeHK(m_hk_item);
     }
     
-    private void storeHK() {
-    	m_hk_timestamp = (int)((m_time.getTimeMillis() - m_initial_time) & 0xFFFFFFFF);
-        
-    	m_hk_item.putInt(m_hk_timestamp);
-        /* Manager */
-        if(m_status == Constants.REPLY_STATUS_READY) {
-        	m_hk_item.put((byte)(-1 & 0xFF));
-        } else {
-        	m_hk_item.put((byte)(m_conf.version & 0xFF));
+    private void updateBootCount() throws IOException
+    {
+    	m_persistent_reader = new FileInputStream(new File(m_persistent_file));
+    	if(m_persistent_reader != null) {
+            try {
+            	if(m_persistent_reader.available() > 0) {
+            		m_exp_number = m_persistent_reader.read();
+                    m_exp_number ++;
+            	}
+            	m_persistent_writer = new FileOutputStream(m_persistent_file);
+            	m_persistent_writer.write(m_exp_number);
+            } catch (IOException e) {
+                m_logger.error(e);
+            } finally {
+            	m_persistent_reader.close();
+            	m_persistent_writer.close();
+            }
         }
-        m_hk_item.put((byte)((((accessToStatus(false, 0) << 5) & 0xE0)) | ((m_command_hk << 3) & 0x18) | (m_data_generator_polling & 0x02) | (m_fss_protocol_polling & 0x01)));
-        m_hk_item.putInt(m_command_time);
-        m_hk_item.put((byte)(m_number_sc_commands & 0xFF));
-        /* DataGenerator */
-        m_hk_item.putInt(m_generator.getGenerated());
-        if(m_generator.getStatus() == true) {
-        	m_hk_item.put((byte)(Constants.generator_STATUS_RUNNING & 0xFF));
-        } else {
-        	m_hk_item.put((byte)(Constants.generator_STATUS_STOPPED & 0xFF));
+    }
+    
+    private void checkOperationsCommand()
+    {
+		String command;
+    	command = accessToCommand(false, "");
+    	if(command.equals("") == false) {
+    		System.out.println(TAG + "Received Command " + command);
+    		m_logger.info(TAG + "Received Command " + command);
+    		m_command_time = (int)(m_time.getTimeMillis() - m_initial_time);
+    		m_number_sc_commands ++;
+    		if(command.equalsIgnoreCase(Constants.COMMAND_EXIT) == true) {
+            	m_logger.info(TAG + "EXIT command received!");
+            	m_exit = true;
+                accessToACKReply(true, 1); //GOOD ACK
+            } else {
+            	m_logger.warning(TAG + "Unknown received command from the platform");
+            	accessToACKReply(true, 0); //BAD ACK
+            }
+            
         }
-        /* FSSDataBuffer */
-        m_hk_item.putShort((short)(m_fss_buffer.getSize() & 0xFFFF));
-        m_hk_item.putShort((short)(m_fss_buffer.getDrops() & 0xFFFF));
-        /* FSSProtocol */
-        m_hk_item.put((byte)((m_fss_protocol.getFederationStatus() & 0xFF) | ((m_fss_protocol.getFederationRole() & 0xFF) << 2)));
-        m_hk_item.putShort((short)(m_fss_protocol.getTXs() & 0xFFFF));
-        m_hk_item.putShort((short)(m_fss_protocol.getRXs() & 0xFFFF));
-        m_hk_item.putShort((short)(m_fss_protocol.getErrRXs() & 0xFFFF));
-        /* RF ISL Module */
-        if(m_rf_isl_alive == true) {
-        	m_hk_item.put((byte)(0 & 0xFF));
-        } else {
-        	m_hk_item.put((byte)(1 & 0xFF));
-        }
-        m_hk_item.put(m_rf_isl_hk);
-        m_hk_buffer.writeHK(m_hk_item.array());
-        m_hk_item.clear();
     }
     
     public void run() {
@@ -474,215 +396,85 @@ public class ExperimentManager extends Thread{
         try {            
         	
             /* Common variables */
-            String command;
             long spent_time;
             long time_to_sleep;
             byte[] data = new byte[Constants.data_rf_isl_hk_size];
             
-            /* Start Uart interface Thread */
-            m_uart_driver.start();
-            
             /* Update the boot count */
-            if(m_persistent_reader != null) {
-                try {
-                	if(m_persistent_file.length() > 0) {
-                		m_exp_number = m_persistent_reader.read();
-	                    m_exp_number ++;
-                	}
-                	m_persistent_writer = new FileOutputStream(m_persistent_file);
-                	m_persistent_writer.write(m_exp_number);
-                } catch (IOException e) {
-                    m_logger.error(e);
-                } finally {
-                	m_persistent_reader.close();
-                	m_persistent_writer.close();
-                }
-            }
+            updateBootCount();
                        
             /* Start the main loop and indicate that we are ready */
             m_logger.info(TAG + "Software version " + Constants.sw_version);
             m_logger.info(TAG + "Start Main Loop");
-            accessToStatus(true, Constants.REPLY_STATUS_READY);
+            accessToStatus(true, Constants.REPLY_STATUS_RUNNING);
             
             while(m_exit == false) {
             	
                 /* Get current time to compute the rate */
                 m_time_tick = m_time.getTimeMillis(); /* Time in milliseconds */
                 
-                if(m_time_tick >= m_start_time + Constants.manager_max_exec_time 
-            		&& m_start_time != 0 
-            		&& accessToStatus(false, 0) != Constants.REPLY_STATUS_FINISHED) {
-                    m_logger.info(TAG + "Reached maximum execution time: " + Constants.manager_max_exec_time);
-                    transitFromRunningToFinished();
-                    /*m_generator.controlledStop();
-                    m_fss_protocol.controlledStop();
-                    accessToStatus(true, Constants.REPLY_STATUS_FINISHED);*/
-                }
-                
                 /* command */
-                try {
-                	
-                	command = accessToCommand(false, "");
-              
-                	if(command.equals("") == false) {
-                	
-                		System.out.println(TAG + "Received Command " + command);
-                		m_logger.info(TAG + "Received Command " + command);
-                		
-                		m_command_time = (int)(m_time.getTimeMillis() - m_initial_time);
-                		m_number_sc_commands ++;
-                		
-                		if(command.equalsIgnoreCase(Constants.COMMAND_EXIT) == true) {
-                        	m_logger.info(TAG + "EXIT command received!");
-                        	m_command_hk = Constants.COMMAND_PARSED_EXIT;
-                        	if(accessToStatus(false, 0) == Constants.REPLY_STATUS_FINISHED) {
-                        		m_logger.info(TAG + "EXITing from FINISHED");
-                            	
-                        		m_exit = true;
-                            	accessToACKReply(true, 1); //GOOD ACK
-                            } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_READY) {
-                            	m_logger.info(TAG + "EXITing from READY");
-                            	m_exit = true;
-                            	accessToACKReply(true, 1); //GOOD ACK
-                            } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_NEGOTIATION 
-                            		|| accessToStatus(false, 0) == Constants.REPLY_STATUS_FEDERATION
-                            		|| accessToStatus(false, 0) == Constants.REPLY_STATUS_CLOSURE) {
-                            	m_exit = true;
-                            	transitFromRunningToFinished();
-                            	accessToACKReply(true, 1); //GOOD ACK
-                            }
-                        } else if(command.equalsIgnoreCase(Constants.COMMAND_STATUS) == true) {
-                        	m_logger.info(TAG + "STATUS command received!");
-                        	m_command_hk = Constants.COMMAND_PARSED_STATUS;
-                        } else {
-                        	m_command_hk = Constants.COMMAND_PARSED_UNKNOWN;
-                        	m_logger.warning(TAG + "Unknown received command from the platform");
-                        	accessToACKReply(true, 0); //BAD ACK
-                        }
-                        
-                    }
-                } catch (IOException e) {
-                    m_logger.error(e);
-                }
-                
+                checkOperationsCommand();
                 
                 if(m_exit == false) {
-                	
-                    /* Define Experiment Status */
-                    if((accessToStatus(false, 0) == Constants.REPLY_STATUS_READY || accessToStatus(false, 0) == Constants.REPLY_STATUS_FINISHED)
-                        && (m_fss_protocol.getState() == Thread.State.TIMED_WAITING || m_fss_protocol.getState() == Thread.State.RUNNABLE)
-                        && m_fss_protocol.getFederationStatus() == Constants.FSS_NEGOTIATION) {
-                        m_logger.info(TAG + "In NEGOTIATION mode");
-                    	accessToStatus(true, Constants.REPLY_STATUS_NEGOTIATION);
-                    } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_NEGOTIATION
-                    	&& (m_fss_protocol.getState() == Thread.State.TIMED_WAITING || m_fss_protocol.getState() == Thread.State.RUNNABLE)
-                    	&& m_fss_protocol.getFederationStatus() == Constants.FSS_EXCHANGE) {
-                        
-                    	accessToStatus(true, Constants.REPLY_STATUS_FEDERATION);
-                    } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_FEDERATION
-                    	&& (m_fss_protocol.getState() == Thread.State.TIMED_WAITING || m_fss_protocol.getState() == Thread.State.RUNNABLE)
-                    	&& m_fss_protocol.getFederationStatus() == Constants.FSS_CLOSURE) {
-                        
-                    	accessToStatus(false, Constants.REPLY_STATUS_CLOSURE);
-                    } else if(accessToStatus(false, 0) == Constants.REPLY_STATUS_CLOSURE
-                    	&& m_fss_protocol.getState() == Thread.State.TERMINATED) {
-                        transitFromRunningToFinished();
-                    }
                     
                     /* Pool Generator and FSSProtocol Threads - Only when they should be executing*/
-                    if(accessToStatus(false, 0) == Constants.REPLY_STATUS_NEGOTIATION || 
-                    	accessToStatus(false, 0) == Constants.REPLY_STATUS_FEDERATION ||
-                    	accessToStatus(false, 0) == Constants.REPLY_STATUS_CLOSURE) {
+                    /* Data Generator */
+                    if(m_generator.getState() != Thread.State.TERMINATED) {
                         
-                        /* Data Generator */
-                        if(m_generator.getState() != Thread.State.TERMINATED) {
-                            
-                        	if(!m_generator.polling(false)) {
-                                m_generator_counter ++;
-                                m_data_generator_polling = 1;
-                            } else {
-                                m_generator_counter = 0;
-                                m_data_generator_polling = 0;
-                            }
-                            
-                            if (m_generator_counter >= Constants.generator_max_polling
-                            	&& m_data_generator_error_notification == false) {
-                                /* ERROR m_generator does not reply */
-                            	m_logger.error(TAG + "DataGenerator is not polling");
-                            	m_data_generator_error_notification = true;
-                            	accessToErrorMessage(true, TAG + "DataGenerator is not polling");
-                            }
-                        } else if(m_data_generator_error_notification == false){
-                        	m_logger.warning(TAG + "The DataGenerator is TERMINATED. Is this coherent?");
+                    	if(!m_generator.polling(false)) {
+                            m_generator_counter ++;
+                            m_data_generator_polling = 1;
+                        } else {
+                            m_generator_counter = 0;
+                            m_data_generator_polling = 0;
+                        }
+                        
+                        if (m_generator_counter >= Constants.generator_max_polling
+                        	&& m_data_generator_error_notification == false) {
+                            /* ERROR m_generator does not reply */
+                        	m_logger.error(TAG + "DataGenerator is not polling");
                         	m_data_generator_error_notification = true;
+                        	accessToErrorMessage(true, TAG + "DataGenerator is not polling");
                         }
-                        
-                        /* FSS Protocol */
-                        if(m_fss_protocol.getState() != Thread.State.TERMINATED) {
-                            if(!m_fss_protocol.polling(false)) {
-                                m_fss_protocol_counter ++;
-                                m_fss_protocol_polling = 1;
-                                m_logger.error(TAG + "FSSProtocol pol down - Try again");
-                            } else {
-                                m_fss_protocol_counter = 0;
-                                m_fss_protocol_polling = 0;
-                            }
-                            
-                            if (m_fss_protocol_counter >= Constants.fss_protocol_max_polling
-                            	&& m_fss_protocol_error_notification == false) {
-                                /* ERROR m_generator does not reply */
-                                m_logger.error(TAG + "FSSProtocol is not polling");
-                                m_fss_protocol_error_notification = true;
-                                accessToErrorMessage(true, TAG + "FSSProtocol is not polling");
-                            }
-                        } else if(m_fss_protocol_error_notification == false) {
-                        	m_logger.warning(TAG + "The FSSProtocol is TERMINATED. Is it coherent?");
-                        	m_fss_protocol_error_notification = true;
-                        }
-                        
-                        if(m_data_generator_error_notification == true 
-                    		&& m_fss_protocol_error_notification == true
-                    		&& (accessToStatus(false, 0) == Constants.REPLY_STATUS_NEGOTIATION 
-                    		|| accessToStatus(false, 0) == Constants.REPLY_STATUS_FEDERATION
-                    		|| accessToStatus(false, 0) == Constants.REPLY_STATUS_CLOSURE)) {
-                        	m_logger.info(TAG + "All threads are terminated, the experiment has finished.");
-                        	transitFromRunningToFinished();
-                        }
-                        
-                        
-                    } else {
-                        m_data_generator_polling = 0;
-                        m_fss_protocol_polling = 0;
-                    }
-                }
-                
-                /* Pool UartInterface */
-                if(m_uart_driver.getState() != Thread.State.TERMINATED) {
-                	
-                	if(m_uart_driver.polling(false) == false) {
-                        m_uart_driver_counter ++;
-                        m_uart_driver_polling = 1;
-                    } else {
-                    	m_uart_driver_counter = 0;
-                        m_uart_driver_polling = 0;
+                    } else if(m_data_generator_error_notification == false){
+                    	m_logger.warning(TAG + "The DataGenerator is TERMINATED. Is this coherent?");
+                    	m_data_generator_error_notification = true;
                     }
                     
-                    if (m_uart_driver_counter >= Constants.uart_interface_max_polling
-                    	&& m_uart_driver_error_notification == false) {
-                        /* ERROR m_generator does not reply */
-                    	m_logger.error(TAG + "UartInterface is not polling");
-                    	m_uart_driver_error_notification = true;
-                    	accessToErrorMessage(true, TAG + "UartInterface is not polling");
+                    /* FSS Protocol */
+                    if(m_fss_protocol.getState() != Thread.State.TERMINATED) {
+                        if(!m_fss_protocol.polling(false)) {
+                            m_fss_protocol_counter ++;
+                            m_fss_protocol_polling = 1;
+                            m_logger.error(TAG + "FSSProtocol pol down - Try again");
+                        } else {
+                            m_fss_protocol_counter = 0;
+                            m_fss_protocol_polling = 0;
+                        }
+                        
+                        if (m_fss_protocol_counter >= Constants.fss_protocol_max_polling
+                        	&& m_fss_protocol_error_notification == false) {
+                            /* ERROR m_generator does not reply */
+                            m_logger.error(TAG + "FSSProtocol is not polling");
+                            m_fss_protocol_error_notification = true;
+                            accessToErrorMessage(true, TAG + "FSSProtocol is not polling");
+                        }
+                    } else if(m_fss_protocol_error_notification == false) {
+                    	m_logger.warning(TAG + "The FSSProtocol is TERMINATED. Is it coherent?");
+                    	m_fss_protocol_error_notification = true;
                     }
-                	
-                } else {
-                	m_logger.error(TAG + "UartInterface is Terminated, it should be working");
+                    
+                    if(m_data_generator_error_notification == true 
+                		&& m_fss_protocol_error_notification == true) {
+                    	m_logger.info(TAG + "All threads are terminated, the experiment has finished.");
+                    	transitFromRunningToFinished();
+                    }
                 }
+                	
                 
                 /* Retrieve Housekeeping */  
-                if(accessToStatus(false, 0) != Constants.REPLY_STATUS_FINISHED 
-                		&& accessToStatus(false, 0) != Constants.REPLY_STATUS_READY
-                		&& m_time_tick >= m_next_hk) {
+                if(m_time_tick >= m_next_hk) {
                 	
                 	data = (byte[])m_ipc_stack.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
                 	if(data.length == 0) {
@@ -706,9 +498,7 @@ public class ExperimentManager extends Thread{
                 
                 if((m_fss_protocol_counter >= Constants.fss_protocol_max_polling || 
                 		m_generator_counter >= Constants.generator_max_polling ||
-        				m_uart_driver_counter >= Constants.uart_interface_max_polling ||
-                		m_rf_isl_alive == false) && 
-                		accessToStatus(false, 0) != Constants.REPLY_STATUS_FINISHED) {
+        				m_rf_isl_alive == false)) {
                 	transitToErroneousFinished();
                 }
                 
@@ -738,20 +528,6 @@ public class ExperimentManager extends Thread{
         } catch(Exception e) {
         	e.printStackTrace();
         	m_logger.error(e);
-        }
-
-        /* Close the UART Interface */
-        m_uart_driver.close();
-        int counter = 0;
-        while(m_uart_driver.getState() != Thread.State.TERMINATED
-        		&& counter < 50) {
-	        try {
-				sleep(10);
-				counter ++;
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
         }
         
         System.out.println(TAG + "Bye Bye!");

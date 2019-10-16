@@ -135,7 +135,7 @@ public class SimpleLinkTest {
 		}
 		
 		TimeUtils time = new TimeUtils();
-		FolderUtils folder = new FolderUtils();
+		FolderUtils folder = new FolderUtils(time);
 		Log logger = new Log(time, folder);
 		ExperimentConf conf = new ExperimentConf(logger);
 		
@@ -146,136 +146,136 @@ public class SimpleLinkTest {
 		conf.rf_isl_redundancy = redundancy;
 		
 		System.out.println("Redundancy: " + conf.rf_isl_redundancy);
-		UartBuffer tx_buffer = new UartBuffer(logger, "tx_buffer");
-		UartBuffer rx_buffer = new UartBuffer(logger, "rx_buffer");
-		UartInterface uart_interface = new UartInterface(logger, tx_buffer, rx_buffer, time, conf);
-		SimpleLinkProtocol slp = new SimpleLinkProtocol(logger, conf, time, tx_buffer, rx_buffer);
+		SimpleLinkProtocol slp = new SimpleLinkProtocol(logger, conf, time);
 		slp.setConfiguration();
-		//slp.open();
+		if(slp.open() == true) {
 		
-		uart_interface.start();
 	
-		switch(mode) {
-			case HK_MODE:
-				while(true) {
-					/* Request Telemetry */
-					System.out.println("Getting telemetry");
-					byte[] telemetry = (byte[])slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
-					System.out.println("Size " + telemetry.length);
-					if(telemetry.length > 0) {
-						String s = "[" + (int)(System.currentTimeMillis()) + "]Telemetry Packet -> ";
-						s += "Boot count: " + (telemetry[0] & 0xFF) + ", Actual RSSI: " + rssi_raw_dbm(telemetry[1] & 0xFF); 
-						s += ", Last RSSI: " + rssi_raw_dbm(telemetry[2] & 0xFF);
-						s += ", Last LQI: " + lqi_status(telemetry[3] & 0xFF) + ", TX Power: " + (telemetry[4] & 0xFF);
-						s += ", PHY TX packets: " + (((telemetry[8] << 24) | (telemetry[7] << 16) | (telemetry[6] << 8) | (telemetry[5] & 0xFF)) & 0xFFFFFFFF);
-						s += ", PHY RX packets: " + (((telemetry[12] << 24) | (telemetry[11] << 16) | (telemetry[10] << 8) | (telemetry[9] & 0xFF)) & 0xFFFFFFFF);
-						s += ", LL TX packets: " + (((telemetry[16] << 24) | (telemetry[15] << 16) | (telemetry[14] << 8) | (telemetry[13] & 0xFF)) & 0xFFFFFFFF);
-						s += ", LL RX packets: " + (((telemetry[20] << 24) | (telemetry[19] << 16) | (telemetry[18] << 8) | (telemetry[17] & 0xFF)) & 0xFFFFFFFF);
-						s += ", PHY TX failed packets: " + (((telemetry[22] << 8) | (telemetry[21] & 0xFF)) & 0xFFFF);
-						s += ", PHY RX errors packets: " + (((telemetry[24] << 8) | (telemetry[23] & 0xFF)) & 0xFFFF);
-						s += ", External Temperature: " + fromU16ToFloat(((telemetry[25] << 8) | (telemetry[26] & 0xFF)) & 0xFFFF);
-						s += ", Internal Temperature: " + fromU16ToFloat(((telemetry[27] << 8) | (telemetry[28] & 0xFF)) & 0xFFFF);
-						byte[] freq_bytes = new byte[4];
-						freq_bytes[3] = telemetry[29];
-						freq_bytes[2] = telemetry[30];
-						freq_bytes[1] = telemetry[31];
-						freq_bytes[0] = telemetry[32];
-						float frequency = ByteBuffer.wrap(freq_bytes).order(ByteOrder.BIG_ENDIAN).getFloat();
-						s += ", Frequency: " + frequency;
-						s += ", RX Queue: " + (telemetry[33] & 0xFF) + ", TX Queue: " + (telemetry[34] & 0xFF);
-						s += ", Free Stack: " + (((telemetry[36] << 8) | (telemetry[35] & 0xFF)) & 0xFFFF) + " " + (((telemetry[38] << 8) | (telemetry[37] & 0xFF)) & 0xFFFF) + " ";
-						s += (((telemetry[40] << 8) | (telemetry[39] & 0xFF)) & 0xFFFF) + " " + (((telemetry[42] << 8) | (telemetry[41] & 0xFF)) & 0xFFFF);
-						s += ", User Stack: " + (((telemetry[44] << 8) | (telemetry[43] & 0xFF)) & 0xFFFF) + " " + (((telemetry[46] << 8) | (telemetry[45] & 0xFF)) & 0xFFFF) + " ";
-						s += (((telemetry[48] << 8) | (telemetry[47] & 0xFF)) & 0xFFFF) + " " + (((telemetry[50] << 8) | (telemetry[49] & 0xFF)) & 0xFFFF);
-						
-						
-						System.out.println(s);
-						if(writer != null) writer.write(s + "\n");
-						System.out.println("---------------------------------------------------------------------");
-						if(writer != null) writer.write("---------------------------------------------------------------------"  + "\n");
-						if(writer != null) writer.flush();
-					}
-					Thread.sleep(1000);
-				}
-
-			case TX_MODE:
-				int counter = 0; 
-				//while(true) {
-				while((counter < max_packets) || always == true) {
-					String content = "RICARD ETS LA CANYA! " + counter; //+ " A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. ";
-					//content += "HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... ";
-					//content += "NO LLEGEIXIS TAN I TREBALLA!";
-					System.out.println("Sending Packet with " + content.length() + " Bytes of content: " + content);
-					if(writer != null) writer.write("Sending Packet with " + content.length() + " Bytes of content: " + content + "\n");
-					if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_SEND, content.getBytes())) {
-						counter ++;
-						byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+			switch(mode) {
+				case HK_MODE:
+					while(true) {
+						/* Request Telemetry */
+						System.out.println("Getting telemetry");
+						byte[] telemetry = (byte[])slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+						System.out.println("Size " + telemetry.length);
 						if(telemetry.length > 0) {
-							String s = "[" + System.currentTimeMillis() + "]Transmission Status -> ";
-							s += "Boot count: " + (telemetry[0] & 0xFF);
-							s += ", TX Power: " + (telemetry[4] & 0xFF);
+							String s = "[" + (int)(System.currentTimeMillis()) + "]Telemetry Packet -> ";
+							s += "Boot count: " + (telemetry[0] & 0xFF) + ", Actual RSSI: " + rssi_raw_dbm(telemetry[1] & 0xFF); 
+							s += ", Last RSSI: " + rssi_raw_dbm(telemetry[2] & 0xFF);
+							s += ", Last LQI: " + lqi_status(telemetry[3] & 0xFF) + ", TX Power: " + (telemetry[4] & 0xFF);
 							s += ", PHY TX packets: " + (((telemetry[8] << 24) | (telemetry[7] << 16) | (telemetry[6] << 8) | (telemetry[5] & 0xFF)) & 0xFFFFFFFF);
+							s += ", PHY RX packets: " + (((telemetry[12] << 24) | (telemetry[11] << 16) | (telemetry[10] << 8) | (telemetry[9] & 0xFF)) & 0xFFFFFFFF);
 							s += ", LL TX packets: " + (((telemetry[16] << 24) | (telemetry[15] << 16) | (telemetry[14] << 8) | (telemetry[13] & 0xFF)) & 0xFFFFFFFF);
-							s += ", TX Queue: " + (telemetry[34] & 0xFF);
+							s += ", LL RX packets: " + (((telemetry[20] << 24) | (telemetry[19] << 16) | (telemetry[18] << 8) | (telemetry[17] & 0xFF)) & 0xFFFFFFFF);
 							s += ", PHY TX failed packets: " + (((telemetry[22] << 8) | (telemetry[21] & 0xFF)) & 0xFFFF);
-							System.out.println(s);
+							s += ", PHY RX errors packets: " + (((telemetry[24] << 8) | (telemetry[23] & 0xFF)) & 0xFFFF);
+							s += ", External Temperature: " + fromU16ToFloat(((telemetry[25] << 8) | (telemetry[26] & 0xFF)) & 0xFFFF);
+							s += ", Internal Temperature: " + fromU16ToFloat(((telemetry[27] << 8) | (telemetry[28] & 0xFF)) & 0xFFFF);
+							byte[] freq_bytes = new byte[4];
+							freq_bytes[3] = telemetry[29];
+							freq_bytes[2] = telemetry[30];
+							freq_bytes[1] = telemetry[31];
+							freq_bytes[0] = telemetry[32];
+							float frequency = ByteBuffer.wrap(freq_bytes).order(ByteOrder.BIG_ENDIAN).getFloat();
+							s += ", Frequency: " + frequency;
+							s += ", RX Queue: " + (telemetry[33] & 0xFF) + ", TX Queue: " + (telemetry[34] & 0xFF);
+							s += ", Free Stack: " + (((telemetry[36] << 8) | (telemetry[35] & 0xFF)) & 0xFFFF) + " " + (((telemetry[38] << 8) | (telemetry[37] & 0xFF)) & 0xFFFF) + " ";
+							s += (((telemetry[40] << 8) | (telemetry[39] & 0xFF)) & 0xFFFF) + " " + (((telemetry[42] << 8) | (telemetry[41] & 0xFF)) & 0xFFFF);
+							s += ", User Stack: " + (((telemetry[44] << 8) | (telemetry[43] & 0xFF)) & 0xFFFF) + " " + (((telemetry[46] << 8) | (telemetry[45] & 0xFF)) & 0xFFFF) + " ";
+							s += (((telemetry[48] << 8) | (telemetry[47] & 0xFF)) & 0xFFFF) + " " + (((telemetry[50] << 8) | (telemetry[49] & 0xFF)) & 0xFFFF);
 							
+							
+							System.out.println(s);
 							if(writer != null) writer.write(s + "\n");
+							System.out.println("---------------------------------------------------------------------");
+							if(writer != null) writer.write("---------------------------------------------------------------------"  + "\n");
+							if(writer != null) writer.flush();
+						}
+						Thread.sleep(1000);
+					}
+	
+				case TX_MODE:
+					int counter = 0; 
+					//while(true) {
+					while((counter < max_packets) || always == true) {
+						String content = "RICARD ETS LA CANYA! " + counter; //+ " A VERE SI AMB AIXò POTS TENIR SUFICIENT DADES COM PER TENIR METRIQUES INTERESANTS. ";
+						//content += "HAIG D'ACONSEGUIR TENIR UNS 200 CARACTERS, PERO NO PORTO TANS. MENTRES, VAIG FENT TEMPS ... ";
+						//content += "NO LLEGEIXIS TAN I TREBALLA!";
+						System.out.println("Sending Packet with " + content.length() + " Bytes of content: " + content);
+						if(writer != null) writer.write("Sending Packet with " + content.length() + " Bytes of content: " + content + "\n");
+						if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_SEND, content.getBytes())) {
+							counter ++;
+							byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+							if(telemetry.length > 0) {
+								String s = "[" + System.currentTimeMillis() + "]Transmission Status -> ";
+								s += "Boot count: " + (telemetry[0] & 0xFF);
+								s += ", TX Power: " + (telemetry[4] & 0xFF);
+								s += ", PHY TX packets: " + (((telemetry[8] << 24) | (telemetry[7] << 16) | (telemetry[6] << 8) | (telemetry[5] & 0xFF)) & 0xFFFFFFFF);
+								s += ", LL TX packets: " + (((telemetry[16] << 24) | (telemetry[15] << 16) | (telemetry[14] << 8) | (telemetry[13] & 0xFF)) & 0xFFFFFFFF);
+								s += ", TX Queue: " + (telemetry[34] & 0xFF);
+								s += ", PHY TX failed packets: " + (((telemetry[22] << 8) | (telemetry[21] & 0xFF)) & 0xFFFF);
+								System.out.println(s);
+								
+								if(writer != null) writer.write(s + "\n");
+								System.out.println("---------------------------------------------------------------------");
+								if(writer != null) writer.write("---------------------------------------------------------------------" + "\n");
+								if(writer != null) writer.flush();
+							} else {
+								System.out.println("[ERROR] Something got wrong. I have correctly sent a command, but I have not received HK...");
+							}
+							
+						} else {
+							System.out.println("The RF ISL has repplied indicating that the packet has not been sent");
+							System.out.println("---------------------------------------------------------------------");
+						}
+						Thread.sleep(3000);
+					}
+				
+				case RX_MODE:
+					
+					System.out.println("Receiving packets...");
+					byte[] data;
+					while(true) {
+						data = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_RECEIVE, null);
+						if(data.length > 0) {
+							Thread.sleep(10);
+							byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+							String s = "[" + System.currentTimeMillis() + "]Received Packet -> ";
+							s += "Boot count: " + (telemetry[0] & 0xFF);
+							s += ", Actual RSSI: " + rssi_raw_dbm(telemetry[1] & 0xFF); 
+							s += ", Last RSSI: " + rssi_raw_dbm(telemetry[2] & 0xFF); 
+							s += ", SNR: " + snr(rssi_raw_dbm(telemetry[2] & 0xFF), rssi_raw_dbm(telemetry[1] & 0xFF));
+							s += ", Last LQI: " + lqi_status(telemetry[3] & 0xFF);
+							s += ", PHY RX packets: " + (((telemetry[12] << 24) | (telemetry[11] << 16) | (telemetry[10] << 8) | (telemetry[9] & 0xFF)) & 0xFFFFFFFF);
+							s += ", LL RX packets: " + (((telemetry[20] << 24) | (telemetry[19] << 16) | (telemetry[18] << 8) | (telemetry[17] & 0xFF)) & 0xFFFFFFFF);
+							s += ", PHY RX errors packets: " + (((telemetry[24] << 8) | (telemetry[23] & 0xFF))& 0xFFFF);
+							s += ", RX Queue: " + (telemetry[33] & 0xFF);
+							System.out.println(s);
+							if(writer != null) writer.write(s + "\n");
+							System.out.println("Received " + data.length + " Bytes Content: " + new String(data));
+							if(writer != null) writer.write("Received " + data.length + " Bytes Content: " + new String(data) + "\n");
 							System.out.println("---------------------------------------------------------------------");
 							if(writer != null) writer.write("---------------------------------------------------------------------" + "\n");
 							if(writer != null) writer.flush();
-						} else {
-							System.out.println("[ERROR] Something got wrong. I have correctly sent a command, but I have not received HK...");
-						}
-						
-					} else {
-						System.out.println("The RF ISL has repplied indicating that the packet has not been sent");
-						System.out.println("---------------------------------------------------------------------");
+						} 
+						Thread.sleep(500);
 					}
-					Thread.sleep(3000);
-				}
-			
-			case RX_MODE:
+				case CONF_MODE:
+					System.out.println("Sending configuration...");
+					byte[] mydata = ByteBuffer.allocate(4).putFloat(freq).array();
+					System.out.println("Bytes: " + mydata.length);
+					if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_CONF, mydata)) {
+						System.out.println("Configuration correctly sent!");
+					} else {
+						System.out.println("ERROR during sendind a configuration");
+					}
+			}
 				
-				System.out.println("Receiving packets...");
-				byte[] data;
-				while(true) {
-					data = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_RECEIVE, null);
-					if(data.length > 0) {
-						Thread.sleep(10);
-						byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
-						String s = "[" + System.currentTimeMillis() + "]Received Packet -> ";
-						s += "Boot count: " + (telemetry[0] & 0xFF);
-						s += ", Actual RSSI: " + rssi_raw_dbm(telemetry[1] & 0xFF); 
-						s += ", Last RSSI: " + rssi_raw_dbm(telemetry[2] & 0xFF); 
-						s += ", SNR: " + snr(rssi_raw_dbm(telemetry[2] & 0xFF), rssi_raw_dbm(telemetry[1] & 0xFF));
-						s += ", Last LQI: " + lqi_status(telemetry[3] & 0xFF);
-						s += ", PHY RX packets: " + (((telemetry[12] << 24) | (telemetry[11] << 16) | (telemetry[10] << 8) | (telemetry[9] & 0xFF)) & 0xFFFFFFFF);
-						s += ", LL RX packets: " + (((telemetry[20] << 24) | (telemetry[19] << 16) | (telemetry[18] << 8) | (telemetry[17] & 0xFF)) & 0xFFFFFFFF);
-						s += ", PHY RX errors packets: " + (((telemetry[24] << 8) | (telemetry[23] & 0xFF))& 0xFFFF);
-						s += ", RX Queue: " + (telemetry[33] & 0xFF);
-						System.out.println(s);
-						if(writer != null) writer.write(s + "\n");
-						System.out.println("Received " + data.length + " Bytes Content: " + new String(data));
-						if(writer != null) writer.write("Received " + data.length + " Bytes Content: " + new String(data) + "\n");
-						System.out.println("---------------------------------------------------------------------");
-						if(writer != null) writer.write("---------------------------------------------------------------------" + "\n");
-						if(writer != null) writer.flush();
-					} 
-					Thread.sleep(500);
-				}
-			case CONF_MODE:
-				System.out.println("Sending configuration...");
-				byte[] mydata = ByteBuffer.allocate(4).putFloat(freq).array();
-				System.out.println("Bytes: " + mydata.length);
-				if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_CONF, mydata)) {
-					System.out.println("Configuration correctly sent!");
-				} else {
-					System.out.println("ERROR during sendind a configuration");
-				}
+			slp.close();
+		} else {
+			System.out.println("[ERROR] Impossible to start the SimpleLink protocol");
 		}
-			
-		//slp.close();
+		
 		if(writer != null) {
 			writer.close();
 		}

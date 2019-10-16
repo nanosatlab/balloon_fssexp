@@ -19,9 +19,9 @@ public class SimpleLinkProtocol {
 
 	private final static String TAG = "[SimpleLinkProtocol] ";
 	
-	public SimpleLinkProtocol(Log log, ExperimentConf conf, TimeUtils timer, UartBuffer tx_buffer, UartBuffer rx_buffer) {
+	public SimpleLinkProtocol(Log log, ExperimentConf conf, TimeUtils timer) {
 		m_logger = log;
-		m_kiss = new KissProtocol(m_logger, timer, tx_buffer, rx_buffer);
+		m_kiss = new KissProtocol(m_logger, timer, conf);
 		m_id_packet = 0;
 		m_conf = conf;
 	}
@@ -30,10 +30,9 @@ public class SimpleLinkProtocol {
 		m_packet_redundancy = m_conf.rf_isl_redundancy;
 	}
 	
-	/*
-	public synchronized void open() {
-		m_kiss.open();
-	}*/
+	public boolean open() {
+		return m_kiss.open();
+	}
 	
 	private byte[] createHeader(byte command, int redundancy, byte[] data) {
 		
@@ -376,10 +375,9 @@ public class SimpleLinkProtocol {
 		return false;
 	}
 	
-	/*
 	public void close() {
 		m_kiss.close();
-	}*/
+	}
 	
 	public synchronized int bytesAvailable() {
 		return m_kiss.bytesAvailable();

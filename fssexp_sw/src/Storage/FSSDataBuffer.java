@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import Common.Constants;
+import Common.FolderUtils;
 import Configuration.ExperimentConf;
 
 public class FSSDataBuffer {
@@ -36,8 +37,6 @@ public class FSSDataBuffer {
     private int m_max_size;
     private int m_size;
     private String m_file_path;
-    private String m_result_file_path;
-    private File m_result_file;
     private int m_drop_packets;
     private int m_read_pointer;
     private Log m_logger;
@@ -45,11 +44,10 @@ public class FSSDataBuffer {
     
     private String TAG = "[FSSDataBuffer] ";
     
-    public FSSDataBuffer(Log log, ExperimentConf conf) {
+    public FSSDataBuffer(Log log, ExperimentConf conf, FolderUtils folder) {
         m_logger = log;
         m_conf = conf;
-        m_file_path = Constants.fss_data_file;
-        m_result_file_path = Constants.fss_result_data_file;
+        m_file_path = folder.payload_name;
         m_drop_packets = 0;
         m_read_pointer = 0;
         m_file = new File(m_file_path);
@@ -160,64 +158,4 @@ public class FSSDataBuffer {
     }
     
     public int getCapacity() { return m_max_size; }
-    
-    public void moveToDownload() {
-        
-        try {
-        	
-        	/* Initialization - remove data of it */
-            m_result_file = new File(m_result_file_path);
-            if(m_result_file.exists() == true) {
-                m_result_file.delete();
-            }
-            try {
-                m_result_file.createNewFile();
-            } catch (IOException e) {
-                m_logger.error(e);
-            }
-        	
-            FileOutputStream file_stream = new FileOutputStream(m_result_file);
-            BufferedOutputStream writer = new BufferedOutputStream(file_stream);
-            
-            /*ByteBuffer size = ByteBuffer.allocate(Integer.SIZE / 8).putInt(m_size);
-            size.flip();
-            writer.write(size.array());*/
-            
-            /*byte[] data;
-            while((data = extractData()) != null) {
-                writer.write(data);
-            }*/
-            
-            /*FileInputStream origin_file_stream = new FileInputStream(m_file);
-            ByteBuffer size = ByteBuffer.allocate(Integer.SIZE / 8).putInt(origin_file_stream.available() / Constants.data_size);
-            size.flip();
-            writer.write(size.array());
-            byte[] data = new byte[origin_file_stream.available()];
-            origin_file_stream.read(data);
-            origin_file_stream.close();
-            writer.write(data);
-            */
-            
-            /* TODO: Proposed by SIMONE - VERIFY!! */
-            FileInputStream origin_file_stream = new FileInputStream(m_file);
-            BufferedInputStream reader = new BufferedInputStream(origin_file_stream);
-            int data_block_number = (int)(m_file.length() & 0xFFFFFFFF) / Constants.data_size;
-            ByteBuffer size = ByteBuffer.allocate(Integer.SIZE / 8).putInt(data_block_number);
-            size.flip();
-            writer.write(size.array());
-            
-            byte [] data = new byte[Constants.fss_buffer_move_block];
-            int count;
-        	while((count = reader.read(data)) != -1) {
-        		writer.write(data, 0, count);
-        	}
-    		reader.close();
-            writer.close();
-            
-        } catch (FileNotFoundException e) {
-            m_logger.error(e);
-        } catch(IOException e) {
-            m_logger.error(e);
-        }
-    }
 }

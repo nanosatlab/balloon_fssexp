@@ -1,10 +1,9 @@
 
 /* Own package */
-package FSS_protocol;
+package InterSatelliteCommunications;
 
 /* External imports */
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 /* Internal imports */
@@ -18,8 +17,8 @@ import Storage.PacketExchangeBuffer;
 
 public class FSSProtocol extends Thread {
 
-	private FSSPacket m_tx_packet;
-	private FSSPacket m_rx_packet;
+	private Packet m_tx_packet;
+	private Packet m_rx_packet;
 	private SimpleLinkProtocol m_port;
 
 	private PacketExchangeBuffer m_hk_packets;
@@ -82,8 +81,8 @@ public class FSSProtocol extends Thread {
 		m_time = timer;
 
 		/* Packet containers */
-		m_tx_packet = new FSSPacket();
-		m_rx_packet = new FSSPacket();
+		m_tx_packet = new Packet();
+		m_rx_packet = new Packet();
 
 		m_tx_num = 0;
 		m_rx_num = 0;
@@ -269,7 +268,7 @@ public class FSSProtocol extends Thread {
 	private void retransmitPacket() {
 		/* Retransmit */
 		m_logger.info(TAG + "No replication - Retransmit Packet type " + m_tx_packet.getType());
-		FSSPacket temp_packet = new FSSPacket(m_tx_packet);
+		Packet temp_packet = new Packet(m_tx_packet);
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, temp_packet.getType(), temp_packet.getDestination());
 		m_tx_packet.setLength(temp_packet.getLength());
@@ -796,7 +795,7 @@ public class FSSProtocol extends Thread {
 		}
 	}
 
-	private void setHeaderPacket(FSSPacket packet, int type, int address) {
+	private void setHeaderPacket(Packet packet, int type, int address) {
 		// packet.setTimestamp(space.golbriak.lang.System.currentTimeMillis());
 		packet.setTimestamp(m_time.getTimeMillis());
 

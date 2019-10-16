@@ -2,7 +2,7 @@ package Tests;
 
 import java.nio.ByteBuffer;
 
-import FSS_protocol.FSSPacket;
+import InterSatelliteCommunications.Packet;
 
 public class FSSPacketTest {
 
@@ -18,7 +18,7 @@ public class FSSPacketTest {
         byte[] data = ByteBuffer.allocate(4).putInt(10).array();
         int length = data.length;
         
-        FSSPacket packet = new FSSPacket();
+        Packet packet = new Packet();
         packet.setSource(source);
         packet.setDestination(destination);
         packet.setTimestamp(timestamp);
@@ -28,7 +28,7 @@ public class FSSPacketTest {
         packet.setData(data);
         
         /* Container to test */
-        FSSPacket packet_test = new FSSPacket();
+        Packet packet_test = new Packet();
         System.out.println("The FSSPacket Initial values are:");
         System.out.println("    - Source: " + packet_test.getSource());
         System.out.println("    - Destination: " + packet_test.getDestination());

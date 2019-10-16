@@ -45,7 +45,7 @@ public class TCPInterface extends Thread{
     
 	public TCPInterface() throws IOException {
 		m_time_utils = new TimeUtils();
-		m_folder = new FolderUtils();
+		m_folder = new FolderUtils(m_time_utils);
 		m_logger = new Log(m_time_utils, m_folder);
 		m_exit = false;
 		m_length_field_bytes = new byte[Constants.LENGHT_FIELD_SIZE];
@@ -54,7 +54,7 @@ public class TCPInterface extends Thread{
 		m_length_field_converter = ByteBuffer.allocate(Constants.LENGHT_FIELD_SIZE);
     	
 		try {
-			m_experiment = new ExperimentManager(m_logger, m_time_utils);
+			m_experiment = new ExperimentManager(m_logger, m_time_utils, m_folder);
 		} catch (FileNotFoundException e) {
 			m_logger.error(TAG + "Impossible to create ExperimentManager: " + e.getMessage());
 		}
@@ -273,23 +273,6 @@ public class TCPInterface extends Thread{
 	        	m_cbor_encoder.writeTextString(Constants.REPLY_ACK_ERROR);
 	        }
             m_cbor_encoder.writeTextString(Constants.MODE_KEY);
-            switch(temp_status){
-                case Constants.REPLY_STATUS_READY:
-                    m_cbor_encoder.writeTextString(Constants.REPLY_READY);
-                break;
-                case Constants.REPLY_STATUS_FINISHED:
-                	m_cbor_encoder.writeTextString(Constants.REPLY_FINISHED);
-                	if(error == true) {
-                		m_cbor_encoder.writeTextString(Constants.ERROR_KEY);
-                		m_cbor_encoder.writeTextString(err_message);
-                	}
-                break;
-                case Constants.REPLY_STATUS_NEGOTIATION:
-                case Constants.REPLY_STATUS_FEDERATION:
-                case Constants.REPLY_STATUS_CLOSURE:
-                    m_cbor_encoder.writeTextString(Constants.REPLY_RUNNING);
-                break;
-            }
     	}
         
         /* Retrieve the CBOR length and Send it*/

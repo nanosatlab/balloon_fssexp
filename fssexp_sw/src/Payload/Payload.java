@@ -13,7 +13,7 @@
 ***************************************************************************************************/
 
 /* Own packages */
-package FSS_experiment;
+package Payload;
 
 /* External imports */
 import java.nio.ByteBuffer;
@@ -32,7 +32,7 @@ import IPCStack.SimpleLinkProtocol;
  * to a packet rate. This generation forces the situation in which a spacecraft request a federation
  * in order to download the data. It becomes thus an important element in the experiment.
  **************************************************************************************************/
-public class DataGenerator extends Thread{
+public class Payload extends Thread{
 
     private float m_packet_rate;                /**< It is the packet rate with which the data is  
                                                  *   generated [packet/second] */
@@ -61,7 +61,7 @@ public class DataGenerator extends Thread{
      *
      * @param     file name in which the configuration is done.
      **********************************************************************************************/
-    public DataGenerator(Log log, ExperimentConf conf, FSSDataBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer) {
+    public Payload(Log log, ExperimentConf conf, FSSDataBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer) {
         super();
         
         m_conf = conf;

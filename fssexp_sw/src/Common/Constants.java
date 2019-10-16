@@ -7,22 +7,33 @@ public class Constants {
 	
     /* Folder tree */
     public final static String exp_root = "/fss/";
+    public final static String data_path = exp_root + "data/";
     public final static String persistent_path = exp_root + "persistent/";
     public final static String fss_data_path = exp_root + "exp_data/";
     public final static String conf_path = exp_root + "conf/";
     public final static String download_path = exp_root + "to_download/";
     public final static String log_path = exp_root + "log/";
-
+    public final static String mem_storage_path = exp_root + "mem_storage/";
+    
+    /* System files */
+    public final static String persistent_file = persistent_path + "manager.prst";
     public final static String conf_file = conf_path + "fss_exp.conf";
+    public final static String log_file = log_path + "log.data";
+    
+    /* Data files */
+    public final static String hk_file = data_path + "hk.data";
+    public final static String dwn_file = data_path + "dwn_packets.data";
+    public final static String tx_file = data_path + "tx_packets.data";
+    public final static String rx_file = data_path + "rx_packets.data";
+    public final static String payload_file = data_path + "gen_payload.data";
+    
+    /* Storage files */
+    public final static String isl_buff_file = mem_storage_path + "isl_queue.binary";
+    public final static String payload_buff_file = mem_storage_path + "payload.binary";
     public final static String fss_data_file = fss_data_path + "fss_buffer.data";
     public final static String fss_result_data_file = download_path + "fss_packets.data";
-    public final static String hk_name = "housekeeping.data";
-    public final static String hk_file = log_path + hk_name;
-    public final static String log_name = "log.data";
-    public final static String log_file = log_path + log_name;
-    public final static String persistent_file = persistent_path + "manager.prst";
-    public final static String tx_file = fss_data_path + "tx_packets.data";
-    public final static String rx_file = fss_data_path + "rx_packets.data";
+    
+    
     public final static String dwn_file_pattern = "fssexp.tar";
     
     /* ExperimentManager */
@@ -61,13 +72,8 @@ public class Constants {
     public final static String REPLY_READY = "READY";
     public final static String REPLY_RUNNING = "RUNNING";
     public final static String REPLY_FINISHED = "FINISHED";
-    public final static int REPLY_STATUS_READY = 0;
-    public final static int REPLY_STATUS_NEGOTIATION = 1;
-    public final static int REPLY_STATUS_FEDERATION = 2;
-    public final static int REPLY_STATUS_CLOSURE = 3;
-    public final static int REPLY_STATUS_FINISHED = 4;
-    public final static int REPLY_STATUS_ENDING = 5;
-    public final static int REPLY_STATUS_ERROR = 6;
+    public final static int REPLY_STATUS_RUNNING = 0;
+    public final static int REPLY_STATUS_ERROR = 1;
     public final static int REPLY_UNKNOWN = 255;
     
     /* FSS Protocol constants */

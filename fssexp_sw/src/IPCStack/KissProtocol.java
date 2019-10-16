@@ -4,25 +4,34 @@ import java.util.ArrayList;
 
 import Common.Constants;
 import Common.TimeUtils;
-import Lockers.UartBuffer;
+import Configuration.ExperimentConf;
 import Storage.Log;
 
 public class KissProtocol {
 
-	private UartBuffer m_tx_buffer;
-	private UartBuffer m_rx_buffer;
 	private ArrayList<Byte> m_frame;
 	private Log m_logger;
 	private TimeUtils m_time;
+	private UartInterface m_uart_driver;
 	
 	private final static String TAG = "[KissProtocol] ";
 	
-	public KissProtocol(Log log, TimeUtils timer, UartBuffer tx_buffer, UartBuffer rx_buffer) {
+	public KissProtocol(Log log, TimeUtils timer, ExperimentConf conf) 
+	{
 		m_logger = log;
 		m_frame = new ArrayList<Byte>();
-		m_tx_buffer = tx_buffer;
-		m_rx_buffer = rx_buffer;
 		m_time = timer;
+		m_uart_driver = new UartInterface(log, timer, conf);
+	}
+	
+	public boolean open()
+	{
+		return m_uart_driver.open();
+	}
+	
+	public void close()
+	{
+		m_uart_driver.close();
 	}
 	
 	public boolean send(byte[] data) {
@@ -46,22 +55,19 @@ public class KissProtocol {
 		}
 		/* Close the frame with FEND */
 		m_frame.add((byte)Constants.KISS_FEND);
+		
 		/* Send through the UART */
 		frame = new byte[m_frame.size()];
 		for(int i = 0; i < m_frame.size(); i++) {
 			frame[i] = m_frame.get(i);
 		}
-		
-		if(m_tx_buffer.write(frame) == 0) {
-			m_logger.error(TAG + "Impossible to write in the UART buffer; Is it full?");
-			return false;
-		}
+		m_uart_driver.writeData(frame);
 		
 		return true;
 	}
 	
 	public byte[] receive() {
-		//byte[] b;
+		byte[] bytes;
 		byte b;
 		byte[] data = new byte[0];
 		boolean started_frame = false;
@@ -70,31 +76,34 @@ public class KissProtocol {
 		m_frame.clear();
 		double start_time;
 		
-		if(m_rx_buffer.bytesAvailable() > 0) {
+		if(m_uart_driver.bytesAvailable() > 0) {
 			start_time = m_time.getTimeMillis();
 			
 			while(finished_frame == false) {
-				if(m_rx_buffer.bytesAvailable() > 0) {
-					b = m_rx_buffer.readByte();
-					/* There is data to process */
-					if((b & 0xFF) == Constants.KISS_FEND && started_frame == false) {
-						started_frame = true;
-					} else if((b & 0xFF) == Constants.KISS_FEND && finished_frame == false) {
-						finished_frame = true;
-					} else if((b & 0xFF) == Constants.KISS_FESC && fesc_found == false) {
-						fesc_found = true;
-					} else if((b & 0xFF) == Constants.KISS_TFEND && fesc_found == true) {
-						m_frame.add((byte)Constants.KISS_FEND);
-						fesc_found = false;
-					} else if((b & 0xFF) == Constants.KISS_TFESC && fesc_found == true) {
-						m_frame.add((byte)Constants.KISS_FESC);
-						fesc_found = false;
-					} else if(started_frame == true){
-						m_frame.add(b);
-					}
-					
-					if(started_frame == true && finished_frame == false) {
-						start_time = m_time.getTimeMillis();
+				if(m_uart_driver.bytesAvailable() > 0) {
+					bytes = m_uart_driver.readByte();
+					if(bytes.length == 1) {
+						b = bytes[0];
+						/* There is data to process */
+						if((b & 0xFF) == Constants.KISS_FEND && started_frame == false) {
+							started_frame = true;
+						} else if((b & 0xFF) == Constants.KISS_FEND && finished_frame == false) {
+							finished_frame = true;
+						} else if((b & 0xFF) == Constants.KISS_FESC && fesc_found == false) {
+							fesc_found = true;
+						} else if((b & 0xFF) == Constants.KISS_TFEND && fesc_found == true) {
+							m_frame.add((byte)Constants.KISS_FEND);
+							fesc_found = false;
+						} else if((b & 0xFF) == Constants.KISS_TFESC && fesc_found == true) {
+							m_frame.add((byte)Constants.KISS_FESC);
+							fesc_found = false;
+						} else if(started_frame == true){
+							m_frame.add(b);
+						}
+						
+						if(started_frame == true && finished_frame == false) {
+							start_time = m_time.getTimeMillis();
+						}
 					}
 					
 				} else if(m_time.getTimeMillis() >= start_time + Constants.kiss_max_byte_waiting) {
@@ -113,6 +122,6 @@ public class KissProtocol {
 	}
 	
 	public int bytesAvailable() {
-		return m_rx_buffer.bytesAvailable();
+		return m_uart_driver.bytesAvailable();
 	}
 }

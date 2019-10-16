@@ -19,7 +19,6 @@ import Common.TimeUtils;
 public class Log {
 
     private File m_file;
-    private String m_file_path;
     private TimeUtils m_time;    
     private BufferedWriter m_writer;
     private double m_data_to_flush;
@@ -27,8 +26,7 @@ public class Log {
     private int m_flush_period;
     
     public Log(TimeUtils timer, FolderUtils folder) throws IOException {
-    	m_file_path = folder.home_folder + Constants.log_file;
-        m_file = new File(m_file_path);
+    	m_file = new File(folder.log_name);
         m_time = timer;
         m_data_to_flush = 0;
         m_flush_period = 30000;
@@ -45,7 +43,7 @@ public class Log {
         try {
         	final String dir = System.getProperty("user.dir");
             System.out.println("current dir = " + dir);
-            System.out.println(m_file_path);
+            System.out.println(folder.log_name);
         	m_writer = new BufferedWriter(new FileWriter(m_file, true));
         } catch(FileNotFoundException e) {
         	e.printStackTrace();
@@ -161,35 +159,5 @@ public class Log {
     
     public synchronized void debug(String string) {
             write(m_time.getTimeMillis() + " - [DEBUG]" + string + "\n");
-    }
-    
-    public synchronized void moveToDownload() {
-        
-    	/* Store anything that is in RAM */
-    	if(m_data_to_flush > 0) {
-			try {
-				m_writer.flush();
-				m_data_to_flush = 0;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-    	
-    	try {
-            String destination = Constants.download_path + Constants.log_name;
-            FileOutputStream file_stream = new FileOutputStream(destination);
-            BufferedOutputStream writer = new BufferedOutputStream(file_stream);
-            FileInputStream file_input_stream = new FileInputStream(m_file);
-            BufferedInputStream reader = new BufferedInputStream(file_input_stream);
-            byte data[] = new byte[1024];
-            int count;
-            while((count = reader.read(data)) != -1) {
-                writer.write(data, 0, count);
-            }
-            writer.close();
-            reader.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

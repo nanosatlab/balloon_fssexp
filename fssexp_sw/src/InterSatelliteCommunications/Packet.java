@@ -1,11 +1,11 @@
-package FSS_protocol;
+package InterSatelliteCommunications;
 
 import java.nio.ByteBuffer;
 
 import CRC.CRC;
 import Common.Constants;
 
-public class FSSPacket {
+public class Packet {
 
     /* header */
     private int m_source;
@@ -22,12 +22,12 @@ public class FSSPacket {
     private short m_checksum; /* CRC16 */
     private ByteBuffer m_checksum_converter;
     
-    public FSSPacket() {
+    public Packet() {
         resetValues();
         m_checksum_converter = ByteBuffer.allocate(Short.SIZE / 8);
     }
     
-    public FSSPacket(FSSPacket packet) {
+    public Packet(Packet packet) {
     	copyFrom(packet);
     }
     
@@ -183,7 +183,7 @@ public class FSSPacket {
         return (recv_checksum == checksum);
     }
 
-    private void copyFrom(FSSPacket packet) {
+    private void copyFrom(Packet packet) {
     	/* header */
         m_source = packet.getSource();
         m_destination = packet.getDestination();
@@ -197,6 +197,23 @@ public class FSSPacket {
         
         /* footer */
         m_checksum = packet.getChecksum();
+    }
+    
+    public String toString()
+    {
+    	// TODO:
+    	String str = "";
+    	str += m_source + ",";
+    	str += m_destination + ",";
+    	str += m_timestamp + ",";
+    	str += m_counter + ",";
+    	str += m_type + ",";
+    	str += m_length + ",";
+    	// TODO: include the data
+    	str += m_packet_data.length + ",";
+    	str += m_checksum;
+    	str += "\n";
+    	return str;
     }
     
 }
