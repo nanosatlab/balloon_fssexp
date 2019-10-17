@@ -10,12 +10,12 @@ import java.nio.ByteOrder;
 
 import Common.Constants;
 import Common.FolderUtils;
+import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
 import IPCStack.UartInterface;
-import Storage.Log;
 
 
 public class SimpleLinkTest {

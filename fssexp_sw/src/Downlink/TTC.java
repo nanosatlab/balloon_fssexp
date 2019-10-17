@@ -4,9 +4,9 @@ import java.lang.Thread;
 import java.util.Random;
 
 import Configuration.ExperimentConf;
-import Storage.Log;
 import Common.TimeUtils;
 import Common.Constants;
+import Common.Log;
 
 public class TTC extends Thread {
 

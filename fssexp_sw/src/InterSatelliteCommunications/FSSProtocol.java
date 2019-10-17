@@ -8,11 +8,11 @@ import java.nio.ByteBuffer;
 
 /* Internal imports */
 import Common.Constants;
+import Common.Log;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
 import Storage.FSSDataBuffer;
-import Storage.Log;
 import Storage.PacketExchangeBuffer;
 
 public class FSSProtocol extends Thread {

@@ -23,7 +23,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import Common.Constants;
-import Storage.Log;
+import Common.Log;
 
 
 /***********************************************************************************************//**
@@ -122,7 +122,7 @@ public class ExperimentConf {
         rf_isl_freq = 435.35e6f;
         
         /* UART port */
-        port_desc = "/tty/USB0";
+        port_desc = "/tty/ttyACM0";
         
         /* Dwn contacts */
         cntct_min_period = 5 * 60;

@@ -9,9 +9,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import Common.Constants;
+import Common.Log;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
-import Storage.Log;
 import space.golbriak.io.Serial;
 
 public class FCTRFISL {

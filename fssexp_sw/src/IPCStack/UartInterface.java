@@ -7,9 +7,9 @@ import java.io.OutputStream;
 import com.fazecast.jSerialComm.SerialPort;
 
 import Common.Constants;
+import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
-import Storage.Log;
 import Configuration.ExperimentConf;
 
 public class UartInterface {

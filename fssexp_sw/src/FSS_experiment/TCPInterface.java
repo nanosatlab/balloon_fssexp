@@ -16,8 +16,8 @@ import CBOR.CborDecoder;
 import CBOR.CborEncoder;
 import Common.Constants;
 import Common.FolderUtils;
+import Common.Log;
 import Common.TimeUtils;
-import Storage.Log;
 
 public class TCPInterface extends Thread{
 	

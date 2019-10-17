@@ -2,10 +2,10 @@ package IPCStack;
 
 import CRC.CRC;
 import Common.Constants;
+import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
-import Storage.Log;
 
 public class SimpleLinkProtocol {
 
@@ -200,8 +200,8 @@ public class SimpleLinkProtocol {
 			
 	}
 	
-	private byte[] receive() throws InterruptedException {
-		
+	private byte[] receive() throws InterruptedException 
+	{
 		short[] header;
 		byte[] header_bytes;
 		byte[] data;
@@ -270,12 +270,10 @@ public class SimpleLinkProtocol {
 		return new byte[0];
 	}
 	
-	public boolean updateConfiguration(byte[] conf) throws InterruptedException {
-		
+	public boolean updateConfiguration(byte[] conf) throws InterruptedException 
+	{
 		int tries = 0;
 		boolean received = false;
-		
-		
 		/* Send configuration */
 		byte[] content;
 		byte[] header;

@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 
 import Common.Constants;
 import Common.FolderUtils;
+import Common.Log;
 import InterSatelliteCommunications.Packet;
 
 public class PacketExchangeBuffer {

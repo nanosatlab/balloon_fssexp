@@ -1,7 +1,5 @@
 package Common;
 
-import Storage.Log;
-
 public class SynchronizedBuffer {
 
 	private byte[] m_buffer;
@@ -9,7 +7,7 @@ public class SynchronizedBuffer {
 	private int m_write_pointer;
 	private int m_size;
 	private Log m_logger;
-	private String TAG = "[UartBuffer]";
+	private String TAG = "[SynchronizedBuffer]";
 	private String m_id = "";
 	
 	public SynchronizedBuffer(Log logger, String id) {
@@ -19,8 +17,7 @@ public class SynchronizedBuffer {
 		m_read_pointer = 0;
 		m_write_pointer = 0;
 		m_id = id;
-		TAG += " " + id + ":";
-		m_logger.info(TAG + "OK!");
+		TAG += "[" + id + "]";
 	}
 	
 	public synchronized int bytesAvailable() {
@@ -56,13 +53,10 @@ public class SynchronizedBuffer {
 			throw new IndexOutOfBoundsException(TAG + "Trying to read the buffer when it is empty");
 		}
 		
-		//m_logger.info(TAG + "Buffer size " + m_size + " reading " + length);
-		
 		if(m_read_pointer + length <= m_buffer.length) {
 			System.arraycopy(m_buffer, m_read_pointer, container, 0, length);
 			m_read_pointer += length;
 			m_size -= length;
-			//m_logger.info(TAG + "After 1 Buffer size " + m_size + " reading " + length);
 			return length;
 		} else {
 			int first = m_buffer.length - m_read_pointer;
@@ -71,7 +65,6 @@ public class SynchronizedBuffer {
 			System.arraycopy(m_buffer, 0, container, first, second);
 			m_read_pointer = second;
 			m_size -= length;
-			//m_logger.info(TAG + "After 2 Buffer size " + m_size + " reading " + length);
 			return length;
 		}
 	}

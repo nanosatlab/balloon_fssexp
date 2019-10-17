@@ -3,10 +3,10 @@ package Tests;
 import java.io.IOException;
 
 import Common.FolderUtils;
+import Common.Log;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import Downlink.TTC;
-import Storage.Log;
 
 public class DwnContactTest {
 

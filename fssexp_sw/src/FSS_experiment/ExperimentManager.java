@@ -18,7 +18,6 @@ package FSS_experiment;
 
 /* Internal imports */
 import Storage.FSSDataBuffer;
-import Storage.Log;
 import Storage.PacketExchangeBuffer;
 
 import java.io.FileNotFoundException;
@@ -28,6 +27,7 @@ import java.util.Arrays;
 
 import Common.Constants;
 import Common.FolderUtils;
+import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;

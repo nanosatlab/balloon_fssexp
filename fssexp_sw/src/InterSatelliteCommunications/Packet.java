@@ -20,10 +20,11 @@ public class Packet
     private byte[] packet_data;
     
     /* footer */
-    private short checksum; /* CRC16 */
+    public short checksum; /* CRC16 */
     
     /* Temporal variables */
     private byte[] bytes;
+    private byte[] long_bytes;
     private byte[] header_stream;
     private ByteBuffer checksum_stream;
     private ByteBuffer timestamp_stream;
@@ -34,7 +35,7 @@ public class Packet
     {
         resetValues();
         /* Maximum unit is 8 Bytes */
-        bytes = new byte[8];
+        long_bytes = new byte[8];
         header_stream = new byte[Constants.header_size];
         checksum_stream = ByteBuffer.allocate(Short.SIZE / 8);
         timestamp_stream = ByteBuffer.allocate(Long.SIZE / 8);
@@ -44,6 +45,13 @@ public class Packet
     
     public Packet(Packet packet) {
     	copyFrom(packet);
+    }
+    
+    public void setChecksum(byte[] data) { 
+    	checksum_stream.clear();
+    	checksum_stream.put(data);
+    	checksum_stream.rewind();
+    	checksum = checksum_stream.getShort();
     }
     
     public short getChecksum() { return checksum; }
@@ -101,17 +109,17 @@ public class Packet
         source = header_stream[0];
         destination = header_stream[1];
         prot_num = header_stream[2];
-        System.arraycopy(header_stream, 3, bytes, 0, 8);
-        timestamp_stream.put(bytes, 0, 8);
+        System.arraycopy(header_stream, 3, long_bytes, 0, 8);
+        timestamp_stream.put(long_bytes, 0, 8);
         timestamp_stream.rewind();
         timestamp = timestamp_stream.getLong();
-        System.arraycopy(header_stream, 11, bytes, 0, 4);
-        counter_stream.put(bytes, 0, 4);
+        System.arraycopy(header_stream, 11, long_bytes, 0, 4);
+        counter_stream.put(long_bytes, 0, 4);
         counter_stream.rewind();
         counter = counter_stream.getInt();
         type = header_stream[15];
-        System.arraycopy(header_stream, 16, bytes, 0, 2);
-        length_stream.put(bytes, 0, 2);
+        System.arraycopy(header_stream, 16, long_bytes, 0, 2);
+        length_stream.put(long_bytes, 0, 2);
         length_stream.rewind();
         length = length_stream.getShort();
     }
@@ -162,6 +170,7 @@ public class Packet
     public byte[] toBytesNoData() 
     {
     	/* header */
+    	System.out.println("PAQUIII");
         byte[] header = getHeader();
         /* checksum */
         computeChecksum(header);

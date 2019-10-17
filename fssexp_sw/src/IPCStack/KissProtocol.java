@@ -3,9 +3,9 @@ package IPCStack;
 import java.util.ArrayList;
 
 import Common.Constants;
+import Common.Log;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
-import Storage.Log;
 
 public class KissProtocol {
 

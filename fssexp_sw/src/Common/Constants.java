@@ -190,8 +190,7 @@ public class Constants {
     
     /* Uart Interface */
     public final static int uart_max_buffer_size = 1632; /* Three DATA packets with SimpleLink Protocol Header */
-    public final static int uart_nominal_sleep = 50;	/* sleep 10 ms */
-    public final static int uart_comms_sleep = 2;	/* sleep 10 ms */
+    public final static int dispatcher_sleep = 200;	/* sleep 200 ms */
     public final static String uart_port = "/dev/ttyACM0";
     public final static int uart_bps = 115200;
     public final static int uart_max_reply = 100; /* 100 ms */

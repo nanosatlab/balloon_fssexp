@@ -20,8 +20,8 @@ import java.nio.ByteBuffer;
 
 /* Internal imports */
 import Storage.FSSDataBuffer;
-import Storage.Log;
 import Common.Constants;
+import Common.Log;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
@@ -138,7 +138,6 @@ public class Payload extends Thread{
             polling(true);
             
             /* Get current time to compute the rate */
-            //time_tick = space.golbriak.lang.System.currentTimeMillis(); /* Time in milliseconds */
             time_tick = m_time.getTimeMillis();
             
             if(time_tick >= next_iteration) {
@@ -159,7 +158,6 @@ public class Payload extends Thread{
             }
             
             /* Sleep to work as the requested rate */
-            //spent_time = space.golbriak.lang.System.currentTimeMillis() - time_tick;
             spent_time = m_time.getTimeMillis() - time_tick;
             if(spent_time < Constants.generator_sleep) {
                 try {
