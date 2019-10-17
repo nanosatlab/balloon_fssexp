@@ -9,11 +9,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 import Common.Constants;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
 import IPCStack.UartInterface;
-import Lockers.UartBuffer;
 import Storage.Log;
 import space.golbriak.io.Serial;
 
@@ -118,8 +118,8 @@ public class ThermalTest {
 		Log logger = new Log(time);
 		ExperimentConf conf = new ExperimentConf(logger);
 		conf.rf_isl_redundancy = redundancy;
-		UartBuffer rx_buffer = new UartBuffer(logger);
-		UartBuffer tx_buffer = new UartBuffer(logger);
+		SynchronizedBuffer rx_buffer = new SynchronizedBuffer(logger);
+		SynchronizedBuffer tx_buffer = new SynchronizedBuffer(logger);
 		UartInterface uart_interface = new UartInterface(logger, tx_buffer, rx_buffer, time);
 		SimpleLinkProtocol slp = new SimpleLinkProtocol(logger, conf, time, tx_buffer, rx_buffer);
 		slp.setConfiguration();

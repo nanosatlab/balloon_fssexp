@@ -1,9 +1,8 @@
-package Lockers;
+package Common;
 
-import Common.Constants;
 import Storage.Log;
 
-public class UartBuffer {
+public class SynchronizedBuffer {
 
 	private byte[] m_buffer;
 	private int m_read_pointer;
@@ -13,7 +12,7 @@ public class UartBuffer {
 	private String TAG = "[UartBuffer]";
 	private String m_id = "";
 	
-	public UartBuffer(Log logger, String id) {
+	public SynchronizedBuffer(Log logger, String id) {
 		m_logger = logger;
 		m_buffer = new byte[Constants.uart_max_buffer_size];
 		m_size = 0;
@@ -32,10 +31,8 @@ public class UartBuffer {
 		return m_buffer.length;
 	}
 	
-	public synchronized byte readByte() {
-		
-		//m_logger.info(TAG + "Buffer size " + m_size + " reading one byte");
-		
+	public synchronized byte readByte() 
+	{	
 		if(m_size > 0) {
 			byte container = m_buffer[m_read_pointer];
 			m_read_pointer = (m_read_pointer + 1 ) % getMaxSize();
@@ -46,8 +43,8 @@ public class UartBuffer {
 		}
 	}
 	
-	public synchronized int read(byte[] container) {
-		
+	public synchronized int read(byte[] container) 
+	{	
 		int length; 
 		
 		if(m_size >= container.length) {

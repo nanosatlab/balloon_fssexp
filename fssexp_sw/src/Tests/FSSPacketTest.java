@@ -17,41 +17,45 @@ public class FSSPacketTest {
         int checksum = 1;
         byte[] data = ByteBuffer.allocate(4).putInt(10).array();
         int length = data.length;
+        int prot_num = 3;
         
         Packet packet = new Packet();
-        packet.setSource(source);
-        packet.setDestination(destination);
-        packet.setTimestamp(timestamp);
-        packet.setCounter(counter);
-        packet.setType(type);
-        packet.setLength(length);
+        packet.source = source;
+        packet.destination = destination;
+        packet.prot_num = prot_num;
+        packet.timestamp = timestamp;
+        packet.counter = counter;
+        packet.type = type;
+        packet.length = length;
         packet.setData(data);
         
         /* Container to test */
         Packet packet_test = new Packet();
         System.out.println("The FSSPacket Initial values are:");
-        System.out.println("    - Source: " + packet_test.getSource());
-        System.out.println("    - Destination: " + packet_test.getDestination());
-        System.out.println("    - Timestamp: " + packet_test.getTimestamp());
-        System.out.println("    - Counter: " + packet_test.getCounter());
-        System.out.println("    - Type: " + packet_test.getType());
-        System.out.println("    - Length: " + packet_test.getLength());
+        System.out.println("    - Source: " + packet_test.source);
+        System.out.println("    - Destination: " + packet_test.destination);
+        System.out.println("    - Protocol Number: " + packet_test.prot_num);
+        System.out.println("    - Timestamp: " + packet_test.timestamp);
+        System.out.println("    - Counter: " + packet_test.counter);
+        System.out.println("    - Type: " + packet_test.type);
+        System.out.println("    - Length: " + packet_test.length);
         System.out.println("    - Checksum: " + packet_test.getChecksum());
         
         System.out.println("");
+        byte[] byte_array = packet.toBytes();
         
         System.out.println("The FSSPacket ref values are:");
         System.out.println("Header:");
-        System.out.println("    - Source: " + packet.getSource());
-        System.out.println("    - Destination: " + packet.getDestination());
-        System.out.println("    - Timestamp: " + packet.getTimestamp());
-        System.out.println("    - Counter: " + packet.getCounter());
-        System.out.println("    - Type: " + packet.getType());
-        System.out.println("    - Length: " + packet.getLength());
+        System.out.println("    - Source: " + packet.source);
+        System.out.println("    - Destination: " + packet.destination);
+        System.out.println("    - Protocol Number: " + packet.prot_num);
+        System.out.println("    - Timestamp: " + packet.timestamp);
+        System.out.println("    - Counter: " + packet.counter);
+        System.out.println("    - Type: " + packet.type);
+        System.out.println("    - Length: " + packet.length);
         System.out.println("    - Checksum: " + packet.getChecksum());
         
         /* Convert to bytes */
-        byte[] byte_array = packet.toBytes();
         System.out.println("");
         System.out.println("The FSSPacket ref bytes are:");
         System.out.println("Header:");
@@ -76,12 +80,13 @@ public class FSSPacketTest {
         System.out.println("");
         System.out.println("The FSSPacket Initial values are:");
         System.out.println("Header:");
-        System.out.println("    - Source: " + packet_test.getSource());
-        System.out.println("    - Destination: " + packet_test.getDestination());
-        System.out.println("    - Timestamp: " + packet_test.getTimestamp());
-        System.out.println("    - Counter: " + packet_test.getCounter());
-        System.out.println("    - Type: " + packet_test.getType());
-        System.out.println("    - Length: " + packet_test.getLength());
+        System.out.println("    - Source: " + packet_test.source);
+        System.out.println("    - Destination: " + packet_test.destination);
+        System.out.println("    - Protocol Number: " + packet_test.prot_num);
+        System.out.println("    - Timestamp: " + packet_test.timestamp);
+        System.out.println("    - Counter: " + packet_test.counter);
+        System.out.println("    - Type: " + packet_test.type);
+        System.out.println("    - Length: " + packet_test.length);
         System.out.println("Data: " + ByteBuffer.wrap(packet_test.getData()).getInt());
         System.out.println("Checksum:");
         System.out.println("    - Checksum: " + packet_test.getChecksum());

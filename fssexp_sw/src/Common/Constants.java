@@ -108,7 +108,8 @@ public class Constants {
     public final static int FSS_BROADCAST_ADDR = 3;
     
     /* FSS Packet constants */
-    public final static int header_size = 13;   /* bytes */
+    public final static int header_size = 18;   /* bytes */
+    public final static int PACKET_TYPE_HK = 1;
     
     /* Data Generator constants */
     public final static long generator_sleep = 500;    /* ms */

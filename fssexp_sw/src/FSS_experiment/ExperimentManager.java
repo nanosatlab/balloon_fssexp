@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import Common.Constants;
 import Common.FolderUtils;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import Housekeeping.HousekeepingItem;
@@ -40,7 +41,6 @@ import java.io.FileOutputStream;
 
 import IPCStack.SimpleLinkProtocol;
 import InterSatelliteCommunications.FSSProtocol;
-import Lockers.UartBuffer;
 import Payload.Payload;
 
 /* External imports */
@@ -65,8 +65,8 @@ public class ExperimentManager extends Thread{
     private HousekeepingStorage m_hk_buffer;
     private SimpleLinkProtocol m_ipc_stack;
     private TimeUtils m_time;
-    private UartBuffer m_uart_rx_buffer;
-    private UartBuffer m_uart_tx_buffer;
+    private SynchronizedBuffer m_uart_rx_buffer;
+    private SynchronizedBuffer m_uart_tx_buffer;
     
     /* Manager attributes */
     private int m_status;                       /**< State of the experiment */

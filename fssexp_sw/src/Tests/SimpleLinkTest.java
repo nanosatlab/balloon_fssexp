@@ -10,11 +10,11 @@ import java.nio.ByteOrder;
 
 import Common.Constants;
 import Common.FolderUtils;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import IPCStack.SimpleLinkProtocol;
 import IPCStack.UartInterface;
-import Lockers.UartBuffer;
 import Storage.Log;
 
 

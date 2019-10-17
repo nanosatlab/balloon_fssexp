@@ -7,8 +7,8 @@ import java.io.OutputStream;
 import com.fazecast.jSerialComm.SerialPort;
 
 import Common.Constants;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
-import Lockers.UartBuffer;
 import Storage.Log;
 import Configuration.ExperimentConf;
 

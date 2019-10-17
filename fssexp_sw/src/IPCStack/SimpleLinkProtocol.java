@@ -2,9 +2,9 @@ package IPCStack;
 
 import CRC.CRC;
 import Common.Constants;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
-import Lockers.UartBuffer;
 import Storage.Log;
 
 public class SimpleLinkProtocol {
@@ -26,16 +26,18 @@ public class SimpleLinkProtocol {
 		m_conf = conf;
 	}
 	
-	public void setConfiguration() {
+	public void setConfiguration() 
+	{
 		m_packet_redundancy = m_conf.rf_isl_redundancy;
 	}
 	
-	public boolean open() {
+	public boolean open() 
+	{
 		return m_kiss.open();
 	}
 	
-	private byte[] createHeader(byte command, int redundancy, byte[] data) {
-		
+	private byte[] createHeader(byte command, int redundancy, byte[] data) 
+	{
 		short crc;
 		short length = (short)data.length;
 		byte[] header = new byte[Constants.SLP_header_size];
@@ -56,8 +58,8 @@ public class SimpleLinkProtocol {
 		return header;
 	}
 	
-	private boolean verifyHeader(short[] header, byte command, int redundancy, byte[] data) {
-		
+	private boolean verifyHeader(short[] header, byte command, int redundancy, byte[] data) 
+	{	
 		short crc;
 		boolean correct = true;
 		
@@ -134,7 +136,7 @@ public class SimpleLinkProtocol {
 		return header;
 	}
 	
-	private byte[] getTelemetry() throws InterruptedException {
+	public byte[] getTelemetry() throws InterruptedException {
 		
 		short[] header;
 		byte[] header_bytes;
@@ -268,7 +270,7 @@ public class SimpleLinkProtocol {
 		return new byte[0];
 	}
 	
-	private boolean sendConfiguration(byte[] conf) throws InterruptedException {
+	public boolean updateConfiguration(byte[] conf) throws InterruptedException {
 		
 		int tries = 0;
 		boolean received = false;
@@ -383,38 +385,11 @@ public class SimpleLinkProtocol {
 		return m_kiss.bytesAvailable();
 	}
 	
-	/*
-	public boolean isOpen() {
-		return m_kiss.isOpen();
-	}*/
-	
-	public synchronized Object accessToIPCStack(int access_type, byte[] data) {
-		
-		try {
-			switch(access_type) {
-				case Constants.SLP_ACCESS_SEND:
-					//m_logger.info(TAG + "Sending Packet");
-					return applyLinkLayerProtocol(data);
-				case Constants.SLP_ACCESS_RECEIVE:
-					//m_logger.info(TAG + "Requesting if Packet received");
-					return receiveLinkLayerProtocol();
-				case Constants.SLP_ACCESS_TELEMETRY:
-					//m_logger.info(TAG + "Requesting Telemetry");
-					return getTelemetry();
-				case Constants.SLP_ACCESS_CONF:
-					m_logger.info(TAG + "Sending Configuration");
-					return sendConfiguration(data);
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-		return null;
-	}
-	
-	// TODO: solve this situation 
-	private boolean applyLinkLayerProtocol(byte[] data) throws InterruptedException {
+	// TODO: solve this situation
+	/***********************************************************************************************//**
+	 * Method to transmit through RF ISL a packet following the Link Layer Protocol.
+	 **************************************************************************************************/
+	public boolean transmitPacket(byte[] data) throws InterruptedException {
 		
 		//m_logger.info(TAG + "At LinkLayerProtocol received " + data.length + " bytes of data");
 		
@@ -481,8 +456,12 @@ public class SimpleLinkProtocol {
 		return correct;
 	}
 	
-	private byte[] receiveLinkLayerProtocol() throws InterruptedException {
-		
+	/***********************************************************************************************//**
+	 * Sends a command to evaluate if a packet has been received. When a packet is received, the method
+	 * replies with the corresponding packet (in byte[] format). Otherwise, the array is empty.
+	 **************************************************************************************************/
+	public byte[] checkReceptionPacket() throws InterruptedException 
+	{	
 		int total_blocks; 
 		int count_blocks;
 		int length;
