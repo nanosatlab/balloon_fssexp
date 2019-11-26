@@ -22,6 +22,18 @@ public class RFISLHousekeepingItem {
 	private float frequency;
 	private int rx_queue;
 	private int tx_queue;
+	private ByteBuffer stream;
+	
+	
+	public RFISLHousekeepingItem()
+	{
+		stream = ByteBuffer.allocate(getSize());
+	}
+	
+	public int getSize()
+	{
+		return (4 * 9 + 8 * 7 + 4);
+	}
 	
 	private double computeRSSI(int rssi_dec)
 	{
@@ -80,6 +92,30 @@ public class RFISLHousekeepingItem {
 		frequency = ByteBuffer.wrap(freq_bytes).order(ByteOrder.BIG_ENDIAN).getFloat();
 		rx_queue = data[33] & 0xFF;
 		tx_queue = data[34] & 0xFF;
+	}
+	
+	public byte[] getBytes()
+	{
+		stream.clear();
+		stream.putInt(boot_count);
+		stream.putDouble(current_rssi);
+		stream.putDouble(last_rx_rssi);
+		stream.putDouble(snr);
+		stream.putDouble(last_rx_lqi);
+		stream.putDouble(tx_power);
+		stream.putInt(phy_tx_packets);
+		stream.putInt(phy_tx_err_packets);
+		stream.putInt(phy_rx_packets);
+		stream.putInt(phy_rx_err_packets);
+		stream.putInt(ll_tx_packets);
+		stream.putInt(ll_rx_packets);
+		stream.putDouble(ext_temperature);
+		stream.putDouble(int_temperature);
+		stream.putFloat(frequency);
+		stream.putInt(rx_queue);
+		stream.putInt(tx_queue);
+		stream.rewind();
+		return stream.array();
 	}
 	
 	public String toString()

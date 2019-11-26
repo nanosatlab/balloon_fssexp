@@ -66,7 +66,7 @@ public class SimpleLinkTest {
 		boolean redundancy_arg = false;
 		int redundancy = 0;
 		boolean freq_arg = false;
-		float freq = 436.250e6f;
+		float freq = 437.250e6f;
 		boolean port_arg = false;
 		String port_name = "";
 		

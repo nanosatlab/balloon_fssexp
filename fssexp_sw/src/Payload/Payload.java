@@ -22,8 +22,12 @@ import java.nio.ByteBuffer;
 import Storage.FSSDataBuffer;
 import Common.Constants;
 import Common.Log;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
+import FSS_experiment.ExperimentManager;
+import Housekeeping.HousekeepingItem;
+import IPCStack.PacketDispatcher;
 import IPCStack.SimpleLinkProtocol;
 
 
@@ -45,12 +49,16 @@ public class Payload extends Thread{
     private int m_sat_id;
     private Log m_logger;
     private SimpleLinkProtocol m_ipc_stack;
-    byte[] m_reference_data;
     private TimeUtils m_time;
+    private PacketDispatcher m_dispatcher;
+    private SynchronizedBuffer m_buffer;
+    private PayloadDataBlock m_payload_data;
     
     
     private ExperimentConf m_conf;
     private int m_initial_packets;
+    
+    private ExperimentManager m_manager;
     
     private final static String TAG = "[DataGenerator] ";
     
@@ -61,23 +69,19 @@ public class Payload extends Thread{
      *
      * @param     file name in which the configuration is done.
      **********************************************************************************************/
-    public Payload(Log log, ExperimentConf conf, FSSDataBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer) {
+    public Payload(Log log, ExperimentConf conf, FSSDataBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer, PacketDispatcher dispatcher, ExperimentManager manager) {
         super();
-        
         m_conf = conf;
         m_logger = log;
+        m_buffer = new SynchronizedBuffer(m_logger, "DataGeneratorBuffer");
+        m_dispatcher = dispatcher;
+        m_dispatcher.addProtocolBuffer(Constants.prot_num_payload, m_buffer);
         m_poll_token = false;
         m_number_generated = 0;
         m_packet_buffer = fss_buffer;
 		m_ipc_stack = ipc_stack;
-		m_time = timer;
-		
-		m_reference_data = new byte[Constants.data_reference_size];
-		
-		/* TODO: to test only */
-		for(int i = 0; i < m_reference_data.length; i ++) {
-			m_reference_data[i] = (byte)(i & 0xFF);
-		}
+		m_time = timer;	
+		m_manager = manager;
     }
     
     public void setConfiguration() {
@@ -108,10 +112,6 @@ public class Payload extends Thread{
         int executed = 0;
         long next_iteration = 0;
         long time_to_sleep;
-        
-        // TODO: Correct reference
-        m_reference_data[0] = (byte)(0xFF);
-        
         
         /* Conditioned loop */
         m_logger.info(TAG + "Started Thread");
@@ -179,7 +179,8 @@ public class Payload extends Thread{
         m_logger.info(TAG + "Stopped Thread");
     }
     
-    private byte[] generateData() {
+    private byte[] generateData() 
+    {
     	
     	byte[] temp;
     	byte[] rf_isl_hk = new byte[Constants.data_rf_isl_hk_size];
@@ -190,6 +191,10 @@ public class Payload extends Thread{
         
     	
     	/* Generate data */
+        m_payload_data.sat_id = m_sat_id;
+        m_payload_data.timestamp = m_time.getTimeMillis();
+        //m_payload_data.exp_hk = m_manager.retrieveHK();
+        
         data_header.put((byte)(m_sat_id & 0xFF));
         temp = data_header.array();
         System.arraycopy(temp, 0, data, 0, temp.length);
@@ -200,20 +205,16 @@ public class Payload extends Thread{
         System.arraycopy(temp, 0, data, Constants.data_header_size, temp.length);
         
         /* Retrieve RF ISL data */
-    	rf_isl_hk = (byte[])m_ipc_stack.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
-    	if(rf_isl_hk.length > 0) {
+    	
+		
         	System.arraycopy(rf_isl_hk, 0, data, Constants.data_header_size + 
                     			Constants.data_timestamp_size, Constants.data_rf_isl_hk_size);
-    	} else {
-    		m_logger.warning(TAG + "No HK retrieved from the RF ISL Module - Connection lost?");
-    		System.arraycopy(generateDefaultRFISLHK(), 0, data, Constants.data_header_size + 
-        						Constants.data_timestamp_size, Constants.data_rf_isl_hk_size);
-    	}
+    	
         
         // TODO: Include reference data
-        System.arraycopy(m_reference_data, 0, data, Constants.data_header_size + 
-                                Constants.data_timestamp_size + 
-                                Constants.data_rf_isl_hk_size, m_reference_data.length); 
+        //System.arraycopy(m_reference_data, 0, data, Constants.data_header_size + 
+        //                        Constants.data_timestamp_size + 
+        //                        Constants.data_rf_isl_hk_size, m_reference_data.length); 
         
         data_header.clear();
         timestamp.clear();

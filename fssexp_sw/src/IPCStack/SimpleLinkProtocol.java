@@ -136,7 +136,7 @@ public class SimpleLinkProtocol {
 		return header;
 	}
 	
-	public byte[] getTelemetry() throws InterruptedException {
+	public byte[] getTelemetry() {
 		
 		short[] header;
 		byte[] header_bytes;
@@ -197,7 +197,6 @@ public class SimpleLinkProtocol {
 		}
 		
 		return new byte[0];
-			
 	}
 	
 	private byte[] receive() throws InterruptedException 
@@ -270,7 +269,7 @@ public class SimpleLinkProtocol {
 		return new byte[0];
 	}
 	
-	public boolean updateConfiguration(byte[] conf) throws InterruptedException 
+	public boolean updateConfiguration(byte[] conf)
 	{
 		int tries = 0;
 		boolean received = false;

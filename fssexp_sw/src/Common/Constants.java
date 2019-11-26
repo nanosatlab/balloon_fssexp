@@ -119,6 +119,7 @@ public class Constants {
     public final static int data_timestamp_size = 8;
     public final static int data_reference_size = 155;
     public final static int data_rf_isl_hk_size = 51;
+    public final static int data_mtu = 215;
     public final static int data_size = data_header_size + 
                                         data_timestamp_size +
                                         data_rf_isl_hk_size +
@@ -197,4 +198,8 @@ public class Constants {
     
     /* LOG */
     public final static int log_data_to_flush = 500;
+    
+    /* Protocols Number */
+    public final static int prot_num_payload = 1;
+
 }

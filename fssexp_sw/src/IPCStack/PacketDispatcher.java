@@ -98,18 +98,14 @@ public class PacketDispatcher extends Thread
 					
 					if(m_packet.type == Constants.PACKET_TYPE_HK) {
 						/* Request the telemetry */
-						try {
-							packet_stream = m_ipc_stack.getTelemetry();
-							if(packet_stream.length > 0) {
-								m_packet.setData(packet_stream);
-								m_packet.length = packet_stream.length;
-								/* Forward the packet */
-								m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
-							} else {
-								m_logger.error(TAG + "[ERROR] Requested telemetry but not received any reply from IPC Stack");
-							}
-						} catch (InterruptedException e) {
-							m_logger.error(e);
+						packet_stream = m_ipc_stack.getTelemetry();
+						if(packet_stream.length > 0) {
+							m_packet.setData(packet_stream);
+							m_packet.length = packet_stream.length;
+							/* Forward the packet */
+							m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
+						} else {
+							m_logger.error(TAG + "[ERROR] Requested telemetry but not received any reply from IPC Stack");
 						}
 					}
 				}
