@@ -49,7 +49,8 @@ public class Constants {
     public final static int rf_isl_max_polling = 5;
     public final static int rf_isl_max_configuration = 5;
     public final static int rf_isl_max_fsspacket = 3;
-    public final static int rf_isl_tostorehk_size = 33;
+    public final static int rf_isl_tostorehk_size = 35;
+    public final static int rf_isl_hk_size = 51;
     public final static long dwn_contact_sleep = 500;       /* ms */
     
     public final static int LENGHT_FIELD_SIZE = 2;	/* in Bytes */

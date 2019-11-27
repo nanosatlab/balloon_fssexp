@@ -25,6 +25,7 @@ public class PayloadDataBlock {
 	
 	public PayloadDataBlock()
 	{
+		exp_hk = new HousekeepingItem();
 		stream = ByteBuffer.allocate(getSize());
 		padding_data = new byte[getPaddingSize()];
 		for(int i = 0; i < padding_data.length; i ++) {

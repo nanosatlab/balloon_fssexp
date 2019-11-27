@@ -29,6 +29,7 @@ public class HousekeepingItem
 	
 	public HousekeepingItem()
 	{
+		rf_isl_hk = new RFISLHousekeepingItem();
 		stream = ByteBuffer.allocate(getSize());
 	}
 	

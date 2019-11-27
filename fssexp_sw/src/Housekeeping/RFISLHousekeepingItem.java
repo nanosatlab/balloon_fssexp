@@ -69,7 +69,8 @@ public class RFISLHousekeepingItem {
 	    return result;
 	}
 	
-	public void parseFromBytes(byte[] data) {
+	public void parseFromBytes(byte[] data) 
+	{
 		boot_count = data[0] & 0xFF;
 		current_rssi = computeRSSI(data[1] & 0xFF);
 		last_rx_rssi = computeRSSI(data[2] & 0xFF);

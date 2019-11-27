@@ -355,6 +355,7 @@ public class ExperimentManager extends Thread{
     	m_payload_data.exp_hk.isl_buffer_size = m_fss_buffer.getSize();
     	m_payload_data.exp_hk.isl_buffer_drops = m_fss_buffer.getDrops();
     	if(m_rf_isl_hk != null) {
+    		System.out.println(m_rf_isl_hk.length);
     		m_payload_data.exp_hk.rf_isl_hk.parseFromBytes(m_rf_isl_hk);
     	}
     }

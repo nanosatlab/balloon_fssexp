@@ -102,7 +102,8 @@ public class ExperimentConf {
         download_end = 0;
         
         /* FSSDataBuffer */
-        fss_buffer_size = 30;
+        //fss_buffer_size = 30;
+        fss_buffer_size = -1;
         fss_buffer_thr = 10;
         
         /* DataGenerator */
@@ -169,7 +170,7 @@ public class ExperimentConf {
                         	correct = false;
                         }
                     } else if(line.contains("fss_buffer_size") == true) {
-                        fss_buffer_size = Integer.parseInt(line.split(":")[1]);
+                    	fss_buffer_size = Integer.parseInt(line.split(":")[1]);
                         counter ++;
                         if(fss_buffer_size < 0) {
                         	m_logger.warning(TAG + "Negative FSS BUFFER SIZE value.");

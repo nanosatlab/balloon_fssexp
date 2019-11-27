@@ -45,21 +45,25 @@ public class FSSDataBuffer {
     
     private String TAG = "[FSSDataBuffer] ";
     
-    public FSSDataBuffer(Log log, ExperimentConf conf, FolderUtils folder) {
+    public FSSDataBuffer(Log log, ExperimentConf conf, FolderUtils folder) 
+    {
         m_logger = log;
         m_conf = conf;
         m_file_path = folder.payload_name;
         m_drop_packets = 0;
         m_read_pointer = 0;
         m_file = new File(m_file_path);
+        setConfiguration();
         resetBuffer();
     }
     
-    public void setConfiguration() {
+    public void setConfiguration() 
+    {
     	m_max_size = m_conf.fss_buffer_size;
     }
     
-    public void resetBuffer() {
+    public void resetBuffer() 
+    {
     	/* Initialization - remove data of it */
         if(m_file.exists() == true) {
             m_file.delete();
@@ -71,9 +75,11 @@ public class FSSDataBuffer {
         }
     }
     
-    public boolean insertData(byte[] data) {
-        
-        if(getSize() < m_max_size) {
+    public boolean insertData(byte[] data) 
+    {
+        System.out.println("Max size: " + m_max_size);
+        /* Having a m_max_size == -1 means that always a data is stored (no drops) */
+        if(getSize() < m_max_size || m_max_size == -1) {
             try {
                 FileOutputStream file_stream = new FileOutputStream(m_file, true);
                 BufferedOutputStream writer = new BufferedOutputStream(file_stream);
@@ -95,7 +101,8 @@ public class FSSDataBuffer {
         return true;
     }
     
-    public byte[] getBottomData() {
+    public byte[] getBottomData() 
+    {
         
         if(getSize() > 0) {
 
@@ -122,15 +129,14 @@ public class FSSDataBuffer {
             
             } catch (FileNotFoundException e) {
                 m_logger.error(e);
-            }
-            
-            
+            } 
         }
         
         return null;
     }
     
-    public void deleteBottomData() {
+    public void deleteBottomData() 
+    {
     	if(accessToSize(false, 0, 0) > 0) {
     		accessToSize(true, -1, 1);  /* m_size -- */ 
     		m_read_pointer ++;
@@ -139,8 +145,8 @@ public class FSSDataBuffer {
     
     public int getSize() { return accessToSize(false, 0, 0); }
     
-    private synchronized int accessToSize(boolean write, int sign, int value) { 
-        
+    private synchronized int accessToSize(boolean write, int sign, int value) 
+    {     
         if(write == true) {
             m_size = m_size + sign * value;
         }
