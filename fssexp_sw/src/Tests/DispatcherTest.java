@@ -111,7 +111,7 @@ public class DispatcherTest {
 		
         /* Check packet transmission */
         System.out.println("Transmitting packet");
-        dispatcher.transmitPacket(packet); 
+        dispatcher.transmitPacket(protocol_number, packet); 
         try {
         	Thread.sleep(500);
         } catch(InterruptedException e) {

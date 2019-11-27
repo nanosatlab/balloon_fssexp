@@ -201,6 +201,7 @@ public class Constants {
     public final static int log_data_to_flush = 500;
     
     /* Protocols Number */
-    public final static int prot_num_payload = 1;
+    public final static int manager_prot_num = 1;
+    public final static int fss_prot_num = 2;
 
 }

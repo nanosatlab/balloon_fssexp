@@ -40,8 +40,10 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import IPCStack.PacketDispatcher;
 import IPCStack.SimpleLinkProtocol;
 import InterSatelliteCommunications.FSSProtocol;
+import InterSatelliteCommunications.Packet;
 import Payload.Payload;
 import Payload.PayloadDataBlock;
 
@@ -65,12 +67,14 @@ public class ExperimentManager extends Thread{
     //private Payload m_generator;
     private FSSProtocol m_fss_protocol;
     private HousekeepingStorage m_hk_buffer;
-    private SimpleLinkProtocol m_ipc_stack;
+    //private SimpleLinkProtocol m_ipc_stack;
     private TimeUtils m_time;
-    private SynchronizedBuffer m_uart_rx_buffer;
-    private SynchronizedBuffer m_uart_tx_buffer;
+    //private SynchronizedBuffer m_uart_rx_buffer;
+    //private SynchronizedBuffer m_uart_tx_buffer;
+    private SynchronizedBuffer m_rfisltelemetry_buffer;
     
     /* Manager attributes */
+    private int m_prot_num; 
     private int m_sat_id;
     private int m_status;                       /**< State of the experiment */
     private int m_generator_counter;
@@ -101,28 +105,36 @@ public class ExperimentManager extends Thread{
     /* DataBlock */
     private PayloadDataBlock m_payload_data;
     
+    /* IPC classes */
+    private PacketDispatcher m_dispatcher;
+    private byte[] m_ipc_header_stream;
+    private byte[] m_ipc_checksum_stream;
+    
     private boolean m_data_generator_error_notification;
     private boolean m_fss_protocol_error_notification;
     
     private String m_command;
     private int m_ack_reply;
     
-    
-    
-    public ExperimentManager(Log logger, TimeUtils timer, FolderUtils folder) throws FileNotFoundException {
-    	
+    public ExperimentManager(Log logger, TimeUtils timer, FolderUtils folder) throws FileNotFoundException 
+    {
     	/* Internal objects */
     	m_logger = logger;
     	m_time = timer;
     	m_conf = new ExperimentConf(m_logger);
+    	m_dispatcher = new PacketDispatcher(m_logger, m_conf, m_time);
     	m_hk_packets = new PacketExchangeBuffer(m_logger, folder);
     	m_fss_buffer = new FSSDataBuffer(m_logger, m_conf, folder);
-    	m_ipc_stack = new SimpleLinkProtocol(m_logger, m_conf, m_time);
     	//m_generator = new Payload(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
-    	m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_ipc_stack, m_time);
+    	m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_time, m_dispatcher);
     	m_hk_buffer = new HousekeepingStorage(folder);
     	m_hk_header = ByteBuffer.allocate(Constants.hk_header_size);
     	m_payload_data = new PayloadDataBlock();
+    	
+    	/* Dispatcher initialization */
+    	m_rfisltelemetry_buffer = new SynchronizedBuffer(m_logger, "manager-telemetry");
+    	m_prot_num = Constants.manager_prot_num;
+    	m_dispatcher.addProtocolBuffer(m_prot_num, m_rfisltelemetry_buffer);
     	
     	/* Manager attributes */
     	accessToStatus(true, Constants.REPLY_STATUS_ERROR);
@@ -148,7 +160,7 @@ public class ExperimentManager extends Thread{
     	m_fss_protocol_polling = 0;
     	m_command_time = 0;
     	m_number_sc_commands = 0;
-    	m_rf_isl_hk = new byte[Constants.rf_isl_tostorehk_size];
+    	m_rf_isl_hk = new byte[Constants.data_rf_isl_hk_size];
     	
     	m_data_generator_error_notification = false;
     	m_fss_protocol_error_notification = false;
@@ -157,12 +169,9 @@ public class ExperimentManager extends Thread{
     	m_command = "";
     	m_ack_reply = -1;
     	
-    	/* Exceptionally, initialize the IPC Stack to retrieve status - the only
-    	 * configuration parameter is the redundancy, and it is no explicitly needed
-    	 * to retrieve RF ISL Module status.
-    	 */
-    	m_ipc_stack.setConfiguration();
-    	//m_ipc_stack.open();
+    	/* Dispatcher parameters */
+    	m_ipc_header_stream = new byte[Constants.header_size];
+        m_ipc_checksum_stream = new byte[Short.SIZE / 8];
     }
     
     public synchronized String accessToCommand(boolean write, String command) {
@@ -202,7 +211,8 @@ public class ExperimentManager extends Thread{
         m_hk_buffer.writeString(str);
     }
     
-    private boolean transitFromReadyToRunning() {
+    private boolean transitFromReadyToRunning() 
+    {
     	m_logger.info(TAG + "Transition from READY to RUNNING");    	
     	
     	/* Lock the starting Time; it is interesting to include this here, because 
@@ -215,7 +225,7 @@ public class ExperimentManager extends Thread{
     	/* Parse configuration */
     	m_conf.parseConf();
     	m_logger.info(TAG + "Configuration version: " + m_conf.version);
-    	m_ipc_stack.setConfiguration();
+    	//m_ipc_stack.setConfiguration();
     	m_fss_buffer.setConfiguration();
     	//m_generator.setConfiguration();
     	m_fss_protocol.setConfiguration();
@@ -225,23 +235,23 @@ public class ExperimentManager extends Thread{
     	
     	
     	/* Configure the RF ISL Module */
-    	ByteBuffer temp = ByteBuffer.allocate(Float.SIZE / 8).putFloat(m_conf.rf_isl_freq);
-    	int counter = 0;
-    	m_logger.info(TAG + "Trying to send the Configuration of the RF ISL Module");
-    	while(m_ipc_stack.updateConfiguration(temp.array()) == false
-    			&& counter <= Constants.rf_isl_max_configuration) {
-    		counter ++;
-    		m_logger.warning(TAG + "Failed to send the RF ISL Configuration; Try number " + counter);
-    	}
+    	//ByteBuffer temp = ByteBuffer.allocate(Float.SIZE / 8).putFloat(m_conf.rf_isl_freq);
+    	//int counter = 0;
+    	//m_logger.info(TAG + "Trying to send the Configuration of the RF ISL Module");
+    	//while(m_ipc_stack.updateConfiguration(temp.array()) == false
+    	//		&& counter <= Constants.rf_isl_max_configuration) {
+    	//	counter ++;
+    	//	m_logger.warning(TAG + "Failed to send the RF ISL Configuration; Try number " + counter);
+    	//}
     	
-    	if(counter >= Constants.rf_isl_max_configuration) {
-    		m_logger.error(TAG + "Impossible to send the RF ISL Configuration");
+    	//if(counter >= Constants.rf_isl_max_configuration) {
+    	//	m_logger.error(TAG + "Impossible to send the RF ISL Configuration");
     		
     		/* Notify the error to the platform */
-    		accessToErrorMessage(true, TAG + "Impossible to send the RF ISL Configuration - No communication");
-    		accessToError(true, true);
-    		return false;
-    	}
+    	//	accessToErrorMessage(true, TAG + "Impossible to send the RF ISL Configuration - No communication");
+    	//	accessToError(true, true);
+    	//	return false;
+    	//}
     	
     	/* Create Files */
     	/** FSS_BUFFER.data **/
@@ -253,12 +263,12 @@ public class ExperimentManager extends Thread{
         m_start_time = m_time.getTimeMillis();
         
         /* Clear Uart Buffer */
-        m_uart_rx_buffer.clear();
-        m_uart_tx_buffer.clear();
+        //m_uart_rx_buffer.clear();
+        //m_uart_tx_buffer.clear();
         
     	/* Start Threads */
         //m_generator = new Payload(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
-        m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_ipc_stack, m_time);
+        m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_time, m_dispatcher);
         
         //m_generator.start();
         m_fss_protocol.start();
@@ -270,14 +280,11 @@ public class ExperimentManager extends Thread{
         return true;
     }
     
-    private void transitFromRunningToFinished() throws IOException {
+    private void transitFromRunningToFinished() throws IOException 
+    {
     	m_logger.info(TAG + "Transition from RUNNING to FINISHED");
     	/* Close the Threads */
     	stopChilds();
-    	
-    	/* Close IPC stack */
-    	m_ipc_stack.close();
-    	m_logger.info(TAG + "IPC stack closed");
     	
         /* Retrieve the final HK */
         storeHK();
@@ -318,9 +325,9 @@ public class ExperimentManager extends Thread{
         //        m_logger.error(e);
         //    }
         // }
-        if(m_exit_counter == Constants.manager_exit_max) {
-        	m_logger.error(TAG + "Impossible to courteously terminate DataGenerator (kill it!)");
-        }
+        //if(m_exit_counter == Constants.manager_exit_max) {
+        //	m_logger.error(TAG + "Impossible to courteously terminate DataGenerator (kill it!)");
+        //}
         
         m_exit_counter = 0;
         while(m_fss_protocol.getState() != Thread.State.TERMINATED 
@@ -337,7 +344,6 @@ public class ExperimentManager extends Thread{
         if(m_exit_counter == Constants.manager_exit_max) {
         	m_logger.error(TAG + "Impossible to courteously terminate FSSProtocol (kill it!)");
         }
-        
     }
     
     private void updateHK()
@@ -355,7 +361,6 @@ public class ExperimentManager extends Thread{
     	m_payload_data.exp_hk.isl_buffer_size = m_fss_buffer.getSize();
     	m_payload_data.exp_hk.isl_buffer_drops = m_fss_buffer.getDrops();
     	if(m_rf_isl_hk != null) {
-    		System.out.println(m_rf_isl_hk.length);
     		m_payload_data.exp_hk.rf_isl_hk.parseFromBytes(m_rf_isl_hk);
     	}
     }
@@ -401,8 +406,7 @@ public class ExperimentManager extends Thread{
             } else {
             	m_logger.warning(TAG + "Unknown received command from the platform");
             	accessToACKReply(true, 0); //BAD ACK
-            }
-            
+            } 
         }
     }
     
@@ -413,11 +417,13 @@ public class ExperimentManager extends Thread{
             /* Common variables */
             long spent_time;
             long time_to_sleep;
-            byte[] data = new byte[Constants.data_rf_isl_hk_size];
             
             /* Update the boot count */
             updateBootCount();
                        
+            /* Start PacketDispatcher */
+            m_dispatcher.start();
+            
             /* Start the main loop and indicate that we are ready */
             m_logger.info(TAG + "Software version " + Constants.sw_version);
             m_logger.info(TAG + "Start Main Loop");
@@ -425,7 +431,7 @@ public class ExperimentManager extends Thread{
             
             while(m_exit == false) {
             	
-                /* Get current time to compute the rate */
+            	/* Get current time to compute the rate */
                 m_time_tick = m_time.getTimeMillis(); /* Time in milliseconds */
                 
                 /* command */
@@ -488,11 +494,29 @@ public class ExperimentManager extends Thread{
                 }
                 	
                 
-                /* Retrieve Housekeeping */  
+                /* Retrieve Housekeeping */ 
                 if(m_time_tick >= m_next_hk) {
-                	
-                	data = (byte[])m_ipc_stack.getTelemetry();
-                	if(data.length == 0) {
+                	/* Request dispatcher */
+                	m_dispatcher.requestHK(m_prot_num);
+                	while(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 0) {
+                		try {
+                			/* Wait and release the processor */
+                        	Thread.sleep(10);
+                        } catch(InterruptedException e) {
+                        	e.printStackTrace();
+                        }
+                	}
+                	if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {
+	                	/* Only in the Telemetry case, the data is useful; but header and checksum must 
+	                	 * be read to decrease the buffer */
+                		m_rfisltelemetry_buffer.read(m_ipc_header_stream);
+	                	m_rfisltelemetry_buffer.read(m_rf_isl_hk);
+	                	m_rfisltelemetry_buffer.read(m_ipc_checksum_stream);
+	                	/* Update the counter */
+                		m_rf_isl_counter = 0;
+                		m_rf_isl_alive = true;
+                	} else {
+                		/* Problem of IPC communications */
                 		if(m_rf_isl_counter >= Constants.rf_isl_max_polling) {
                 			/* The RF ISL Module does not reply - Comms error? */
                 			m_logger.error(TAG + "RF ISL Module does not reply correctly - wrong polling");
@@ -502,16 +526,12 @@ public class ExperimentManager extends Thread{
                 		} else {
                 			m_rf_isl_counter ++;
                 		}
-                	} else {
-                		m_rf_isl_counter = 0;
-                		m_rf_isl_alive = true;
-                		System.arraycopy(data, 0, m_rf_isl_hk, 0, Constants.rf_isl_tostorehk_size);
                 	}
                 	updateDataBlock();
                 	m_number_generated += 1;
                 	storeHK();
                 	storeDataBlock();
-                	m_next_hk = m_time_tick + m_conf.manager_hk_period;
+	                m_next_hk = m_time_tick + m_conf.manager_hk_period;
                 }
                 
                 if((m_fss_protocol_counter >= Constants.fss_protocol_max_polling || 
@@ -546,6 +566,24 @@ public class ExperimentManager extends Thread{
         } catch(Exception e) {
         	e.printStackTrace();
         	m_logger.error(e);
+        }
+        
+        /* Close IPC stack */
+        m_dispatcher.controlledStop();
+        int m_exit_counter = 0;
+        while(m_dispatcher.getState() != Thread.State.TERMINATED 
+                && m_dispatcher.getState() != Thread.State.NEW
+                && m_exit_counter < Constants.manager_exit_max) {
+                m_logger.info(TAG + "PacketDispatcher not terminated (status " + m_dispatcher.getState() + "), waiting a little more");
+                m_exit_counter ++;
+                try {
+                    Thread.sleep(Constants.manager_sleep);
+                } catch (InterruptedException e) {
+                    m_logger.error(e);
+                }
+             }
+        if(m_exit_counter == Constants.manager_exit_max) {
+        	m_logger.error(TAG + "Impossible to courteously terminate PacketDispatcher (kill it!)");
         }
         
         System.out.println(TAG + "Bye Bye!");

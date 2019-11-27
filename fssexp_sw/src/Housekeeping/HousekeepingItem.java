@@ -68,18 +68,18 @@ public class HousekeepingItem
 		str += payload_poll + ",";
 		str += fss_poll + ",";
 		str += service_poll + ",";
-		str += rf_isl_poll + ",";
+		str += rf_isl_poll + "::";
 		/* Payload hk */
-		str += payload_generated_items + ",";
+		str += payload_generated_items + "::";
 		/* FSS Protocol */
 		str += fss_status + ",";
 		str += fss_role + ",";
 		str += fss_tx + ",";
 		str += fss_rx + ",";
-		str += fss_err_rx + ",";
+		str += fss_err_rx + "::";
 		/* Buffers */
 		str += isl_buffer_size + ",";
-		str += isl_buffer_drops + ",";
+		str += isl_buffer_drops + "::";
 		/* RF ISL hk */
 		str += rf_isl_hk.toString();
 		/* EOL */

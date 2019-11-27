@@ -9,8 +9,10 @@ import java.nio.ByteBuffer;
 /* Internal imports */
 import Common.Constants;
 import Common.Log;
+import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
+import IPCStack.PacketDispatcher;
 import IPCStack.SimpleLinkProtocol;
 import Storage.FSSDataBuffer;
 import Storage.PacketExchangeBuffer;
@@ -19,8 +21,7 @@ public class FSSProtocol extends Thread {
 
 	private Packet m_tx_packet;
 	private Packet m_rx_packet;
-	private SimpleLinkProtocol m_port;
-
+	
 	private PacketExchangeBuffer m_hk_packets;
 
 	private FSSDataBuffer m_fss_buffer;
@@ -64,21 +65,30 @@ public class FSSProtocol extends Thread {
 	private byte[] m_previous_data;
 	private ExperimentConf m_conf;
 
+	private PacketDispatcher m_dispatcher;
+	private SynchronizedBuffer m_isc_buffer;
+	private byte[] m_ipc_header_stream;
+	private byte[] m_ipc_checksum_stream;
+	private int m_prot_num;
+	
 	private Log m_logger;
 	private TimeUtils m_time;
 
 	private final static String TAG = "[FSSProtocol] ";
 
 	public FSSProtocol(Log log, FSSDataBuffer buffer, PacketExchangeBuffer hk_packets, ExperimentConf conf,
-			SimpleLinkProtocol ipc_stack, TimeUtils timer) {
+			TimeUtils timer, PacketDispatcher dispatcher) {
 		super();
 
 		m_logger = log;
 		m_conf = conf;
-
-		m_port = ipc_stack;
-
 		m_time = timer;
+		
+		/* Init dispatcher */
+		m_dispatcher = dispatcher;
+		m_isc_buffer = new SynchronizedBuffer(m_logger, "fssprotocol-rx-buffer");
+		m_prot_num = Constants.fss_prot_num;
+		m_dispatcher.addProtocolBuffer(m_prot_num, m_isc_buffer);
 
 		/* Packet containers */
 		m_tx_packet = new Packet();
@@ -132,6 +142,7 @@ public class FSSProtocol extends Thread {
 
 	@Override
 	public void run() {
+		
 		m_running = true;
 		long time_tick;
 		long spent_time;
@@ -159,7 +170,7 @@ public class FSSProtocol extends Thread {
 
 		/* main loop */
 		while (m_running == true) {
-
+			
 			/* Poll myself */
 			//m_logger.info(TAG + "Pol up!");
 			polling(true);
@@ -267,11 +278,11 @@ public class FSSProtocol extends Thread {
 
 	private void retransmitPacket() {
 		/* Retransmit */
-		m_logger.info(TAG + "No replication - Retransmit Packet type " + m_tx_packet.getType());
+		m_logger.info(TAG + "No replication - Retransmit Packet type " + m_tx_packet.type);
 		Packet temp_packet = new Packet(m_tx_packet);
 		m_tx_packet.resetValues();
-		setHeaderPacket(m_tx_packet, temp_packet.getType(), temp_packet.getDestination());
-		m_tx_packet.setLength(temp_packet.getLength());
+		setHeaderPacket(m_tx_packet, temp_packet.type, temp_packet.destination);
+		m_tx_packet.length = temp_packet.length;
 		m_tx_packet.setData(temp_packet.getData());
 		sendPacket();
 	}
@@ -294,7 +305,7 @@ public class FSSProtocol extends Thread {
 	private void verifyLinkDead() {
 		if (m_waiting_counter > m_waiting_max) {
 			m_logger.warning(
-					TAG + "Maximum reply of Packet type " + m_tx_packet.getType() + " reached. The link is dead!");
+					TAG + "Maximum reply of Packet type " + m_tx_packet.type + " reached. The link is dead!");
 			m_running = false;
 		} else {
 			m_waiting_counter++;
@@ -303,7 +314,7 @@ public class FSSProtocol extends Thread {
 			// m_waiting_timeout;
 			m_waiting_next = m_time.getTimeMillis() + m_waiting_timeout;
 
-			m_logger.info(TAG + "No replication - Retransmitted packet " + m_tx_packet.getType() + "; next at "
+			m_logger.info(TAG + "No replication - Retransmitted packet " + m_tx_packet.type + "; next at "
 					+ m_waiting_next);
 		}
 	}
@@ -314,7 +325,8 @@ public class FSSProtocol extends Thread {
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_SERVICE_PUBLISH, Constants.FSS_BROADCAST_ADDR);
 		data.putInt(service_type);
 		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.setLength(Integer.SIZE * 2 / 8);
+		m_tx_packet.length = Integer.SIZE * 2 / 8;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(data.array());
 		sendPacket();
 	}
@@ -324,7 +336,8 @@ public class FSSProtocol extends Thread {
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_SERVICE_REQUEST, m_sat_destination);
 		data.putInt(service_type);
-		m_tx_packet.setLength(Integer.SIZE / 8);
+		m_tx_packet.length = Integer.SIZE / 8;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(data.array());
 		sendPacket();
 	}
@@ -332,11 +345,12 @@ public class FSSProtocol extends Thread {
 	private void sendACCEPT(int service_type) {
 		ByteBuffer data = ByteBuffer.allocate(Integer.SIZE * 2 / 8);
 		m_tx_packet.resetValues();
-		m_sat_destination = m_rx_packet.getSource();
+		m_sat_destination = m_rx_packet.source;
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_SERVICE_ACCEPT, m_sat_destination);
 		data.putInt(service_type);
 		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.setLength(Integer.SIZE * 2 / 8);
+		m_tx_packet.length = Integer.SIZE * 2 / 8;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(data.array());
 		sendPacket();
 	}
@@ -345,7 +359,8 @@ public class FSSProtocol extends Thread {
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_DATA, m_sat_destination);
 		m_previous_data = m_fss_buffer.getBottomData();
-		m_tx_packet.setLength(m_previous_data.length);
+		m_tx_packet.length = m_previous_data.length;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(m_previous_data);
 		sendPacket();
 	}
@@ -356,7 +371,8 @@ public class FSSProtocol extends Thread {
 		ByteBuffer data;
 		data = ByteBuffer.allocate(Integer.SIZE / 8);
 		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.setLength(Integer.SIZE / 8);
+		m_tx_packet.length = Integer.SIZE / 8;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(data.array());
 		sendPacket();
 	}
@@ -364,7 +380,8 @@ public class FSSProtocol extends Thread {
 	private void sendCLOSEPacket() {
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_CLOSE, m_sat_destination);
-		m_tx_packet.setLength(0);
+		m_tx_packet.length = 0;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(m_empty_data);
 		sendPacket();
 	}
@@ -372,16 +389,18 @@ public class FSSProtocol extends Thread {
 	private void sendCLOSEACKPacket() {
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_CLOSE_ACK, m_sat_destination);
-		m_tx_packet.setLength(0);
+		m_tx_packet.length = 0;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(m_empty_data);
 		sendPacket();
 	}
 
 	private void sendCLOSEDATAACKPacket() {
 		m_tx_packet.resetValues();
-		m_sat_destination = m_rx_packet.getSource();
+		m_sat_destination = m_rx_packet.source;
 		setHeaderPacket(m_tx_packet, Constants.FSS_PACKET_CLOSE_DATA_ACK, m_sat_destination);
-		m_tx_packet.setLength(0);
+		m_tx_packet.length = 0;
+		m_tx_packet.prot_num = m_prot_num;
 		m_tx_packet.setData(m_empty_data);
 		sendPacket();
 	}
@@ -396,7 +415,7 @@ public class FSSProtocol extends Thread {
 			/* Process if a packet has been received */
 			if (isRX == true) {
 
-				if (m_waiting_packet == true && m_waiting_type == m_rx_packet.getType()) {
+				if (m_waiting_packet == true && m_waiting_type == m_rx_packet.type) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
 					 * working
@@ -404,13 +423,13 @@ public class FSSProtocol extends Thread {
 					releaseForPacket();
 				}
 
-				switch (m_rx_packet.getType()) {
+				switch (m_rx_packet.type) {
 
 				case Constants.FSS_PACKET_SERVICE_PUBLISH:
 					ByteBuffer publish_data = ByteBuffer.wrap(m_rx_packet.getData());
 					m_service_type = publish_data.getInt();
 					m_publisher_capacity = publish_data.getInt();
-					m_sat_destination = m_rx_packet.getSource();
+					m_sat_destination = m_rx_packet.source;
 					m_logger.info(TAG + "NEGOTIATION PHASE: Received PUBLISH Packet with service " + m_service_type);
 					break;
 
@@ -597,7 +616,7 @@ public class FSSProtocol extends Thread {
 
 				m_logger.info(TAG + "Something received in the CUSTOMER");
 
-				if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.getType()) != 0) {
+				if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
 					 * working
@@ -605,7 +624,7 @@ public class FSSProtocol extends Thread {
 					releaseForPacket();
 				}
 
-				switch (m_rx_packet.getType()) {
+				switch (m_rx_packet.type) {
 
 				case Constants.FSS_PACKET_CLOSE:
 					m_logger.info(TAG + "FEDERATION PHASE: Received CLOSE Packet");
@@ -681,7 +700,7 @@ public class FSSProtocol extends Thread {
 
 				m_logger.info(TAG + "Something received in the SUPPLIER");
 
-				if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.getType()) != 0) {
+				if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
 					 * working
@@ -689,7 +708,7 @@ public class FSSProtocol extends Thread {
 					releaseForPacket();
 				}
 
-				switch (m_rx_packet.getType()) {
+				switch (m_rx_packet.type) {
 
 				case Constants.FSS_PACKET_CLOSE:
 					m_logger.info(TAG + "FEDERATION PHASE: Received CLOSE Packet");
@@ -700,7 +719,7 @@ public class FSSProtocol extends Thread {
 					break;
 
 				case Constants.FSS_PACKET_DATA:
-					m_logger.info(TAG + "FEDERATION PHASE: Received DATA Packet " + m_rx_packet.getCounter());
+					m_logger.info(TAG + "FEDERATION PHASE: Received DATA Packet " + m_rx_packet.counter);
 
 					if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
 
@@ -762,7 +781,7 @@ public class FSSProtocol extends Thread {
 
 		if (isRX == true) {
 
-			if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.getType()) != 0) {
+			if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 				/*
 				 * I have received the packet that I was waiting - I can release and keep
 				 * working
@@ -770,10 +789,10 @@ public class FSSProtocol extends Thread {
 				releaseForPacket();
 			}
 
-			if (m_rx_packet.getType() == Constants.FSS_PACKET_CLOSE_ACK) {
+			if (m_rx_packet.type == Constants.FSS_PACKET_CLOSE_ACK) {
 				m_logger.info(TAG + "CLOSURE PHASE: Received CLOSE ACK Packet");
 
-				if (m_tx_packet.getType() == Constants.FSS_PACKET_CLOSE) {
+				if (m_tx_packet.type == Constants.FSS_PACKET_CLOSE) {
 					sendCLOSEACKPacket();
 					m_logger.info(TAG + "CLOSURE PHASE: CLOSE ACK Packet sent");
 					lockForPacket(Constants.FSS_PACKET_CLOSE_ACK);
@@ -797,12 +816,12 @@ public class FSSProtocol extends Thread {
 
 	private void setHeaderPacket(Packet packet, int type, int address) {
 		// packet.setTimestamp(space.golbriak.lang.System.currentTimeMillis());
-		packet.setTimestamp(m_time.getTimeMillis());
+		packet.timestamp = m_time.getTimeMillis();
 
-		packet.setSource(m_sat_source);
-		packet.setDestination(address);
-		packet.setType(type);
-		packet.setCounter(accessToTXs(false, 0, 0));
+		packet.source = m_sat_source;
+		packet.destination = address;
+		packet.type = type;
+		packet.counter = accessToTXs(false, 0, 0);
 	}
 
 	public void controlledStop() {
@@ -815,32 +834,24 @@ public class FSSProtocol extends Thread {
 		return previous_poll;
 	}
 
-	private int dataAvailable() {
-		int available = -1;
-		//if (m_port.isOpen()) {
-			available = m_port.bytesAvailable();
-		//}
-		return available;
-	}
-
-	private boolean receivePacket() {
-
-		InputStream input;
-		byte[] buffer;
-		boolean correct_packet = false;
-
-		buffer = (byte[]) m_port.accessToIPCStack(Constants.SLP_ACCESS_RECEIVE, null);
-		if (buffer.length > 0) {
+	private boolean receivePacket() 
+	{
+		byte[] content;
+		if(m_isc_buffer.bytesAvailable() > 0) {
+			m_isc_buffer.read(m_ipc_header_stream);
+			m_rx_packet.setHeader(m_ipc_header_stream);
+			content = new byte[m_rx_packet.length];
+			m_isc_buffer.read(content);
+			m_isc_buffer.read(m_ipc_checksum_stream);
+			m_rx_packet.setChecksum(m_ipc_checksum_stream);
 			// TODO: Interesting to include the time in which it is received...
-			correct_packet = m_rx_packet.fromBytes(buffer);
 			m_hk_packets.insertRXPacket(m_rx_packet);
-			if (correct_packet == false) {
+			if(m_rx_packet.isPacketCorrect(m_rx_packet.checksum, content) == false) {
 				m_logger.warning(TAG + "IPC Stack has bytes, but the received packet is not correct");
-
 				accessToErrRXs(true, 1, 1);
 				return false;
-			} else if (m_rx_packet.getDestination() != Constants.FSS_BROADCAST_ADDR
-					&& m_rx_packet.getDestination() != m_sat_source) {
+			} else if (m_rx_packet.destination != Constants.FSS_BROADCAST_ADDR
+					&& m_rx_packet.destination != m_sat_source) {
 				/* The packet is not for me; I should remove it */
 				m_rx_packet.resetValues();
 				return false;
@@ -849,7 +860,6 @@ public class FSSProtocol extends Thread {
 			/* No packet has been received */
 			return false;
 		}
-	
 		return true;
 	}
 
@@ -858,20 +868,31 @@ public class FSSProtocol extends Thread {
 		int counter = 0;
 		
 		/* Sending packet */
-		m_logger.info(TAG + "Sending packet " + m_tx_packet.getType() + " count " + m_tx_packet.getCounter());
+		m_logger.info(TAG + "Sending packet " + m_tx_packet.type + " count " + m_tx_packet.counter);
 		
-		while((Boolean) (m_port.accessToIPCStack(Constants.SLP_ACCESS_SEND, m_tx_packet.toBytes())) == false
-    			&& counter <= Constants.rf_isl_max_fsspacket) {
-    		counter ++;
-    		m_logger.warning(TAG + "Failed to send a FSS Packet to the RF ISL; Try number " + counter);
-    	}
+		do {
+			m_dispatcher.transmitPacket(m_prot_num, m_tx_packet);
+			while(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 0) {
+				try {
+	    			/* Wait and release the processor */
+	            	Thread.sleep(10);
+	            } catch(InterruptedException e) {
+	            	m_logger.error(e);
+	            }
+			}
+			
+			if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 2) {
+				counter ++;
+	    		m_logger.warning(TAG + "Failed to send a FSS Packet to the RF ISL; Try number " + counter);
+			}
+		} while(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 2 && counter <= Constants.rf_isl_max_fsspacket);
     	
     	if(counter >= Constants.rf_isl_max_fsspacket) {
     		m_logger.error(TAG + "FSS packet is not sent correctly; Problem with the RF ISL Module.");
 			return false;
 		} else {
-			m_logger.info(TAG + "Packet sent correctly; type " + m_tx_packet.getType() + " count "
-					+ m_tx_packet.getCounter());
+			m_logger.info(TAG + "Packet sent correctly; type " + m_tx_packet.type + " count "
+					+ m_tx_packet.counter);
 			m_hk_packets.insertTXPacket(m_tx_packet);
 			accessToTXs(true, 1, 1);
 		}

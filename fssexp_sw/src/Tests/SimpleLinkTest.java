@@ -156,7 +156,7 @@ public class SimpleLinkTest {
 					while(true) {
 						/* Request Telemetry */
 						System.out.println("Getting telemetry");
-						byte[] telemetry = (byte[])slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+						byte[] telemetry = slp.getTelemetry();
 						System.out.println("Size " + telemetry.length);
 						if(telemetry.length > 0) {
 							String s = "[" + (int)(System.currentTimeMillis()) + "]Telemetry Packet -> ";
@@ -203,9 +203,9 @@ public class SimpleLinkTest {
 						//content += "NO LLEGEIXIS TAN I TREBALLA!";
 						System.out.println("Sending Packet with " + content.length() + " Bytes of content: " + content);
 						if(writer != null) writer.write("Sending Packet with " + content.length() + " Bytes of content: " + content + "\n");
-						if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_SEND, content.getBytes())) {
+						if(slp.transmitPacket(content.getBytes())) {
 							counter ++;
-							byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+							byte[] telemetry = slp.getTelemetry();
 							if(telemetry.length > 0) {
 								String s = "[" + System.currentTimeMillis() + "]Transmission Status -> ";
 								s += "Boot count: " + (telemetry[0] & 0xFF);
@@ -236,10 +236,10 @@ public class SimpleLinkTest {
 					System.out.println("Receiving packets...");
 					byte[] data;
 					while(true) {
-						data = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_RECEIVE, null);
+						data = slp.checkReceptionPacket();
 						if(data.length > 0) {
 							Thread.sleep(10);
-							byte[] telemetry = (byte[]) slp.accessToIPCStack(Constants.SLP_ACCESS_TELEMETRY, null);
+							byte[] telemetry = slp.getTelemetry();
 							String s = "[" + System.currentTimeMillis() + "]Received Packet -> ";
 							s += "Boot count: " + (telemetry[0] & 0xFF);
 							s += ", Actual RSSI: " + rssi_raw_dbm(telemetry[1] & 0xFF); 
@@ -264,7 +264,7 @@ public class SimpleLinkTest {
 					System.out.println("Sending configuration...");
 					byte[] mydata = ByteBuffer.allocate(4).putFloat(freq).array();
 					System.out.println("Bytes: " + mydata.length);
-					if((boolean)slp.accessToIPCStack(Constants.SLP_ACCESS_CONF, mydata)) {
+					if(slp.updateConfiguration(mydata) == true) {
 						System.out.println("Configuration correctly sent!");
 					} else {
 						System.out.println("ERROR during sendind a configuration");

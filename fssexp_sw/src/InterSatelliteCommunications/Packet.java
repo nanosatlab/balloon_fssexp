@@ -170,8 +170,7 @@ public class Packet
     public byte[] toBytesNoData() 
     {
     	/* header */
-    	System.out.println("PAQUIII");
-        byte[] header = getHeader();
+    	byte[] header = getHeader();
         /* checksum */
         computeChecksum(header);
         checksum_stream.clear();
@@ -190,7 +189,7 @@ public class Packet
     	checksum = (short) CRC.calculateCRC(CRC.Parameters.CRC16, content);
     }
     
-    private boolean isPacketCorrect(short checksum, byte[] content) 
+    public boolean isPacketCorrect(short checksum, byte[] content) 
     {
         /* Compute checksum */
     	short recv_checksum = (short)CRC.calculateCRC(CRC.Parameters.CRC16, content);

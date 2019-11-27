@@ -10,7 +10,8 @@ public class SynchronizedBuffer {
 	private String TAG = "[SynchronizedBuffer]";
 	private String m_id = "";
 	
-	public SynchronizedBuffer(Log logger, String id) {
+	public SynchronizedBuffer(Log logger, String id) 
+	{
 		m_logger = logger;
 		m_buffer = new byte[Constants.uart_max_buffer_size];
 		m_size = 0;
@@ -20,11 +21,13 @@ public class SynchronizedBuffer {
 		TAG += "[" + id + "]";
 	}
 	
-	public synchronized int bytesAvailable() {
+	public synchronized int bytesAvailable() 
+	{
 		return m_size;
 	}
 	
-	public int getMaxSize() {
+	public int getMaxSize() 
+	{
 		return m_buffer.length;
 	}
 	
@@ -69,10 +72,9 @@ public class SynchronizedBuffer {
 		}
 	}
 	
-	public synchronized int write(byte[] data) {
-	
+	public synchronized int write(byte[] data) 
+	{
 		int length;
-
 		if(m_size >= m_buffer.length) {
 			m_logger.warning(TAG + "Trying to write in a full buffer (i.e. Buffer overflow)");
 			return 0;
@@ -100,7 +102,8 @@ public class SynchronizedBuffer {
 		}
 	}
 	
-	public synchronized void clear() {
+	public synchronized void clear() 
+	{
 		m_size = 0;
 		m_read_pointer = 0;
 		m_write_pointer = 0;

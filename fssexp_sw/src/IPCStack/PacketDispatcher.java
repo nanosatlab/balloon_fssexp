@@ -18,6 +18,7 @@ public class PacketDispatcher extends Thread
 	private SynchronizedBuffer m_packet_buffer;
 	private SynchronizedBuffer m_hk_buffer;
 	private Hashtable<Integer, SynchronizedBuffer> m_prot_buffers;
+	private Hashtable<Integer, Integer> m_prot_status;
 	private boolean m_exit;
 	private Packet m_packet;
 	
@@ -30,19 +31,37 @@ public class PacketDispatcher extends Thread
 		m_packet = new Packet();
 		m_ipc_stack = new SimpleLinkProtocol(log, conf, timer);
 		m_prot_buffers = new Hashtable<Integer, SynchronizedBuffer>();
+		m_prot_status = new Hashtable<Integer, Integer>();
 		m_packet_buffer = new SynchronizedBuffer(log, "DispatcherBuffer");
 		m_hk_buffer = new SynchronizedBuffer(log, "TelemetryBuffer");
 		m_exit = false;
 	}
 	
+	public synchronized int accessRequestStatus(int protocol_number, int new_status, boolean write)
+	{
+		/* Status values are: 0 = working; 1 = delivered; 2 = IPC error; 3 = prot_num unknown */
+		int status = 3;
+		if(m_prot_buffers.containsKey(protocol_number) == true) {
+			if(write == true) {
+				m_prot_status.put(protocol_number, new_status);
+				status = new_status;
+			} else {
+				status = m_prot_status.get(protocol_number);
+			}
+		}
+		return status;
+	}
+	
 	public void addProtocolBuffer(int protocol_num, SynchronizedBuffer buff)
 	{
 		m_prot_buffers.put(protocol_num, buff);
+		accessRequestStatus(protocol_num, 0, true); /* The first value is the working one */
 	}
 	
-	public void transmitPacket(Packet packet)
+	public void transmitPacket(int protocol_num, Packet packet)
 	{
 		m_packet_buffer.write(packet.toBytes());
+		accessRequestStatus(protocol_num, 0, true);
 	}
 	
 	public void requestHK(int protocol_num)
@@ -51,6 +70,7 @@ public class PacketDispatcher extends Thread
 		m_packet.prot_num = protocol_num;
 		m_packet.type = Constants.PACKET_TYPE_HK;
 		m_hk_buffer.write(m_packet.toBytesNoData());
+		accessRequestStatus(protocol_num, 0, true);
 	}
 	
 	public void run()
@@ -67,6 +87,11 @@ public class PacketDispatcher extends Thread
 		if(m_ipc_stack.open() == true) {
 		
 			/* Configure the RF ISL */
+			// TODO:
+			/* Exceptionally, initialize the IPC Stack to retrieve status - the only
+	    	 * configuration parameter is the redundancy, and it is no explicitly needed
+	    	 * to retrieve RF ISL Module status.
+	    	 */
 			//m_ipc_stack.updateConfiguration(conf);
 			
 			/* Nominal loop */
@@ -104,8 +129,10 @@ public class PacketDispatcher extends Thread
 							m_packet.length = packet_stream.length;
 							/* Forward the packet */
 							m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
+							accessRequestStatus(m_packet.prot_num, 1, true);	/* Correctly delivered */
 						} else {
 							m_logger.error(TAG + "[ERROR] Requested telemetry but not received any reply from IPC Stack");
+							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						}
 					}
 				}
@@ -126,6 +153,9 @@ public class PacketDispatcher extends Thread
 					try {
 						if(m_ipc_stack.transmitPacket(m_packet.toBytes()) == false) {
 							m_logger.error(TAG + "[ERROR] Impossible to send a packet through IPC Stack");
+							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
+						} else {
+							accessRequestStatus(m_packet.prot_num, 1, true);
 						}
 					} catch (InterruptedException e) {
 						m_logger.error(e);

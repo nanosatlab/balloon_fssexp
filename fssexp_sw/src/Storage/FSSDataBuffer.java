@@ -77,7 +77,6 @@ public class FSSDataBuffer {
     
     public boolean insertData(byte[] data) 
     {
-        System.out.println("Max size: " + m_max_size);
         /* Having a m_max_size == -1 means that always a data is stored (no drops) */
         if(getSize() < m_max_size || m_max_size == -1) {
             try {
