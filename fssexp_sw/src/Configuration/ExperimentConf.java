@@ -64,6 +64,8 @@ public class ExperimentConf {
     public double cntct_min_duration;
     public double cntct_max_period; 
     public double cntct_min_period; 
+    public int ttc_timeout;
+    public int ttc_retries;
     
     public String port_desc;
     
@@ -115,7 +117,7 @@ public class ExperimentConf {
         sat_destination = 0;
         fss_retries = 3;
         fss_interest = 1;
-        fss_timeout = 1000;
+        fss_timeout = 5000;
         download_rate = 1;
         
         /* RF ISL */
@@ -130,6 +132,8 @@ public class ExperimentConf {
         cntct_max_period = 10 * 60;
         cntct_max_duration = 2 * 60;
         cntct_min_duration = 30;
+        ttc_timeout = 5000;	// TODO: confirm this value
+        ttc_retries = 3;
     }
     
     public void parseConf() {

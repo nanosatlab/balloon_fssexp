@@ -17,7 +17,7 @@
 package FSS_experiment;
 
 /* Internal imports */
-import Storage.FSSDataBuffer;
+import Storage.PayloadBuffer;
 import Storage.PacketExchangeBuffer;
 
 import java.io.FileNotFoundException;
@@ -63,7 +63,7 @@ public class ExperimentManager extends Thread{
     private Log m_logger;
     private ExperimentConf m_conf;
     private PacketExchangeBuffer m_hk_packets;
-    private FSSDataBuffer m_fss_buffer;
+    private PayloadBuffer m_fss_buffer;
     //private Payload m_generator;
     private FSSProtocol m_fss_protocol;
     private HousekeepingStorage m_hk_buffer;
@@ -122,9 +122,9 @@ public class ExperimentManager extends Thread{
     	m_logger = logger;
     	m_time = timer;
     	m_conf = new ExperimentConf(m_logger);
-    	m_dispatcher = new PacketDispatcher(m_logger, m_conf, m_time);
+    	m_dispatcher = new PacketDispatcher(m_logger, m_conf, m_time, folder);
     	m_hk_packets = new PacketExchangeBuffer(m_logger, folder);
-    	m_fss_buffer = new FSSDataBuffer(m_logger, m_conf, folder);
+    	m_fss_buffer = new PayloadBuffer(m_logger, m_conf, folder);
     	//m_generator = new Payload(m_logger, m_conf, m_fss_buffer, m_ipc_stack, m_time);
     	m_fss_protocol = new FSSProtocol(m_logger, m_fss_buffer, m_hk_packets, m_conf, m_time, m_dispatcher);
     	m_hk_buffer = new HousekeepingStorage(folder);
@@ -170,7 +170,7 @@ public class ExperimentManager extends Thread{
     	m_ack_reply = -1;
     	
     	/* Dispatcher parameters */
-    	m_ipc_header_stream = new byte[Constants.header_size];
+    	m_ipc_header_stream = new byte[Packet.getHeaderSize()];
         m_ipc_checksum_stream = new byte[Short.SIZE / 8];
     }
     
@@ -503,7 +503,7 @@ public class ExperimentManager extends Thread{
                 			/* Wait and release the processor */
                         	Thread.sleep(10);
                         } catch(InterruptedException e) {
-                        	e.printStackTrace();
+                        	m_logger.error(e);
                         }
                 	}
                 	if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {

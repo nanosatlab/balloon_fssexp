@@ -32,7 +32,7 @@ import Common.FolderUtils;
 import Common.Log;
 import Configuration.ExperimentConf;
 
-public class FSSDataBuffer {
+public class PayloadBuffer {
 
     private File m_file;
     private int m_max_size;
@@ -43,9 +43,9 @@ public class FSSDataBuffer {
     private Log m_logger;
     private ExperimentConf m_conf;
     
-    private String TAG = "[FSSDataBuffer] ";
+    private String TAG = "[PayloadBuffer] ";
     
-    public FSSDataBuffer(Log log, ExperimentConf conf, FolderUtils folder) 
+    public PayloadBuffer(Log log, ExperimentConf conf, FolderUtils folder) 
     {
         m_logger = log;
         m_conf = conf;

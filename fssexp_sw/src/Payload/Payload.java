@@ -19,7 +19,7 @@ package Payload;
 import java.nio.ByteBuffer;
 
 /* Internal imports */
-import Storage.FSSDataBuffer;
+import Storage.PayloadBuffer;
 import Common.Constants;
 import Common.Log;
 import Common.SynchronizedBuffer;
@@ -41,7 +41,7 @@ public class Payload extends Thread{
     private float m_packet_rate;                /**< It is the packet rate with which the data is  
                                                  *   generated [packet/second] */
     private int m_iterations;                   /**< Number of executions of the payload */
-    private FSSDataBuffer m_packet_buffer;    /**< Buffer in which the data is stored */
+    private PayloadBuffer m_packet_buffer;    /**< Buffer in which the data is stored */
     private boolean m_running;                  /**< Condition that indicates if the thread has to 
                                                  *   be stopped */
     private boolean m_poll_token;
@@ -69,7 +69,7 @@ public class Payload extends Thread{
      *
      * @param     file name in which the configuration is done.
      **********************************************************************************************/
-    public Payload(Log log, ExperimentConf conf, FSSDataBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer, PacketDispatcher dispatcher, ExperimentManager manager) {
+    public Payload(Log log, ExperimentConf conf, PayloadBuffer fss_buffer, SimpleLinkProtocol ipc_stack, TimeUtils timer, PacketDispatcher dispatcher, ExperimentManager manager) {
         super();
         m_conf = conf;
         m_logger = log;

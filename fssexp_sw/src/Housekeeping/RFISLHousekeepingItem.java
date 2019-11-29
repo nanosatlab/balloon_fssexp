@@ -5,24 +5,24 @@ import java.nio.ByteOrder;
 
 public class RFISLHousekeepingItem {
 	
-	private int boot_count;
-	private double current_rssi;
-	private double last_rx_rssi;
-	private double snr;
-	private double last_rx_lqi;
-	private double tx_power;
-	private int phy_tx_packets;
-	private int phy_tx_err_packets;
-	private int phy_rx_packets;
-	private int phy_rx_err_packets;
-	private int ll_tx_packets;
-	private int ll_rx_packets;
-	private double ext_temperature;
-	private double int_temperature;
-	private float frequency;
-	private int rx_queue;
-	private int tx_queue;
-	private ByteBuffer stream;
+	public int boot_count;
+	public double current_rssi;
+	public double last_rx_rssi;
+	public double snr;
+	public double last_rx_lqi;
+	public double tx_power;
+	public int phy_tx_packets;
+	public int phy_tx_err_packets;
+	public int phy_rx_packets;
+	public int phy_rx_err_packets;
+	public int ll_tx_packets;
+	public int ll_rx_packets;
+	public double ext_temperature;
+	public double int_temperature;
+	public float frequency;
+	public int rx_queue;
+	public int tx_queue;
+	public ByteBuffer stream;
 	
 	
 	public RFISLHousekeepingItem()
@@ -30,9 +30,35 @@ public class RFISLHousekeepingItem {
 		stream = ByteBuffer.allocate(getSize());
 	}
 	
-	public int getSize()
+	public void resetValues()
 	{
-		return (4 * 9 + 8 * 7 + 4);
+		boot_count = 0;
+		current_rssi = 0;
+		last_rx_rssi = 0;
+		snr = 0;
+		last_rx_lqi = 0;
+		tx_power = 0;
+		phy_tx_packets = 0;
+		phy_tx_err_packets = 0;
+		phy_rx_packets = 0;
+		phy_rx_err_packets = 0;
+		ll_tx_packets = 0;
+		ll_rx_packets = 0;
+		ext_temperature = 0;
+		int_temperature = 0;
+		frequency = 0;
+		rx_queue = 0;
+		tx_queue = 0;
+	}
+	
+	public static int getRawSize()
+	{
+		return 51;	/* See the code of the RF ISL module for more details */
+	}
+	
+	public static int getSize()
+	{
+		return ((Integer.SIZE / 8) * 9 + (Double.SIZE / 8) * 7 + (Float.SIZE / 8));
 	}
 	
 	private double computeRSSI(int rssi_dec)
@@ -117,6 +143,35 @@ public class RFISLHousekeepingItem {
 		stream.putInt(tx_queue);
 		stream.rewind();
 		return stream.array();
+	}
+	
+	public boolean fromBytes(byte[] data)
+	{
+		boolean done = false;
+		if(data.length == stream.capacity()) {
+			stream.clear();
+			stream.put(data);
+			stream.rewind();
+			boot_count = stream.getInt();
+			current_rssi = stream.getDouble();
+			last_rx_rssi = stream.getDouble();
+			snr = stream.getDouble();
+			last_rx_lqi = stream.getDouble();
+			tx_power = stream.getDouble();
+			phy_tx_packets = stream.getInt();
+			phy_tx_err_packets = stream.getInt();
+			phy_rx_packets = stream.getInt();
+			phy_rx_err_packets = stream.getInt();
+			ll_tx_packets = stream.getInt();
+			ll_rx_packets = stream.getInt();
+			ext_temperature = stream.getDouble();
+			int_temperature = stream.getDouble();
+			frequency = stream.getFloat();
+			rx_queue = stream.getInt();
+			tx_queue = stream.getInt();
+			done = true;
+		}
+		return done;
 	}
 	
 	public String toString()

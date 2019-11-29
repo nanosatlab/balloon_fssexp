@@ -1,13 +1,17 @@
 package IPCStack;
 
+import java.nio.ByteBuffer;
 import java.util.Hashtable;
 
 import Common.Constants;
+import Common.FolderUtils;
 import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import InterSatelliteCommunications.Packet;
+import Storage.PacketExchangeBuffer;
+import Storage.PacketSnifferBuffer;
 
 public class PacketDispatcher extends Thread 
 {
@@ -20,11 +24,20 @@ public class PacketDispatcher extends Thread
 	private Hashtable<Integer, SynchronizedBuffer> m_prot_buffers;
 	private Hashtable<Integer, Integer> m_prot_status;
 	private boolean m_exit;
+	private boolean m_sniffer;
+	private boolean m_broadcast_allowed;
 	private Packet m_packet;
+	private int m_sat_id;
+	private PacketExchangeBuffer m_hk_packets;
+	private PacketSnifferBuffer m_sniffed_packets;
+	private ByteBuffer m_header_stream;
+	private ByteBuffer m_data_stream;	
+	private ByteBuffer m_checksum_stream;
+	
 	
 	private String TAG = "[PacketDispatcher] ";
 	
-	public PacketDispatcher(Log log, ExperimentConf conf, TimeUtils timer)
+	public PacketDispatcher(Log log, ExperimentConf conf, TimeUtils timer, FolderUtils folder)
 	{
 		m_logger = log;
 		m_time = timer;
@@ -34,8 +47,19 @@ public class PacketDispatcher extends Thread
 		m_prot_status = new Hashtable<Integer, Integer>();
 		m_packet_buffer = new SynchronizedBuffer(log, "DispatcherBuffer");
 		m_hk_buffer = new SynchronizedBuffer(log, "TelemetryBuffer");
+		m_hk_packets = new PacketExchangeBuffer(log, folder);
+		m_sniffed_packets = new PacketSnifferBuffer(log, timer, folder);
+		m_header_stream = ByteBuffer.allocate(Packet.getHeaderSize());
+		m_checksum_stream = ByteBuffer.allocate(Packet.getChecksumSize());
 		m_exit = false;
+		m_sniffer = false;
+		m_broadcast_allowed = true;
+		m_sat_id = conf.satellite_id;
 	}
+	
+	public void activateSniffer() { m_sniffer = true; }
+	
+	public void disableBroadcast() { m_broadcast_allowed = false; }
 	
 	public synchronized int accessRequestStatus(int protocol_number, int new_status, boolean write)
 	{
@@ -51,6 +75,10 @@ public class PacketDispatcher extends Thread
 		}
 		return status;
 	}
+	
+	
+	public void setSnifferMode() { m_sniffer = true; }
+	
 	
 	public void addProtocolBuffer(int protocol_num, SynchronizedBuffer buff)
 	{
@@ -73,16 +101,46 @@ public class PacketDispatcher extends Thread
 		accessRequestStatus(protocol_num, 0, true);
 	}
 	
+	private boolean receivePacket() throws InterruptedException
+	{
+		boolean received = false;
+		int received_checksum;
+		byte[] packet_stream = m_ipc_stack.checkReceptionPacket();
+		if(packet_stream.length > 0) {
+			/* Something has been received */
+			m_packet.fromBytes(packet_stream);
+			received_checksum = m_packet.checksum;
+			m_packet.computeChecksum();
+			/* Store the type of the packet */
+			m_hk_packets.insertRXPacket(m_packet);
+			/* If sniffer mode - store it */
+			if(m_sniffer == true) {
+				m_sniffed_packets.insertRXPacket(m_packet);
+			}
+			/* Check if it has to be forwarded */
+			if(m_broadcast_allowed == false 
+				&& m_packet.destination == m_sat_id
+				&& m_packet.checksum == received_checksum) {
+					received  = true;
+			} else if((m_packet.destination & m_sat_id) > 0
+				&& m_packet.checksum == received_checksum) {
+				received = true;
+			} else {
+				/* Discard the packet */
+				m_packet.resetValues();
+			}
+		}
+		return received;
+	}
+	
 	public void run()
 	{
-		byte[] packet_stream;
-		byte[] data_stream;
-		byte[] header_stream = new byte[Constants.header_size];
-		byte[] checksum_stream = new byte[Short.SIZE / 8];
 		long time_tick;                             /* in ms */
         long spent_time;
         long time_to_sleep;
-		
+		byte[] packet_stream;
+		byte[] data_stream;
+        
 		/* Open the IPC Stack */
 		if(m_ipc_stack.open() == true) {
 		
@@ -99,12 +157,9 @@ public class PacketDispatcher extends Thread
 				/* Note the time */
 				time_tick = m_time.getTimeMillis();
 				
-				/* Check if IPC stack has a packet */
+				/* Check if IPC stack has a RX packet */
 				try {
-					packet_stream = m_ipc_stack.checkReceptionPacket();
-					if(packet_stream.length > 0) {
-						/* Parse Packet */
-						m_packet.fromBytes(packet_stream);
+					if(receivePacket() ==  true) {
 						/* Forward the packet */
 						m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
 					}
@@ -113,13 +168,17 @@ public class PacketDispatcher extends Thread
 				}
 				
 				/* Check if incoming HK request */
-				while(m_hk_buffer.bytesAvailable() >= header_stream.length) {
+				while(m_hk_buffer.bytesAvailable() >= m_header_stream.capacity()) {
 					/* Check the packet length to read all of it */
-					m_hk_buffer.read(header_stream);
+					m_header_stream.clear();
+					m_hk_buffer.read(m_header_stream.array());
+					m_header_stream.rewind();
 					m_packet.resetValues();
-					m_packet.setHeader(header_stream);
+					m_packet.setHeader(m_header_stream.array());
 					/* The remaining checksum */
-					m_hk_buffer.read(checksum_stream);
+					m_checksum_stream.clear();
+					m_hk_buffer.read(m_checksum_stream.array());
+					m_checksum_stream.rewind();
 					
 					if(m_packet.type == Constants.PACKET_TYPE_HK) {
 						/* Request the telemetry */
@@ -138,16 +197,21 @@ public class PacketDispatcher extends Thread
 				}
 					
 				/* Check if incoming TX request */
-				while(m_packet_buffer.bytesAvailable() >= header_stream.length) {
+				while(m_packet_buffer.bytesAvailable() >= m_header_stream.capacity()) {
 					/* Check the packet length to read all of it */
-					m_packet_buffer.read(header_stream);
+					m_header_stream.clear();
+					m_packet_buffer.read(m_header_stream.array());
+					m_header_stream.rewind();
 					m_packet.resetValues();
-					m_packet.setHeader(header_stream);
+					m_packet.setHeader(m_header_stream.array());
 					data_stream = new byte[m_packet.length];
 					m_packet_buffer.read(data_stream);
 					m_packet.setData(data_stream);
 					/* The remaining checksum */
-					m_packet_buffer.read(checksum_stream);
+					m_checksum_stream.clear();
+					m_packet_buffer.read(m_checksum_stream.array());
+					m_checksum_stream.rewind();
+					m_packet.setChecksum(m_checksum_stream.array());
 					
 					/* Send packet */
 					try {
@@ -155,6 +219,8 @@ public class PacketDispatcher extends Thread
 							m_logger.error(TAG + "[ERROR] Impossible to send a packet through IPC Stack");
 							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						} else {
+							m_hk_packets.insertTXPacket(m_packet);
+							m_packet.resetValues();
 							accessRequestStatus(m_packet.prot_num, 1, true);
 						}
 					} catch (InterruptedException e) {

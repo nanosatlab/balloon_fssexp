@@ -14,6 +14,7 @@ public class FolderUtils {
 	public String log_name;
 	public String conf_name;
 	public String dwn_name;
+	public String sniffer_name;
 	public String tx_name;
 	public String rx_name;
 	public String payload_name;
@@ -99,6 +100,13 @@ public class FolderUtils {
 			if(fl.exists() == false) {
 				fl.createNewFile();
 				System.out.println(TAG + "Created file " + dwn_name);
+			}
+			/* check sniffer packets */
+			sniffer_name = home_folder + Constants.sniffer_file + "_" + creation_time;
+			fl = new File(sniffer_name);
+			if(fl.exists() == false) {
+				fl.createNewFile();
+				System.out.println(TAG + "Created file " + sniffer_name);
 			}
 			/* check isl tx packets */
 			tx_name = home_folder + Constants.tx_file + "_" + creation_time;

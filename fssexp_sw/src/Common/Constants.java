@@ -19,6 +19,7 @@ public class Constants {
     public final static String persistent_file = persistent_path + "manager.prst";
     public final static String conf_file = conf_path + "fss_exp.conf";
     public final static String log_file = log_path + "log.data";
+    public final static String sniffer_file = data_path + "sniffed_packets.data";
     
     /* Data files */
     public final static String hk_file = data_path + "hk.data";
@@ -51,7 +52,7 @@ public class Constants {
     public final static int rf_isl_max_fsspacket = 3;
     public final static int rf_isl_tostorehk_size = 35;
     public final static int rf_isl_hk_size = 51;
-    public final static long dwn_contact_sleep = 500;       /* ms */
+    public final static long dwn_contact_sleep = 50;       /* ms */
     
     public final static int LENGHT_FIELD_SIZE = 2;	/* in Bytes */
     public final static int COMMAND_ITEMS = 2;
@@ -88,15 +89,23 @@ public class Constants {
     public final static int FSS_ROLE_CUSTOMER = 0;
     public final static int FSS_ROLE_SUPPLIER = 1;
     
-    public final static int FSS_PACKET_SERVICE_PUBLISH 	= 	0x00000000; /* 0 */
-    public final static int FSS_PACKET_SERVICE_REQUEST 	= 	0x00000001; /* 1 */
-    public final static int FSS_PACKET_SERVICE_ACCEPT 	= 	0x00000002; /* 2 */
-    public final static int FSS_PACKET_DATA 			=	0x00000004; /* 4 */
-    public final static int FSS_PACKET_DATA_ACK 		= 	0x00000008; /* 8 */
-    public final static int FSS_PACKET_CLOSE 			= 	0x00000010; /* 16 */
-    public final static int FSS_PACKET_CLOSE_ACK 		= 	0x00000020;	/* 32 */
-    public final static int FSS_PACKET_CLOSE_DATA_ACK 	= 	0x00000030;	/* 64 */
-    public final static int FSS_PACKET_NOT_VALID 		= 	0x00000040;	/* 128 */
+    public final static int PACKET_FSS_SERVICE_PUBLISH 	= 	0x00000000; /* 0 */
+    public final static int PACKET_FSS_SERVICE_REQUEST 	= 	0x00000001; /* 1 */
+    public final static int PACKET_FSS_SERVICE_ACCEPT 	= 	0x00000002; /* 2 */
+    public final static int PACKET_FSS_DATA 			=	0x00000004; /* 4 */
+    public final static int PACKET_FSS_DATA_ACK 		= 	0x00000008; /* 8 */
+    public final static int PACKET_FSS_CLOSE 			= 	0x00000010; /* 16 */
+    public final static int PACKET_FSS_CLOSE_ACK 		= 	0x00000020;	/* 32 */
+    public final static int PACKET_FSS_CLOSE_DATA_ACK 	= 	0x00000040;	/* 64 */
+    public final static int PACKET_HELLO 				= 	0x00000080;	/* 128 */
+    public final static int PACKET_HELLO_ACK 			= 	0x00000100;	/* 256 */
+    public final static int PACKET_DWN 					= 	0x00000200;	/* 512 */
+    public final static int PACKET_DWN_ACK 				= 	0x00000400;	/* 1024 */
+    public final static int PACKET_DWN_CLOSE			= 	0x00000800;	/* 2048 */
+    public final static int PACKET_DWN_CLOSE_ACK		= 	0x00001000;	/* 4096 */
+    public final static int PACKET_DWN_ALIVE			= 	0x00002000;	/* 4096 */
+    public final static int PACKET_DWN_ALIVE_ACK		= 	0x00004000;	/* 4096 */
+    public final static int FSS_PACKET_NOT_VALID 		= 	0x00008000;	/* 8192 */
     
     
     public final static int FSS_SERVICE_TYPE_NOT_DEFINED = -1;
@@ -109,7 +118,6 @@ public class Constants {
     public final static int FSS_BROADCAST_ADDR = 3;
     
     /* FSS Packet constants */
-    public final static int header_size = 18;   /* bytes */
     public final static int PACKET_TYPE_HK = 1;
     
     /* Data Generator constants */
@@ -192,7 +200,7 @@ public class Constants {
     
     /* Uart Interface */
     public final static int uart_max_buffer_size = 1632; /* Three DATA packets with SimpleLink Protocol Header */
-    public final static int dispatcher_sleep = 200;	/* sleep 200 ms */
+    public final static int dispatcher_sleep = 50;	/* sleep 200 ms */
     public final static String uart_port = "/dev/ttyACM0";
     public final static int uart_bps = 115200;
     public final static int uart_max_reply = 100; /* 100 ms */
@@ -203,5 +211,12 @@ public class Constants {
     /* Protocols Number */
     public final static int manager_prot_num = 1;
     public final static int fss_prot_num = 2;
+    public final static int ttc_prot_num = 3;
+    
+    /* TTC */
+    public final static int dwn_max_packet = 3;
+    
+    /* Identifiers */
+    public final static int gs_id = 1;
 
 }

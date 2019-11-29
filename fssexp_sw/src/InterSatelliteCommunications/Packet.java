@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 import CRC.CRC;
 import Common.Constants;
 
-public class Packet 
+public class Packet
 {
     /* header */
     public int source;
@@ -23,24 +23,19 @@ public class Packet
     public short checksum; /* CRC16 */
     
     /* Temporal variables */
-    private byte[] bytes;
-    private byte[] long_bytes;
-    private byte[] header_stream;
+    private byte[] checksum_bytes;
+    private byte[] empty_data;
+    private ByteBuffer header_stream;
     private ByteBuffer checksum_stream;
-    private ByteBuffer timestamp_stream;
-    private ByteBuffer counter_stream;
-    private ByteBuffer length_stream;
     
     public Packet() 
     {
+    	empty_data = new byte[0];
         resetValues();
         /* Maximum unit is 8 Bytes */
-        long_bytes = new byte[8];
-        header_stream = new byte[Constants.header_size];
+        checksum_bytes = new byte[Short.SIZE / 8];
+        header_stream = ByteBuffer.allocate(getHeaderSize());
         checksum_stream = ByteBuffer.allocate(Short.SIZE / 8);
-        timestamp_stream = ByteBuffer.allocate(Long.SIZE / 8);
-        counter_stream = ByteBuffer.allocate(Integer.SIZE / 8);
-        length_stream = ByteBuffer.allocate(Short.SIZE / 8);
     }
     
     public Packet(Packet packet) {
@@ -53,8 +48,6 @@ public class Packet
     	checksum_stream.rewind();
     	checksum = checksum_stream.getShort();
     }
-    
-    public short getChecksum() { return checksum; }
     
     public byte[] getData() { return packet_data; }
     
@@ -75,95 +68,78 @@ public class Packet
         type = 6; /* NO_VALID type */
         length = 0;
         /* data */
-        packet_data = null;
+        packet_data = empty_data;
         /* footer */
         checksum = -1;
     }
     
     public byte[] getHeader() 
     {    
-    	header_stream[0] = (byte) (source & 0xFF);
-        header_stream[1] = (byte) (destination & 0xFF);
-        header_stream[2] = (byte) (prot_num & 0xFF);
-        timestamp_stream.clear();
-        timestamp_stream.putLong(timestamp);
-        timestamp_stream.rewind();
-        bytes = timestamp_stream.array();
-        System.arraycopy(bytes, 0, header_stream, 3, 8);
-        counter_stream.clear();
-        counter_stream.putInt(counter);
-        counter_stream.rewind();
-        bytes = counter_stream.array();
-        System.arraycopy(bytes, 0, header_stream, 11, 4);
-        header_stream[15] = (byte) (type & 0xFF);
-        length_stream.clear();
-        length_stream.putShort((short)length);
-        length_stream.rewind();
-        bytes = length_stream.array();
-        System.arraycopy(bytes, 0, header_stream, 16, 2);
-        return header_stream;
+    	header_stream.clear();
+    	header_stream.putInt(source);
+    	header_stream.putInt(destination);
+    	header_stream.putInt(prot_num);
+    	header_stream.putLong(timestamp);
+    	header_stream.putInt(counter);
+    	header_stream.putInt(type);
+    	header_stream.putInt(length);
+    	header_stream.rewind();
+    	return header_stream.array();
     }
     
-    public void setHeader(byte[] header_stream) 
-    {    
-        source = header_stream[0];
-        destination = header_stream[1];
-        prot_num = header_stream[2];
-        System.arraycopy(header_stream, 3, long_bytes, 0, 8);
-        timestamp_stream.put(long_bytes, 0, 8);
-        timestamp_stream.rewind();
-        timestamp = timestamp_stream.getLong();
-        System.arraycopy(header_stream, 11, long_bytes, 0, 4);
-        counter_stream.put(long_bytes, 0, 4);
-        counter_stream.rewind();
-        counter = counter_stream.getInt();
-        type = header_stream[15];
-        System.arraycopy(header_stream, 16, long_bytes, 0, 2);
-        length_stream.put(long_bytes, 0, 2);
-        length_stream.rewind();
-        length = length_stream.getShort();
+    public void setHeader(byte[] stream) 
+    {   
+    	header_stream.clear();
+    	header_stream.put(stream);
+    	header_stream.rewind();
+    	source = header_stream.getInt();
+    	destination = header_stream.getInt();
+        prot_num = header_stream.getInt();
+        timestamp = header_stream.getLong();
+        counter = header_stream.getInt();
+        type = header_stream.getInt();
+        length = header_stream.getInt();
     }
+    
+    public static int getHeaderSize() { return ((Integer.SIZE / 8) * 6 + (Long.SIZE / 8)); }
+    
+    public static int getChecksumSize() { return (Short.SIZE / 8); }
     
     public boolean fromBytes(byte[] packet_bytes) 
     {
-        /* Clean the current packet structure*/
+    	/* Clean the current packet structure*/
     	resetValues();
         /* Parse Header */
-        System.arraycopy(packet_bytes, 0, header_stream, 0, header_stream.length);
-        setHeader(header_stream);
+    	header_stream.clear();
+    	System.arraycopy(packet_bytes, 0, header_stream.array(), 0, header_stream.capacity());
+        setHeader(header_stream.array());
         /* Read data */
         packet_data = new byte[length];
-        System.arraycopy(packet_bytes, Constants.header_size, packet_data, 0, packet_data.length);
+        System.arraycopy(packet_bytes, Packet.getHeaderSize(), packet_data, 0, packet_data.length);
         /* Read Checksum */
-        byte[] content = new byte[packet_data.length + header_stream.length];
-        System.arraycopy(header_stream, 0, content, 0, header_stream.length);
-        System.arraycopy(packet_data, 0, content, header_stream.length, packet_data.length);
-        System.arraycopy(packet_bytes, Constants.header_size + length, bytes, 0, 2);
-        checksum_stream.put(bytes, 0, 2);
-        checksum_stream.rewind();
-        checksum = checksum_stream.getShort();
+        computeChecksum();
+        
+        /* Verify the checksum */
+        byte[] content = new byte[packet_data.length + header_stream.capacity()];
+        System.arraycopy(header_stream.array(), 0, content, 0, header_stream.capacity());
+        System.arraycopy(packet_data, 0, content, header_stream.capacity(), packet_data.length);
+        System.arraycopy(packet_bytes, Packet.getHeaderSize() + length, checksum_bytes, 0, 2);
         return isPacketCorrect(checksum, content);
     }
     
     public byte[] toBytes() 
     {
-        /* header */
-        byte[] header = getHeader();
-        /* data */
-        byte[] data = packet_data;
-        /* checksum */
-        byte[] content = new byte[header.length + data.length];
-        System.arraycopy(header, 0, content, 0, header.length);
-        System.arraycopy(data, 0, content, header.length, data.length);
-        computeChecksum(content);
+    	/* Compute checksum */
+        computeChecksum();
         checksum_stream.clear();
         checksum_stream.putShort(checksum);
         checksum_stream.rewind();
-        byte[] checksum = checksum_stream.array();
+    	
         /* All the packet */
-        byte[] output = new byte[content.length + checksum.length];
-        System.arraycopy(content, 0, output, 0, content.length);
-        System.arraycopy(checksum, 0, output, content.length, checksum.length);
+        byte[] output = new byte[getHeaderSize() + packet_data.length + checksum_stream.capacity()];
+        System.arraycopy(getHeader(), 0, output, 0, getHeaderSize());
+        System.arraycopy(packet_data, 0, output, getHeaderSize(), packet_data.length);
+        System.arraycopy(checksum_stream.array(), 0, output, getHeaderSize() + packet_data.length, checksum_stream.capacity());
         return output;
     }
 
@@ -184,9 +160,23 @@ public class Packet
         return output;
     }
     
-    private void computeChecksum(byte[] content)
+    public void computeChecksum(byte[] content)
     {
     	checksum = (short) CRC.calculateCRC(CRC.Parameters.CRC16, content);
+    }
+    
+    public void computeChecksum()
+    {
+    	ByteBuffer content = ByteBuffer.allocate(getHeaderSize() + length);
+    	content.putInt(source);
+    	content.putInt(destination);
+    	content.putInt(prot_num);
+    	content.putLong(timestamp);
+    	content.putInt(counter);
+    	content.putInt(type);
+    	content.putInt(length);
+    	content.put(packet_data);
+    	checksum = (short) CRC.calculateCRC(CRC.Parameters.CRC16, content.array());
     }
     
     public boolean isPacketCorrect(short checksum, byte[] content) 
@@ -210,7 +200,7 @@ public class Packet
         /* data */
         packet_data = packet.getData();
         /* footer */
-        checksum = packet.getChecksum();
+        checksum = packet.checksum;
     }
     
     public String toString()

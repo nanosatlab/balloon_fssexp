@@ -9,6 +9,7 @@ import Housekeeping.HousekeepingItem;
 public class PayloadDataBlock {
 
 	private ByteBuffer stream;
+	private ByteBuffer m_exp_hk_stream;
 	
 	/* Header of PayloadDataBlock */
 	public int sat_id;
@@ -27,6 +28,7 @@ public class PayloadDataBlock {
 	{
 		exp_hk = new HousekeepingItem();
 		stream = ByteBuffer.allocate(getSize());
+		m_exp_hk_stream = ByteBuffer.allocate(exp_hk.getSize());
 		padding_data = new byte[getPaddingSize()];
 		for(int i = 0; i < padding_data.length; i ++) {
 			padding_data[i] = (byte)(i & 0xFF);
@@ -57,5 +59,33 @@ public class PayloadDataBlock {
 		stream.put(padding_data);
 		stream.rewind();
 		return stream.array();
+	}
+	
+	public boolean fromBytes(byte[] data)
+	{
+		boolean done = false;
+		if(data.length == stream.capacity()) {
+			stream.clear();
+			stream.put(data);
+			stream.rewind();
+			sat_id = stream.getInt();
+			timestamp = stream.getLong();
+			m_exp_hk_stream.clear();
+			stream.get(m_exp_hk_stream.array());
+			m_exp_hk_stream.rewind();
+			if(exp_hk.fromBytes(m_exp_hk_stream.array()) == true) {
+				done = true;
+			}
+		}
+		return done;
+	}
+
+	public String toString()
+	{
+		String s = "";
+		s += sat_id + ",";
+		s += timestamp + ",";
+		s += exp_hk.toString();
+		return s;
 	}
 }

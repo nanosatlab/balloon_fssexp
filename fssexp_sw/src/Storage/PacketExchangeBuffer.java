@@ -73,7 +73,7 @@ public class PacketExchangeBuffer {
         try {
             FileOutputStream file_stream = new FileOutputStream(m_tx_file, true);
             BufferedOutputStream writer = new BufferedOutputStream(file_stream);
-            if(packet.type != Constants.FSS_PACKET_DATA) {
+            if(packet.type != Constants.PACKET_FSS_DATA) {
                 writer.write(packet.toBytes());
             } else {
                 writer.write(packet.toBytesNoData());
@@ -91,7 +91,7 @@ public class PacketExchangeBuffer {
         try {
             FileOutputStream file_stream = new FileOutputStream(m_rx_file, true);
             BufferedOutputStream writer = new BufferedOutputStream(file_stream);
-            if(packet.type != Constants.FSS_PACKET_DATA) {
+            if(packet.type != Constants.PACKET_FSS_DATA) {
                 writer.write(packet.toBytes());
             } else {
                 writer.write(packet.toBytesNoData());

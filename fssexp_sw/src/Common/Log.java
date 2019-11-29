@@ -27,8 +27,7 @@ public class Log {
         }
         
         try {
-        	final String dir = System.getProperty("user.dir");
-            m_writer = new BufferedWriter(new FileWriter(m_file, true));
+        	m_writer = new BufferedWriter(new FileWriter(m_file, true));
         } catch(FileNotFoundException e) {
         	e.printStackTrace();
         	m_writer = null;
