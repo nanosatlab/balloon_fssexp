@@ -103,8 +103,8 @@ public class Constants {
     public final static int PACKET_DWN_ACK 				= 	0x00000400;	/* 1024 */
     public final static int PACKET_DWN_CLOSE			= 	0x00000800;	/* 2048 */
     public final static int PACKET_DWN_CLOSE_ACK		= 	0x00001000;	/* 4096 */
-    public final static int PACKET_DWN_ALIVE			= 	0x00002000;	/* 4096 */
-    public final static int PACKET_DWN_ALIVE_ACK		= 	0x00004000;	/* 4096 */
+    public final static int PACKET_DWN_ALIVE			= 	0x00002000;	/* 8192 */
+    public final static int PACKET_DWN_ALIVE_ACK		= 	0x00004000;	/* 16384 */
     public final static int FSS_PACKET_NOT_VALID 		= 	0x00008000;	/* 8192 */
     
     
@@ -215,6 +215,10 @@ public class Constants {
     
     /* TTC */
     public final static int dwn_max_packet = 3;
+    public final static int TTC_STATUS_STANDBY = 0;
+    public final static int TTC_STATUS_HANDSHAKING = 1;
+    public final static int TTC_STATUS_CONNECTED = 2;
+    public final static int TTC_STATUS_TERMINATION = 3;
     
     /* Identifiers */
     public final static int gs_id = 1;

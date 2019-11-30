@@ -317,4 +317,7 @@ void init_freertos_tasks(void)
     read_eeprom(EP_EEPROM_ID_SYSTEM_BOOT_COUNT, sysbootcount.raw, sizeof(SysBootCountEeprom));
     sysbootcount.fields.system_boot_count++;
     write_eeprom(EP_EEPROM_ID_SYSTEM_BOOT_COUNT, sysbootcount.raw, sizeof(SysBootCountEeprom));
+
+    /* Init random seed */
+    srand(sysbootcount.fields.system_boot_count);
 }

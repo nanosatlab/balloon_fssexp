@@ -217,7 +217,6 @@ public class Packet
     	// TODO: include the data
     	str += packet_data.length + ",";
     	str += checksum;
-    	str += "\n";
     	return str;
     }
     

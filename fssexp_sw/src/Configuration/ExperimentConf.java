@@ -133,7 +133,7 @@ public class ExperimentConf {
         cntct_max_duration = 2 * 60;
         cntct_min_duration = 30;
         ttc_timeout = 5000;	// TODO: confirm this value
-        ttc_retries = 3;
+        ttc_retries = 2;
     }
     
     public void parseConf() {

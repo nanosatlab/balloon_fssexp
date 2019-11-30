@@ -55,7 +55,7 @@ public class GroundSegment {
         System.out.println("    - HK-TRANSCEIVER");
         System.out.println("    - BYE - Close the Ground Station");
         while(exit == false) {
-            System.out.println("Please, insert the telecommand to be sent: HELLO::address | CLOSE | CHECK-TRANSCEIVER | HK-TRANSCEIVER | BYE");
+            System.out.println("Please, insert the telecommand to be sent: HELLO::address | CLOSE | CHECK-CONNECTION | CHECK-TRANSCEIVER | HK-TRANSCEIVER | BYE");
             System.out.print("Telecommand to send: ");
             String s = bufferRead.readLine().toUpperCase();
             if(s.contains("HELLO")) {
@@ -77,7 +77,7 @@ public class GroundSegment {
             	}
             } else if(s.contains("CLOSE")) {
             	remote_sat = ground_station.remote_sat;
-            	if(ground_station.closeConnection() == true) {
+            	if(ground_station.disconnectWithBalloon() == true) {
             		System.out.println("[" + timer.getTimeMillis() + "] Downlink connection is closed with balloon " + remote_sat);
             	} else {
             		System.out.println("[" + timer.getTimeMillis() + "] Impossible to correctly close the connection with balloon " + remote_sat);

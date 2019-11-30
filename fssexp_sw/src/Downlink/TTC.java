@@ -38,7 +38,13 @@ public class TTC extends Thread {
 	private int m_waiting_timeout;
 	private long m_waiting_next;
 	private int m_waiting_max;
-	private int m_remote_candidate;
+	private int m_status;
+	private int m_alive_timeout;
+	private int m_alive_counter;
+	private long m_alive_next;
+	private int m_alive_max;
+	private int m_rx_packet_backoff;
+	private int m_rx_packet_timeout;
 	
 	private Packet m_tx_packet;
 	private Packet m_rx_packet;
@@ -74,7 +80,9 @@ public class TTC extends Thread {
 		m_waiting_next = 0;
 		m_header_stream = ByteBuffer.allocate(Packet.getHeaderSize());
 		m_checksum_stream = ByteBuffer.allocate(Packet.getChecksumSize());
-		m_remote_candidate = -1;
+		m_status = Constants.TTC_STATUS_STANDBY;
+		m_alive_next = 0;
+		m_alive_counter = 0;
 	}
 	
 	public void setConfiguration(ExperimentConf conf) 
@@ -85,6 +93,10 @@ public class TTC extends Thread {
 		cntct_min_period = conf.cntct_min_period;
 		cntct_max_duration = conf.cntct_max_duration;
 		cntct_min_duration = conf.cntct_min_duration;
+		m_alive_max = 2;
+		m_alive_timeout = 60 * 1000;	/* ms */
+		m_rx_packet_backoff = 250;	/* ms */
+		m_rx_packet_timeout = 4000;		/* ms */
 	}
 	
 	private void setHeaderPacket(Packet packet, int type, int address, int data_length) 
@@ -102,13 +114,7 @@ public class TTC extends Thread {
 	{
 		m_tx_packet.resetValues();
 		/* set the header */
-		m_tx_packet.source = m_sat_id;
-		m_tx_packet.destination = m_gs_id;
-		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.timestamp = m_time.getTimeMillis();
-		m_tx_packet.counter = m_dwn_packet_counter;
-		m_tx_packet.type = Constants.PACKET_DWN;
-		m_tx_packet.length = content.length;
+		setHeaderPacket(m_tx_packet, Constants.PACKET_DWN, m_gs_id, content.length);
 		/* set the content */
 		m_tx_packet.setData(content);
 		/* set the checksum */
@@ -117,7 +123,6 @@ public class TTC extends Thread {
 	
 	private void generateHelloAckPacket()
 	{
-		System.out.println("Generating HELLO ACK Packet");
 		m_tx_packet.resetValues();
 		/* set the header */
 		m_tx_packet.source = m_sat_id;
@@ -129,7 +134,6 @@ public class TTC extends Thread {
 		m_tx_packet.length = 0;
 		/* set the checksum */
 		m_tx_packet.computeChecksum();
-		System.out.println(m_tx_packet.toString());
 	}
 	
 	private void generateCloseAckPacket()
@@ -144,6 +148,20 @@ public class TTC extends Thread {
 		m_tx_packet.type = Constants.PACKET_DWN_CLOSE_ACK;
 		m_tx_packet.length = 0;
 		/* set the checksum */
+		m_tx_packet.computeChecksum();
+	}
+	
+	private void generateAlivePacket()
+	{
+		m_tx_packet.resetValues();
+		setHeaderPacket(m_tx_packet, Constants.PACKET_DWN_ALIVE, m_gs_id, 0);
+		m_tx_packet.computeChecksum();
+	}
+	
+	private void generateAliveAckPacket()
+	{
+		m_tx_packet.resetValues();
+		setHeaderPacket(m_tx_packet, Constants.PACKET_DWN_ALIVE_ACK, m_gs_id, 0);
 		m_tx_packet.computeChecksum();
 	}
 	
@@ -228,15 +246,13 @@ public class TTC extends Thread {
 		m_waiting_counter = 0;
 	}
 	
-	private void lockForPacket(int packet_type) 
+	private void lockForPacket(int packet_type, int timeout) 
 	{
 		m_waiting_packet = true;
 		m_rx_packet_type_waiting = packet_type;
-		m_waiting_next = m_time.getTimeMillis() + m_waiting_timeout;
-		m_logger.info(TAG + "Retransmission of packet " + packet_type + " set at " + m_waiting_next + "(backoff: "
-				+ m_waiting_timeout + ")");
+		m_waiting_next = m_time.getTimeMillis() + timeout;
+		m_logger.info(TAG + "Expecting to receive packet type " + packet_type + " before " + m_waiting_next);
 	}
-	
 	
 	private void retransmitPacket() 
 	{
@@ -248,27 +264,20 @@ public class TTC extends Thread {
 		m_tx_packet.setData(temp_packet.getData());
 		m_tx_packet.computeChecksum();
 		downloadPacket();
+		/* Compute the next waiting time */
+		lockForPacket(m_tx_packet.type, m_waiting_timeout);
 	}
 	
-	private void verifyLinkDead() 
+	private void resetAliveSequence()
 	{
-		if (m_waiting_counter > m_waiting_max) {
-			m_logger.warning(
-					TAG + "Maximum reply of Packet type " + m_tx_packet.type + " reached. The downlink is dead!");
-			m_real_dwn_contact = false;
-			releaseForPacket();
-		} else {
-			m_waiting_counter++;
-			retransmitPacket();
-			m_waiting_next = m_time.getTimeMillis() + m_waiting_timeout;
-			m_logger.info(TAG + "No replication - Retransmitted packet " + m_tx_packet.type + "; next at "
-					+ m_waiting_next);
-		}
+		m_alive_next = m_time.getTimeMillis() +  m_alive_timeout;
+		m_alive_counter = 0;
 	}
 	
 	public void run() 
 	{
 		byte[] data;
+		long backoff;
 		double cntct_start = 0;
 		double cntct_end = 0;
 		
@@ -276,73 +285,121 @@ public class TTC extends Thread {
 			
 			/* Check if something is received */
 			if(receivePacket() == true) {
-				
 				if(m_waiting_packet == true && (m_rx_packet_type_waiting & m_rx_packet.type) != 0) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
 					 * working
 					 */
-					System.out.println("Releasing the waiting packet");
+					System.out.println("Release packet type " + m_rx_packet.type);
 					releaseForPacket();
+					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						resetAliveSequence();
+					}
 				}
 				
 				/* Something is received - check if it is an DWN_ACK */
 				switch(m_rx_packet.type) {
 				case Constants.PACKET_HELLO:
-					/* Check source to evaluate if it is a GS */
-					System.out.println("Received HELLO packet from " + m_rx_packet.source);
-					if(m_real_dwn_contact == false) {
+					if(m_status == Constants.TTC_STATUS_STANDBY) {
+						/* Change the status */
+						m_status = Constants.TTC_STATUS_HANDSHAKING;
 						/* GS is requesting to have a downlink connection */
 						generateHelloAckPacket();
 						if(downloadPacket() == true) {
-							System.out.println("Transmitted HELLO ACK packet to " + m_tx_packet.destination);
-						} else {
-							System.out.println("Impossible to transmit HELLO ACK packet to " + m_tx_packet.destination);
+							/* Wait to confirm the downlink connection */
+							lockForPacket(Constants.PACKET_HELLO_ACK, m_rx_packet_timeout);
 						}
-						/* Wait to confirm the dwnlink connection */
-						lockForPacket(Constants.PACKET_HELLO_ACK);
-					} else {
-						System.out.println("Already connected to ground station " + m_rx_packet.source);
 					}
 				break;
 				case Constants.PACKET_HELLO_ACK:
-					/* Check if I was waiting this packet */
-					if(m_rx_packet_type_waiting == Constants.PACKET_HELLO_ACK) {
+					if(m_status == Constants.TTC_STATUS_HANDSHAKING) {
 						/* downlink established */
+						m_status = Constants.TTC_STATUS_CONNECTED;
 						m_real_dwn_contact = true;
-						/* Reset the waiting counter */
-						//TODO:
+						/* TODO: Evaluate if data can be sent */
+						/* TODO: If no data, force an ALIVE packet in the next loop */
+						m_alive_next = 0;
+					}
+				break;
+				case Constants.PACKET_DWN_ALIVE:
+					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						/* TODO: */
+						generateAliveAckPacket();
+						downloadPacket();
+						/* Wait a reply */
+						lockForPacket(Constants.PACKET_DWN_ALIVE_ACK, m_rx_packet_timeout);
+						/* reset the Alive sequence */
+						resetAliveSequence();
+					}
+				break;
+				case Constants.PACKET_DWN_ALIVE_ACK:
+					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						/* reset the Alive sequence */
+						resetAliveSequence();
 					}
 				break;
 				case Constants.PACKET_DWN_ACK:
-					/* GS confirms the last download */
-					if(m_rx_packet_type_waiting == Constants.PACKET_DWN_ACK) {
-						// TODO: Send the next one
+					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						/* TODO: Evaluate if data can be sent */
 					}
 				break;
 				case Constants.PACKET_DWN_CLOSE:
-					/* GS wants to close the downlink */
-					generateCloseAckPacket();
-					downloadPacket();
-					// TODO: Reset counter
-					m_rx_packet_type_waiting = Constants.PACKET_DWN_CLOSE_ACK;
-					m_real_dwn_contact = false;
+					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						m_status = Constants.TTC_STATUS_TERMINATION;
+						generateCloseAckPacket();
+						downloadPacket();
+						lockForPacket(Constants.PACKET_DWN_CLOSE_ACK, m_rx_packet_timeout);
+					}
 				break;
 				case Constants.PACKET_DWN_CLOSE_ACK:
-					/* GS confirms the closure - Nothing to do */
-					if(m_rx_packet_type_waiting == Constants.PACKET_DWN_CLOSE_ACK) {
-						m_logger.info(TAG + "GS has closed the downlink connection");
+					if(m_status == Constants.TTC_STATUS_TERMINATION) {
 						/* Reset the counter */
-					} else {
-						m_logger.warning(TAG + "Received a DWN_CLOSE_ACK from GS when no CLOSE packet has been received previously; Something wrong with the GS?");
+						m_status = Constants.TTC_STATUS_STANDBY;
+						m_real_dwn_contact = false;
 					}
 				break;
 				}
-			} else if(m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
-				/*
-				 * No reply has been received, and the timeout has passed - retransmit or exit
-				 */
-				verifyLinkDead();
+			} else if(m_waiting_packet == true 
+				&& m_time.getTimeMillis() >= m_waiting_next
+				&& m_waiting_counter < m_waiting_max) {
+				/* schedule retransmission */
+				try {
+					backoff = (long)(m_rand.nextFloat() * m_rx_packet_backoff);
+					m_logger.info(TAG + "Retransmission of packet " + m_tx_packet.type + " scheduled after " + backoff + " ms");
+					sleep(backoff);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				retransmitPacket();
+				m_waiting_counter++;
+			} else if(m_waiting_packet == true 
+				&& m_time.getTimeMillis() >= m_waiting_next) {
+				/* Connection lost */
+				System.out.println("[" + m_time.getTimeMillis() + "] Maximum reply of Packet type " + m_tx_packet.type + " reached. The connection is dead!");
+				m_status = Constants.TTC_STATUS_STANDBY;
+				m_real_dwn_contact = false;
+				releaseForPacket();
+			}
+			
+			/* Execute the mode if connected */
+			if(m_status == Constants.TTC_STATUS_CONNECTED && m_real_dwn_contact == true) {
+				/* Verify if ALIVE packet has to be sent */
+				if(m_time.getTimeMillis() >= m_alive_next
+					&& m_alive_counter < m_alive_max) {
+					/* Transmit ALIVE packet */
+					generateAlivePacket();
+					downloadPacket();
+					lockForPacket(Constants.PACKET_DWN_ALIVE_ACK, m_rx_packet_timeout);
+					/* Reset Alive counter */
+					resetAliveSequence();
+					m_alive_counter += 1;
+				} else if(m_time.getTimeMillis() >= m_alive_next) {
+					/* No packet received, thus lost of connection */
+					releaseForPacket();
+					m_status = Constants.TTC_STATUS_STANDBY;
+					m_real_dwn_contact = false;
+					m_logger.info(TAG + "No packet received during " + m_alive_timeout + " ms; Lost of connection with Baloon");
+				}
 			}
 			
 			// TODO: move to the other site

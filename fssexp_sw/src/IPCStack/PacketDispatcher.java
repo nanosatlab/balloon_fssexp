@@ -212,7 +212,6 @@ public class PacketDispatcher extends Thread
 					m_packet_buffer.read(m_checksum_stream.array());
 					m_checksum_stream.rewind();
 					m_packet.setChecksum(m_checksum_stream.array());
-					
 					/* Send packet */
 					try {
 						if(m_ipc_stack.transmitPacket(m_packet.toBytes()) == false) {
@@ -220,8 +219,8 @@ public class PacketDispatcher extends Thread
 							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						} else {
 							m_hk_packets.insertTXPacket(m_packet);
-							m_packet.resetValues();
 							accessRequestStatus(m_packet.prot_num, 1, true);
+							m_packet.resetValues();
 						}
 					} catch (InterruptedException e) {
 						m_logger.error(e);
@@ -241,8 +240,6 @@ public class PacketDispatcher extends Thread
 	                } catch (InterruptedException e) {
 	                    m_logger.error(e);
 	                }
-	            } else {
-	            	m_logger.info(TAG + "No sleep, the process consumed " + spent_time);
 	            }
 			}
 			

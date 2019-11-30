@@ -61,10 +61,10 @@ public class GroundStation extends Thread
 	private Random m_rand;
 	private DownloadedStorage m_dwn_storage;
 	
-	private int GS_STATUS_STANDBY = 0;
-	private int GS_STATUS_HANDSHAKING = 1;
-	private int GS_STATUS_CONNECTED = 2;
-	private int GS_STATUS_TERMINATION = 3;
+	private int GS_STATUS_STANDBY = Constants.TTC_STATUS_STANDBY;
+	private int GS_STATUS_HANDSHAKING = Constants.TTC_STATUS_HANDSHAKING;
+	private int GS_STATUS_CONNECTED = Constants.TTC_STATUS_CONNECTED;
+	private int GS_STATUS_TERMINATION = Constants.TTC_STATUS_TERMINATION;
 	private int m_status;
 	
 	
@@ -77,7 +77,7 @@ public class GroundStation extends Thread
 		m_retransmission_time = 0;
 		m_rx_packet_timeout = 4000;		/* ms */
 		m_hello_timeout = 8000;		/* ms */
-		m_alive_timeout = 60 * 1000;	/* ms */
+		m_alive_timeout = 90 * 1000;	/* ms */
 		m_waiting_timeout = m_rx_packet_timeout;
 		m_waiting_max = m_rx_packet_max;
 		m_alive_max = 2;
@@ -103,6 +103,7 @@ public class GroundStation extends Thread
         System.out.println("[" + m_time.getTimeMillis() + "] Folder tree constructed");
 		m_log = new Log(m_time, m_folder);
 		m_conf = new ExperimentConf(m_log);
+		m_conf.port_desc = "/dev/ttyS1";
 		m_dispatcher = new PacketDispatcher(m_log, m_conf, m_time, m_folder);
 		m_rx_buffer = new SynchronizedBuffer(m_log, "rx-buffer-gs");
 		m_dispatcher.addProtocolBuffer(m_prot_num, m_rx_buffer);
@@ -240,6 +241,8 @@ public class GroundStation extends Thread
 		m_tx_packet.setData(temp_packet.getData());
 		m_tx_packet.computeChecksum();
 		transmitPacket();
+		/* Compute the next waiting time */
+		lockForPacket(m_tx_packet.type, m_waiting_timeout);
 	}
 	
 	private boolean transmitPacket()
@@ -254,6 +257,7 @@ public class GroundStation extends Thread
             	e.printStackTrace();
             }
     	}
+		
 		if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {
 			transmitted = true;
 			System.out.println("[" + m_time.getTimeMillis() + "] Transmitted packet: "
@@ -423,8 +427,7 @@ public class GroundStation extends Thread
 		m_waiting_packet = true;
 		m_rx_packet_type_waiting = packet_type;
 		m_waiting_next = m_time.getTimeMillis() + timeout;
-		System.out.println("[" + m_time.getTimeMillis() + "] Retransmission of packet " + packet_type + " set at " + m_waiting_next + "(backoff: "
-				+ m_waiting_timeout + ")");
+		System.out.println("[" + m_time.getTimeMillis() + "] Expecting to receive packet type " + packet_type + " before " + m_waiting_next);
 	}
 	
 	private void resetAliveSequence()
@@ -452,6 +455,9 @@ public class GroundStation extends Thread
 					 * working
 					 */
 					releaseForPacket();
+					if(m_status == GS_STATUS_CONNECTED) {
+						resetAliveSequence();
+					}
 				}
 				/* Something is received, perform according */
 				switch(m_rx_packet.type) {
@@ -476,6 +482,8 @@ public class GroundStation extends Thread
 						generateAliveAckPacket();
 						transmitPacket();
 						resetAliveSequence();
+						/* I do not expect to receive any other message */
+						releaseForPacket();
 					}
 					break;
 				case Constants.PACKET_DWN:
@@ -502,6 +510,7 @@ public class GroundStation extends Thread
 						/* Connection terminated */
 						m_status = GS_STATUS_STANDBY;
 						m_established = false;
+						remote_sat = -1;
 						/* Notify the Ground Segment */
 						m_reply = true;
 						m_mutex.release();
@@ -509,16 +518,30 @@ public class GroundStation extends Thread
 					break;
 				}	
 			} else if(m_waiting_packet == true 
-				&& m_time.getTimeMillis() >= m_waiting_next) {
+				&& m_time.getTimeMillis() >= m_waiting_next
+				&& m_waiting_counter < m_waiting_max) {
 				/* schedule retransmission */
 				try {
-					backoff = (long)m_rand.nextFloat() * m_rx_packet_backoff;
+					backoff = (long)(m_rand.nextFloat() * m_rx_packet_backoff);
 					System.out.println("[" + m_time.getTimeMillis() + "] Retransmission of packet " + m_tx_packet.type + " scheduled after " + backoff + " ms");
 					sleep(backoff);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				retransmitPacket();
+				m_waiting_counter++;
+			} else if(m_waiting_packet == true 
+				&& m_time.getTimeMillis() >= m_waiting_next) {
+				/* Connection lost */
+				System.out.println("[" + m_time.getTimeMillis() + "] Maximum reply of Packet type " + m_tx_packet.type + " reached. The connection is dead!");
+				m_status = GS_STATUS_STANDBY;
+				m_established = false;
+				remote_sat = -1;
+				releaseForPacket();
+				/* Notify the Ground Segment if there it is blocked */
+				if(m_mutex.getQueueLength() > 0) {
+					m_mutex.release();
+				}
 			}
 			
 			/* Execute the mode if connected */
@@ -529,11 +552,16 @@ public class GroundStation extends Thread
 					/* Transmit ALIVE packet */
 					generateAlivePacket();
 					transmitPacket();
+					lockForPacket(Constants.PACKET_DWN_ALIVE_ACK, m_rx_packet_timeout);
+					/* Reset Alive counter */
+					resetAliveSequence();
 					m_alive_counter += 1;
 				} else if(m_time.getTimeMillis() >= m_alive_next) {
 					/* No packet received, thus lost of connection */
+					releaseForPacket();
 					m_status = GS_STATUS_STANDBY;
 					m_established = false;
+					remote_sat = -1;
 					System.out.println("[" + m_time.getTimeMillis() + "][WARNING] No packet received during " + m_alive_timeout + " ms; Lost of connection with Baloon");
 				}
 			}
@@ -543,6 +571,7 @@ public class GroundStation extends Thread
 			if(command != -1) {
 				switch(command) {
 				case 0:	/* connect with balloon */
+					System.out.println("Executing the connection at status " + m_status);
 					if(m_status == GS_STATUS_STANDBY) {
 						establishConnection();
 					} else {
@@ -563,10 +592,14 @@ public class GroundStation extends Thread
 					}
 					break;
 				case 2:	/* check transceiver */
-					isTransceiverConnected();
+					m_reply = isTransceiverConnected();
+					/* Notify the Ground Segment */
+					m_mutex.release();
 					break;
 				case 3: /* request telemetry */
-					getTransceiverTelemetry();
+					m_item = getTransceiverTelemetry();
+					/* Notify the Ground Segment */
+					m_mutex.release();
 					break;
 				}
 				accessToCommand(-1, true);
