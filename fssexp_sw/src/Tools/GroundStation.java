@@ -257,11 +257,13 @@ public class GroundStation extends Thread
 		
 		if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {
 			transmitted = true;
-			System.out.println("[" + m_time.getTimeMillis() + "] Transmitted packet: "
-					+ "src = " + m_tx_packet.source + " | dst = " + m_tx_packet.destination
-					+ " | prot_num = " + m_tx_packet.prot_num + " | timestamp = " + m_tx_packet.timestamp 
-					+ " | counter = " + m_tx_packet.counter + " | type = " + m_tx_packet.type 
-					+ " | length = " + m_tx_packet.length);
+			if((m_tx_packet.type & (Constants.PACKET_HELLO | Constants.PACKET_HELLO_ACK | Constants.PACKET_DWN_CLOSE | Constants.PACKET_DWN_CLOSE_ACK)) > 0) {
+				System.out.println("[" + m_time.getTimeMillis() + "] Transmitted packet: "
+						+ "src = " + m_tx_packet.source + " | dst = " + m_tx_packet.destination
+						+ " | prot_num = " + m_tx_packet.prot_num + " | timestamp = " + m_tx_packet.timestamp 
+						+ " | counter = " + m_tx_packet.counter + " | type = " + m_tx_packet.type 
+						+ " | length = " + m_tx_packet.length);
+			}
 			m_tx_packet_counter += 1;
 			m_tx_packet.counter = m_tx_packet_counter;
 		} else {
@@ -297,10 +299,12 @@ public class GroundStation extends Thread
 			if(m_rx_packet.destination == m_gs_id) {
 				//&& m_rx_packet.type == type) {					
 				received = true;
-				System.out.println("[" + m_time.getTimeMillis() + "] Received packet: "
-						+ "src = " + m_rx_packet.source + " | dst = " + m_rx_packet.destination
-						+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
-						+ " | counter = " + m_rx_packet.counter);
+				if((m_rx_packet.type & (Constants.PACKET_HELLO_ACK | Constants.PACKET_DWN_CLOSE_ACK)) > 0) {
+					System.out.println("[" + m_time.getTimeMillis() + "] Received packet: "
+							+ "src = " + m_rx_packet.source + " | dst = " + m_rx_packet.destination
+							+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
+							+ " | counter = " + m_rx_packet.counter);
+				}
 			} else {
 				System.out.println("[" + m_time.getTimeMillis() + "] Received packet, but discarded; " + m_rx_packet.toString());
 				m_rx_packet.resetValues();
