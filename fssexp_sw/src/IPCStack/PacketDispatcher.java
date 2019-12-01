@@ -26,7 +26,9 @@ public class PacketDispatcher extends Thread
 	private boolean m_exit;
 	private boolean m_sniffer;
 	private boolean m_broadcast_allowed;
-	private Packet m_packet;
+	private Packet m_tx_packet;
+	private Packet m_rx_packet;
+	private Packet m_hk_packet;
 	private int m_sat_id;
 	private PacketExchangeBuffer m_hk_packets;
 	private PacketSnifferBuffer m_sniffed_packets;
@@ -41,7 +43,9 @@ public class PacketDispatcher extends Thread
 	{
 		m_logger = log;
 		m_time = timer;
-		m_packet = new Packet();
+		m_tx_packet = new Packet();
+		m_rx_packet = new Packet();
+		m_hk_packet = new Packet();
 		m_ipc_stack = new SimpleLinkProtocol(log, conf, timer);
 		m_prot_buffers = new Hashtable<Integer, SynchronizedBuffer>();
 		m_prot_status = new Hashtable<Integer, Integer>();
@@ -94,10 +98,10 @@ public class PacketDispatcher extends Thread
 	
 	public void requestHK(int protocol_num)
 	{
-		m_packet.resetValues();
-		m_packet.prot_num = protocol_num;
-		m_packet.type = Constants.PACKET_TYPE_HK;
-		m_hk_buffer.write(m_packet.getBytesNoData());
+		m_hk_packet.resetValues();
+		m_hk_packet.prot_num = protocol_num;
+		m_hk_packet.type = Constants.PACKET_TYPE_HK;
+		m_hk_buffer.write(m_hk_packet.getBytesNoData());
 		accessRequestStatus(protocol_num, 0, true);
 	}
 	
@@ -108,26 +112,26 @@ public class PacketDispatcher extends Thread
 		byte[] packet_stream = m_ipc_stack.checkReceptionPacket();
 		if(packet_stream.length > 0) {
 			/* Something has been received */
-			m_packet.fromBytes(packet_stream);
-			received_checksum = m_packet.checksum;
-			m_packet.computeChecksum();
+			m_rx_packet.fromBytes(packet_stream);
+			received_checksum = m_rx_packet.checksum;
+			m_rx_packet.computeChecksum();
 			/* Store the type of the packet */
-			m_hk_packets.insertRXPacket(m_packet);
+			m_hk_packets.insertRXPacket(m_rx_packet);
 			/* If sniffer mode - store it */
 			if(m_sniffer == true) {
-				m_sniffed_packets.insertRXPacket(m_packet);
+				m_sniffed_packets.insertRXPacket(m_rx_packet);
 			}
 			/* Check if it has to be forwarded */
 			if(m_broadcast_allowed == false 
-				&& m_packet.destination == m_sat_id
-				&& m_packet.checksum == received_checksum) {
+				&& m_rx_packet.destination == m_sat_id
+				&& m_rx_packet.checksum == received_checksum) {
 					received  = true;
-			} else if((m_packet.destination & m_sat_id) > 0
-				&& m_packet.checksum == received_checksum) {
+			} else if((m_rx_packet.destination & m_sat_id) > 0
+				&& m_rx_packet.checksum == received_checksum) {
 				received = true;
 			} else {
 				/* Discard the packet */
-				m_packet.resetValues();
+				m_rx_packet.resetValues();
 			}
 		}
 		return received;
@@ -161,7 +165,9 @@ public class PacketDispatcher extends Thread
 				try {
 					if(receivePacket() ==  true) {
 						/* Forward the packet */
-						m_prot_buffers.get(m_packet.prot_num).write(m_packet.getBytes());
+						m_prot_buffers.get(m_rx_packet.prot_num).write(m_rx_packet.getBytes());
+						/* Reset container */
+						m_rx_packet.resetValues();
 					}
 				} catch (InterruptedException e) {
 					m_logger.error(e);
@@ -173,27 +179,32 @@ public class PacketDispatcher extends Thread
 					m_header_stream.clear();
 					m_hk_buffer.read(m_header_stream.array());
 					m_header_stream.rewind();
-					m_packet.resetValues();
-					m_packet.setHeader(m_header_stream.array());
+					m_hk_packet.resetValues();
+					m_hk_packet.setHeader(m_header_stream.array());
 					/* The remaining checksum */
 					m_checksum_stream.clear();
 					m_hk_buffer.read(m_checksum_stream.array());
 					m_checksum_stream.rewind();
 					
-					if(m_packet.type == Constants.PACKET_TYPE_HK) {
+					if(m_hk_packet.type == Constants.PACKET_TYPE_HK) {
 						/* Request the telemetry */
 						packet_stream = m_ipc_stack.getTelemetry();
 						if(packet_stream.length > 0) {
-							m_packet.setData(packet_stream);
-							m_packet.length = packet_stream.length;
+							m_hk_packet.setData(packet_stream);
+							m_hk_packet.length = packet_stream.length;
 							/* Forward the packet */
-							m_prot_buffers.get(m_packet.prot_num).write(m_packet.getBytes());
-							accessRequestStatus(m_packet.prot_num, 1, true);	/* Correctly delivered */
+							if(m_prot_buffers.get(m_hk_packet.prot_num).write(m_hk_packet.getBytes()) > 0) {
+								accessRequestStatus(m_hk_packet.prot_num, 1, true);	/* Correctly delivered */
+							} else {
+								accessRequestStatus(m_hk_packet.prot_num, 2, true);	/* Problem to write the result in the buffer */
+							}
 						} else {
 							m_logger.error(TAG + "[ERROR] Requested telemetry but not received any reply from IPC Stack");
-							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
+							accessRequestStatus(m_hk_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						}
 					}
+					/* reset container */
+					m_hk_packet.resetValues();
 				}
 					
 				/* Check if incoming TX request */
@@ -202,29 +213,30 @@ public class PacketDispatcher extends Thread
 					m_header_stream.clear();
 					m_packet_buffer.read(m_header_stream.array());
 					m_header_stream.rewind();
-					m_packet.resetValues();
-					m_packet.setHeader(m_header_stream.array());
-					data_stream = new byte[m_packet.length];
+					m_tx_packet.resetValues();
+					m_tx_packet.setHeader(m_header_stream.array());
+					data_stream = new byte[m_tx_packet.length];
 					m_packet_buffer.read(data_stream);
-					m_packet.setData(data_stream);
+					m_tx_packet.setData(data_stream);
 					/* The remaining checksum */
 					m_checksum_stream.clear();
 					m_packet_buffer.read(m_checksum_stream.array());
 					m_checksum_stream.rewind();
-					m_packet.setChecksum(m_checksum_stream.array());
+					m_tx_packet.setChecksum(m_checksum_stream.array());
 					/* Send packet */
 					try {
-						if(m_ipc_stack.transmitPacket(m_packet.getBytes()) == false) {
+						if(m_ipc_stack.transmitPacket(m_tx_packet.getBytes()) == false) {
 							m_logger.error(TAG + "[ERROR] Impossible to send a packet through IPC Stack");
-							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
+							accessRequestStatus(m_tx_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						} else {
-							m_hk_packets.insertTXPacket(m_packet);
-							accessRequestStatus(m_packet.prot_num, 1, true);
-							m_packet.resetValues();
+							m_hk_packets.insertTXPacket(m_tx_packet);
+							accessRequestStatus(m_tx_packet.prot_num, 1, true);
 						}
 					} catch (InterruptedException e) {
 						m_logger.error(e);
 					}
+					/* Reset the container */
+					m_tx_packet.resetValues();
 				}
 				
 				/* Sleep */

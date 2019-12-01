@@ -98,7 +98,7 @@ public class ExperimentConf {
         satellite_id = 2;
         
         /* ExperimentManager */
-        manager_hk_period = 1000;
+        manager_hk_period = 10 * 1000;			/* ms */
         download_experiment_activated = false;
         download_start = 0;
         download_end = 0;

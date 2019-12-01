@@ -7,7 +7,7 @@ public class SynchronizedBuffer {
 	private int m_write_pointer;
 	private int m_size;
 	private Log m_logger;
-	private String TAG = "[SynchronizedBuffer]";
+	private String TAG = "[SynchronizedBuffer] ";
 	private String m_id = "";
 	
 	public SynchronizedBuffer(Log logger, String id) 
