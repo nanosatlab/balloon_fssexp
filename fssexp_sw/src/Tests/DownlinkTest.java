@@ -8,8 +8,10 @@ import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import Downlink.TTC;
 import IPCStack.PacketDispatcher;
+import InterSatelliteCommunications.FSSProtocol;
 import Payload.PayloadDataBlock;
 import Storage.FederationPacketsBuffer;
+import Storage.PacketExchangeBuffer;
 import Storage.PayloadBuffer;
 
 public class DownlinkTest 
@@ -25,7 +27,9 @@ public class DownlinkTest
 		PacketDispatcher dispatcher = new PacketDispatcher(log, conf, time, folder);
 		PayloadBuffer payload_buffer = new PayloadBuffer(log, conf, folder);
 		FederationPacketsBuffer fed_buffer = new FederationPacketsBuffer(log, conf, folder);
+		PacketExchangeBuffer hk_packets = new PacketExchangeBuffer(log, folder);
 		TTC ttc = new TTC(time, conf, log, dispatcher, payload_buffer, fed_buffer);
+		FSSProtocol fss = new FSSProtocol(log, payload_buffer, hk_packets, conf, time, dispatcher, ttc);
 		
 		/* Set some data in the payload buffer */
 		PayloadDataBlock payload_data = new PayloadDataBlock();
@@ -44,6 +48,7 @@ public class DownlinkTest
 		System.out.println(fed_buffer.getBottomDataBlock().toString());
 		
 		dispatcher.start();
+		fss.start();
 		ttc.start();
 		try {
 			ttc.join();

@@ -86,6 +86,7 @@ public class Constants {
     public final static int FSS_NEGOTIATION = 0;
     public final static int FSS_EXCHANGE = 1;
     public final static int FSS_CLOSURE = 2;
+    public final static int FSS_STANDBY = 4;
     public final static int FSS_ROLE_NOT_DEFINED = 2;
     public final static int FSS_ROLE_CUSTOMER = 0;
     public final static int FSS_ROLE_SUPPLIER = 1;

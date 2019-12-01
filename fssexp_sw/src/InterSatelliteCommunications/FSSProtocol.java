@@ -3,7 +3,6 @@
 package InterSatelliteCommunications;
 
 /* External imports */
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /* Internal imports */
@@ -12,8 +11,8 @@ import Common.Log;
 import Common.SynchronizedBuffer;
 import Common.TimeUtils;
 import Configuration.ExperimentConf;
+import Downlink.TTC;
 import IPCStack.PacketDispatcher;
-import IPCStack.SimpleLinkProtocol;
 import Storage.PayloadBuffer;
 import Storage.PacketExchangeBuffer;
 
@@ -25,6 +24,7 @@ public class FSSProtocol extends Thread {
 	private PacketExchangeBuffer m_hk_packets;
 
 	private PayloadBuffer m_fss_buffer;
+	private TTC m_ttc;
 	private boolean m_running;
 	private boolean m_poll_token;
 	private int m_state;
@@ -77,12 +77,13 @@ public class FSSProtocol extends Thread {
 	private final static String TAG = "[FSSProtocol] ";
 
 	public FSSProtocol(Log log, PayloadBuffer buffer, PacketExchangeBuffer hk_packets, ExperimentConf conf,
-			TimeUtils timer, PacketDispatcher dispatcher) {
+			TimeUtils timer, PacketDispatcher dispatcher, TTC ttc) {
 		super();
 
 		m_logger = log;
 		m_conf = conf;
 		m_time = timer;
+		m_ttc = ttc;
 		
 		/* Init dispatcher */
 		m_dispatcher = dispatcher;
@@ -120,7 +121,7 @@ public class FSSProtocol extends Thread {
 		m_publishing_period = 5000;
 		m_publishing_next = 0;
 		m_service_type = Constants.FSS_SERVICE_TYPE_NOT_DEFINED;
-		m_service_type_interest = Constants.FSS_SERVICE_TYPE_STORAGE;
+		m_service_type_interest = Constants.FSS_SERVICE_TYPE_DOWNLOAD;
 		m_mydata_downloaded = false;
 		m_download_contact = false;
 	}
@@ -148,13 +149,13 @@ public class FSSProtocol extends Thread {
 		long time_tick;
 		long spent_time;
 		long time_to_sleep;
-
+		
 		/* Upload Configuration first */
 		setConfiguration();
 
 		/* Initialize parameters */
 		m_logger.info(TAG + "Started Thread");
-		accessToState(true, Constants.FSS_NEGOTIATION);
+		accessToState(true, Constants.FSS_STANDBY);
 
 		// m_start_time = space.golbriak.lang.System.currentTimeMillis();
 		m_start_time = m_time.getTimeMillis();
@@ -173,84 +174,57 @@ public class FSSProtocol extends Thread {
 		while (m_running == true) {
 			
 			/* Poll myself */
-			//m_logger.info(TAG + "Pol up!");
 			polling(true);
 
 			/* Get current time to compute the rate */
-			// time_tick = space.golbriak.lang.System.currentTimeMillis(); /* Time in
-			// milliseconds */
 			time_tick = m_time.getTimeMillis(); /* Time in milliseconds */
 
 			/*
-			 * In case of download experiment, verify that the download slot has started ord
+			 * In case of download experiment, verify that the download slot has started or
 			 * finished
 			 */
-			if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD && m_download_start != m_download_end) {
-				
-				if (m_time.getTimeMillis() >= m_download_start && m_time.getTimeMillis() < m_download_end
-					&& m_download_contact == false) {
-					m_logger.info(TAG + "Download contact has started");
-					m_download_contact = true;
-				} else if (m_time.getTimeMillis() >= m_download_end && m_download_contact == true) {
-					m_logger.info(TAG + "Download contact has finished");
-					m_download_contact = false;
-				}
-			}
-			
-			/* Check if I have to leave the loop */
-			if(m_running == false) {
-				break;
-			} else {
-				polling(true);
-			}
+			//if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD && m_download_start != m_download_end) {
+			//	
+			//	if (m_time.getTimeMillis() >= m_download_start && m_time.getTimeMillis() < m_download_end
+			//		&& m_download_contact == false) {
+			//		m_logger.info(TAG + "Download contact has started");
+			//		m_download_contact = true;
+			//	} else if (m_time.getTimeMillis() >= m_download_end && m_download_contact == true) {
+			//		m_logger.info(TAG + "Download contact has finished");
+			//		m_download_contact = false;
+			//	}
+			//}
 				
 			/* First verify if there is a packet in the interface */
-			if (receivePacket() == true) {
+			if(receivePacket() == true) {
 				accessToRXs(true, 1, 1);
 				m_received_packet = true;
 			} else {
 				m_received_packet = false;
 			}
-			
-			/* Check if I have to leave the loop */
-			if(m_running == false) {
-				break;
-			} else {
-				polling(true);
-			}
 
 			/* Execute depending on the mode */
-			switch (getFederationStatus()) {
-
+			switch(getFederationStatus()) {
+			case Constants.FSS_STANDBY:
+				standbyPhase(m_received_packet);
+				break;
 			case Constants.FSS_NEGOTIATION:
 				negotiationPhase(m_received_packet);
 				break;
-
 			case Constants.FSS_EXCHANGE:
 				federationPhase(m_received_packet);
 				break;
-
 			case Constants.FSS_CLOSURE:
 				closurePhase(m_received_packet);
 				break;
-
-			}
-
-			/* Check if I have to leave the loop */
-			if(m_running == false) {
-				break;
-			} else {
-				polling(true);
 			}
 			
 			/* Sleep */
-			// spent_time = space.golbriak.lang.System.currentTimeMillis() - time_tick;
 			spent_time = m_time.getTimeMillis() - time_tick;
 			if (spent_time < Constants.fss_prot_sleep) {
 				try {
 					time_to_sleep = Constants.fss_prot_sleep - spent_time;
 					if(time_to_sleep <= Constants.fss_prot_sleep && time_to_sleep > 0) {
-						//m_logger.info(TAG + "I have to sleep this time " + (time_to_sleep));
 						sleep(time_to_sleep);
 					} else {
 						m_logger.error(TAG + "The time to sleep is different than the expected: " + time_to_sleep);
@@ -271,9 +245,7 @@ public class FSSProtocol extends Thread {
 		}
 
 		accessToState(true, Constants.FSS_NOT_STARTED);
-		// m_end_time = space.golbriak.lang.System.currentTimeMillis();
 		m_end_time = m_time.getTimeMillis();
-
 		m_logger.info(TAG + "Stopped Thread");
 	}
 
@@ -407,16 +379,69 @@ public class FSSProtocol extends Thread {
 		sendPacket();
 	}
 
+	private void standbyPhase(boolean isRX) 
+	{
+		/* Verify if my service is available */
+		if(m_ttc.accessToServiceAvailable(false, false) == true) {
+			/* Publish this service */
+			if(m_time.getTimeMillis() >= m_publishing_next || m_publishing_next == 0) {
+				/* send PUBLISH */
+				sendPUBLISHPacket(Constants.FSS_SERVICE_TYPE_DOWNLOAD);
+				m_logger.info(TAG + "STANDBY PHASE: PUBLISH Packet sent with service "
+						+ Constants.FSS_SERVICE_TYPE_DOWNLOAD);
+				m_publishing_next = m_time.getTimeMillis() + m_publishing_period;
+			}
+		}
+		
+		/* Check what has been received */
+		if(isRX == true) {
+			switch(m_rx_packet.type) {
+			case Constants.PACKET_FSS_SERVICE_PUBLISH:
+				/* Process packet */
+				ByteBuffer publish_data = ByteBuffer.wrap(m_rx_packet.getData());
+				m_service_type = publish_data.getInt();
+				m_publisher_capacity = publish_data.getInt();
+				m_sat_destination = m_rx_packet.source;
+				m_logger.info(TAG + "STANDBY PHASE: Received PUBLISH Packet with service " + m_service_type);
+				if(m_ttc.accessToServiceAvailable(false, false) == false
+					&& m_publisher_capacity > 0
+					&& m_fss_buffer.getSize() > 0) {
+					/* I need and I want the service of storage - send REQUEST */
+					sendREQUEST(m_service_type_interest);
+					m_logger.info(TAG + "STANDBY PHASE: REQUEST Packet sent with service "
+							+ m_service_type_interest);
+					/* Wait ACCEPT packet to be received */
+					lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
+					/* Change to negotiation phase */
+					accessToState(true, Constants.FSS_NEGOTIATION);
+				}
+				break;
+			case Constants.PACKET_FSS_SERVICE_REQUEST:
+				/* Check if I have a service to share */
+				if(m_ttc.accessToServiceAvailable(false, false) == true) {
+					m_logger.info(TAG + "NEGOTIATION PHASE: Received REQUEST Packet with service " + m_service_type_interest);
+					/* Send ACCEPT because I have the service and I am interested */
+					sendACCEPT(m_service_type_interest);
+					m_logger.info(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
+							+ m_service_type_interest);
+					/* Wait first DATA to confirm the correct reception */
+					lockForPacket(Constants.PACKET_FSS_DATA | Constants.PACKET_FSS_CLOSE);
+					/* Change to negotiation phase */
+					accessToState(true, Constants.FSS_NEGOTIATION);
+				}
+				break;
+			}
+		}
+	}
+	
 	private void negotiationPhase(boolean isRX) {
 
 		ByteBuffer data;
 		int service_type;
 
 		if (m_fss_interest == Constants.FSS_INTEREST) {
-
 			/* Process if a packet has been received */
 			if (isRX == true) {
-
 				if (m_waiting_packet == true && m_waiting_type == m_rx_packet.type) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
@@ -426,7 +451,6 @@ public class FSSProtocol extends Thread {
 				}
 
 				switch (m_rx_packet.type) {
-
 				case Constants.PACKET_FSS_SERVICE_PUBLISH:
 					ByteBuffer publish_data = ByteBuffer.wrap(m_rx_packet.getData());
 					m_service_type = publish_data.getInt();
@@ -434,7 +458,6 @@ public class FSSProtocol extends Thread {
 					m_sat_destination = m_rx_packet.source;
 					m_logger.info(TAG + "NEGOTIATION PHASE: Received PUBLISH Packet with service " + m_service_type);
 					break;
-
 				case Constants.PACKET_FSS_SERVICE_REQUEST:
 					data = ByteBuffer.wrap(m_rx_packet.getData());
 					service_type = data.getInt();
@@ -462,9 +485,7 @@ public class FSSProtocol extends Thread {
 							}
 						}
 					}
-
 					break;
-
 				case Constants.PACKET_FSS_SERVICE_ACCEPT:
 					data = ByteBuffer.wrap(m_rx_packet.getData());
 					service_type = data.getInt();
@@ -487,9 +508,7 @@ public class FSSProtocol extends Thread {
 					} else {
 						lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
 					}
-
 					break;
-
 				case Constants.PACKET_FSS_DATA:
 					m_logger.info(TAG + "NEGOTIATION PHASE: Received DATA Packet");
 					m_role = Constants.FSS_ROLE_SUPPLIER;
@@ -506,9 +525,6 @@ public class FSSProtocol extends Thread {
 					federationPhase(true);
 					break;
 				}
-
-				// } else if(m_waiting_packet == true &&
-				// space.golbriak.lang.System.currentTimeMillis() >= m_waiting_next) {
 			} else if (m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
 				/*
 				 * No reply has been received, and the timeout has passed - retransmit or exit
@@ -518,11 +534,8 @@ public class FSSProtocol extends Thread {
 
 			/* If not waiting a packet, I will do other things */
 			if (m_waiting_packet == false) {
-
 				if (getFederationStatus() != Constants.FSS_EXCHANGE) {
-
 					if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
-
 						/* Do I have to publish? */
 						if (m_fss_buffer.getSize() < m_buffer_thr
 								// && (space.golbriak.lang.System.currentTimeMillis() >= m_publishing_next ||
@@ -533,8 +546,6 @@ public class FSSProtocol extends Thread {
 							sendPUBLISHPacket(Constants.FSS_SERVICE_TYPE_STORAGE);
 							m_logger.info(TAG + "NEGOTIATION PHASE: PUBLISH Packet sent with service "
 									+ Constants.FSS_SERVICE_TYPE_STORAGE);
-							// m_publishing_next = space.golbriak.lang.System.currentTimeMillis() +
-							// m_publishing_period;
 							m_publishing_next = m_time.getTimeMillis() + m_publishing_period;
 
 						} else if (m_service_type_interest == m_service_type && m_publisher_capacity > 0
@@ -575,10 +586,7 @@ public class FSSProtocol extends Thread {
 						 * when I have download all my data, I have to perform the federation protocol
 						 */
 						if (m_mydata_downloaded == true && m_download_contact == true
-						// && (space.golbriak.lang.System.currentTimeMillis() >= m_publishing_next ||
-						// m_publishing_next == 0)) {
 								&& (m_time.getTimeMillis() >= m_publishing_next || m_publishing_next == 0)) {
-
 							/*
 							 * To publish, the download shall be available, sand data to download - send
 							 * PUBLISH
@@ -586,10 +594,7 @@ public class FSSProtocol extends Thread {
 							sendPUBLISHPacket(Constants.FSS_SERVICE_TYPE_DOWNLOAD);
 							m_logger.info(TAG + "NEGOTIATION PHASE: PUBLISH Packet sent with service "
 									+ Constants.FSS_SERVICE_TYPE_DOWNLOAD);
-							// m_publishing_next = space.golbriak.lang.System.currentTimeMillis() +
-							// m_publishing_period;
 							m_publishing_next = m_time.getTimeMillis() + m_publishing_period;
-
 						}
 
 						/* I should evaluate if I want the published service */

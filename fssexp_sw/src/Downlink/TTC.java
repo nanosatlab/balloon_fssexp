@@ -436,12 +436,10 @@ public class TTC extends Thread {
 			if(isConnected() == true && m_waiting_packet == false) {
 				/* Check if there is payload data to download */
 				if(m_payload_buffer.getSize() > 0) {
-					System.out.println("Sending from Payload " + m_payload_buffer.getBottomDataBlock().sat_id);
 					downloadDataBlock(m_payload_buffer.getBottomDataBlock());
 					resetAliveSequence();
 					m_dwn_packet_from = 0;
 				} else if(m_federation_buffer.getSize() > 0){
-					System.out.println("Sending from Federation " + m_federation_buffer.getBottomDataBlock().sat_id);
 					/* Check if there is data in the FSS Buffer */
 					downloadDataBlock(m_federation_buffer.getBottomDataBlock());
 					resetAliveSequence();

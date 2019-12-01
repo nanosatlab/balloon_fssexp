@@ -125,8 +125,9 @@ public class PacketDispatcher extends Thread
 			if(m_broadcast_allowed == false 
 				&& m_rx_packet.destination == m_sat_id
 				&& m_rx_packet.checksum == received_checksum) {
-					received  = true;
-			} else if((m_rx_packet.destination & m_sat_id) > 0
+				received  = true;
+			} else if(m_broadcast_allowed == true
+				&& (m_rx_packet.destination & m_sat_id) > 0
 				&& m_rx_packet.checksum == received_checksum) {
 				received = true;
 			} else {

@@ -122,12 +122,11 @@ public class ExperimentManager extends Thread{
     	m_hk_packets = new PacketExchangeBuffer(m_logger, folder);
     	m_payload_buffer = new PayloadBuffer(m_logger, m_conf, folder);
     	m_fss_buffer = new FederationPacketsBuffer(m_logger, m_conf, folder);
-    	//m_generator = new Payload(m_logger, m_conf, m_payload_buffer, m_ipc_stack, m_time);
-    	m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher);
     	m_hk_buffer = new HousekeepingStorage(folder);
     	m_hk_header = ByteBuffer.allocate(Constants.hk_header_size);
     	m_payload_data = new PayloadDataBlock();
     	m_ttc = new TTC(m_time, m_conf, m_logger, m_dispatcher, m_payload_buffer, m_fss_buffer);
+    	m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher, m_ttc);
     	
     	/* Dispatcher initialization */
     	m_rfisltelemetry_buffer = new SynchronizedBuffer(m_logger, "manager-telemetry");
@@ -266,7 +265,7 @@ public class ExperimentManager extends Thread{
         
     	/* Start Threads */
         //m_generator = new Payload(m_logger, m_conf, m_payload_buffer, m_ipc_stack, m_time);
-        m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher);
+        m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher, m_ttc);
         
         //m_generator.start();
         m_fss_protocol.start();
