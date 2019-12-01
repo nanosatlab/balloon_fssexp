@@ -8,6 +8,8 @@ import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import Downlink.TTC;
 import IPCStack.PacketDispatcher;
+import Payload.PayloadDataBlock;
+import Storage.FederationPacketsBuffer;
 import Storage.PayloadBuffer;
 
 public class DownlinkTest 
@@ -22,7 +24,24 @@ public class DownlinkTest
 		conf.port_desc = "/dev/ttyACM1";	/* To perform the test */
 		PacketDispatcher dispatcher = new PacketDispatcher(log, conf, time, folder);
 		PayloadBuffer payload_buffer = new PayloadBuffer(log, conf, folder);
-		TTC ttc = new TTC(time, conf, log, dispatcher, payload_buffer);
+		FederationPacketsBuffer fed_buffer = new FederationPacketsBuffer(log, conf, folder);
+		TTC ttc = new TTC(time, conf, log, dispatcher, payload_buffer, fed_buffer);
+		
+		/* Set some data in the payload buffer */
+		PayloadDataBlock payload_data = new PayloadDataBlock();
+		for(int i = 0; i < 5; i++) {
+			payload_data.sat_id = i;
+			payload_buffer.insertData(payload_data);
+		}
+		
+		/* Set some data in the federated buffer */
+		PayloadDataBlock fed_data = new PayloadDataBlock();
+		for(int j = 0; j < 3; j++) {
+			fed_data.sat_id = 10 + j;
+			fed_buffer.insertData(fed_data);
+		}
+		
+		System.out.println(fed_buffer.getBottomDataBlock().toString());
 		
 		dispatcher.start();
 		ttc.start();

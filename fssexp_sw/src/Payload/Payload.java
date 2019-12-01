@@ -75,7 +75,7 @@ public class Payload extends Thread{
         m_logger = log;
         m_buffer = new SynchronizedBuffer(m_logger, "DataGeneratorBuffer");
         m_dispatcher = dispatcher;
-        m_dispatcher.addProtocolBuffer(Constants.prot_num_payload, m_buffer);
+        //m_dispatcher.addProtocolBuffer(Constants.prot_num_payload, m_buffer);
         m_poll_token = false;
         m_number_generated = 0;
         m_packet_buffer = fss_buffer;

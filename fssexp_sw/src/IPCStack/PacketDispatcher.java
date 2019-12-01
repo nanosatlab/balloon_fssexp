@@ -88,7 +88,7 @@ public class PacketDispatcher extends Thread
 	
 	public void transmitPacket(int protocol_num, Packet packet)
 	{
-		m_packet_buffer.write(packet.toBytes());
+		m_packet_buffer.write(packet.getBytes());
 		accessRequestStatus(protocol_num, 0, true);
 	}
 	
@@ -97,7 +97,7 @@ public class PacketDispatcher extends Thread
 		m_packet.resetValues();
 		m_packet.prot_num = protocol_num;
 		m_packet.type = Constants.PACKET_TYPE_HK;
-		m_hk_buffer.write(m_packet.toBytesNoData());
+		m_hk_buffer.write(m_packet.getBytesNoData());
 		accessRequestStatus(protocol_num, 0, true);
 	}
 	
@@ -161,7 +161,7 @@ public class PacketDispatcher extends Thread
 				try {
 					if(receivePacket() ==  true) {
 						/* Forward the packet */
-						m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
+						m_prot_buffers.get(m_packet.prot_num).write(m_packet.getBytes());
 					}
 				} catch (InterruptedException e) {
 					m_logger.error(e);
@@ -187,7 +187,7 @@ public class PacketDispatcher extends Thread
 							m_packet.setData(packet_stream);
 							m_packet.length = packet_stream.length;
 							/* Forward the packet */
-							m_prot_buffers.get(m_packet.prot_num).write(m_packet.toBytes());
+							m_prot_buffers.get(m_packet.prot_num).write(m_packet.getBytes());
 							accessRequestStatus(m_packet.prot_num, 1, true);	/* Correctly delivered */
 						} else {
 							m_logger.error(TAG + "[ERROR] Requested telemetry but not received any reply from IPC Stack");
@@ -214,7 +214,7 @@ public class PacketDispatcher extends Thread
 					m_packet.setChecksum(m_checksum_stream.array());
 					/* Send packet */
 					try {
-						if(m_ipc_stack.transmitPacket(m_packet.toBytes()) == false) {
+						if(m_ipc_stack.transmitPacket(m_packet.getBytes()) == false) {
 							m_logger.error(TAG + "[ERROR] Impossible to send a packet through IPC Stack");
 							accessRequestStatus(m_packet.prot_num, 2, true);	/* Problem with IPC communications */
 						} else {

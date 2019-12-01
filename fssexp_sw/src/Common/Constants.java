@@ -27,6 +27,7 @@ public class Constants {
     public final static String tx_file = data_path + "tx_packets.data";
     public final static String rx_file = data_path + "rx_packets.data";
     public final static String payload_file = data_path + "gen_payload.data";
+    public final static String fed_file = data_path + "fed_payload.data";
     
     /* Storage files */
     public final static String isl_buff_file = mem_storage_path + "isl_queue.binary";

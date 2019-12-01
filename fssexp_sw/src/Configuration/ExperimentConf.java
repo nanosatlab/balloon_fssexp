@@ -95,7 +95,7 @@ public class ExperimentConf {
         
         /* Common */
         version = 0;
-        satellite_id = 1;
+        satellite_id = 2;
         
         /* ExperimentManager */
         manager_hk_period = 1000;
@@ -125,7 +125,7 @@ public class ExperimentConf {
         rf_isl_freq = 435.35e6f;
         
         /* UART port */
-        port_desc = "/tty/ttyACM0";
+        port_desc = "/tty/ttyACM1";
         
         /* Dwn contacts */
         cntct_min_period = 5 * 60;

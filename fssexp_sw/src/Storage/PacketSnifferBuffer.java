@@ -44,10 +44,10 @@ public class PacketSnifferBuffer {
     
     public void insertRXPacket(Packet packet) 
     {
-        String line = m_time.getTimeMillis() + "::::";
+        String line = "[" + m_time.getTimeMillis() + "]";
         line += packet.toString();
-        line += "::::";
         if(packet.length > 0) {
+        	line += "::::";
         	m_data_block.fromBytes(packet.getData());
         	line += m_data_block.toString();
         }

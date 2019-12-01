@@ -27,9 +27,7 @@ public class GroundStation extends Thread
 	private int m_rx_packet_timeout;
 	private int m_rx_packet_backoff;
 	private int m_hello_timeout;
-	private int m_rx_packet_retries;
 	private int m_rx_packet_max;
-	private long m_retransmission_time;
 	private boolean m_exit;
 	private boolean m_established;
 	private int m_alive_timeout;
@@ -73,8 +71,6 @@ public class GroundStation extends Thread
 		/* Configuration */
 		m_tx_packet_counter = 0;
 		m_rx_packet_max = 2;
-		m_rx_packet_retries = 0;
-		m_retransmission_time = 0;
 		m_rx_packet_timeout = 4000;		/* ms */
 		m_hello_timeout = 8000;		/* ms */
 		m_alive_timeout = 90 * 1000;	/* ms */
@@ -103,6 +99,7 @@ public class GroundStation extends Thread
         System.out.println("[" + m_time.getTimeMillis() + "] Folder tree constructed");
 		m_log = new Log(m_time, m_folder);
 		m_conf = new ExperimentConf(m_log);
+		m_conf.satellite_id = m_gs_id;
 		m_conf.port_desc = "/dev/ttyS1";
 		m_dispatcher = new PacketDispatcher(m_log, m_conf, m_time, m_folder);
 		m_rx_buffer = new SynchronizedBuffer(m_log, "rx-buffer-gs");
@@ -110,7 +107,7 @@ public class GroundStation extends Thread
 		m_mutex = new Semaphore(0);
 		m_item = new RFISLHousekeepingItem();
 		m_rand = new Random(m_time.getTimeMillis());
-		m_dwn_storage = new DownloadedStorage(m_log, m_folder);
+		m_dwn_storage = new DownloadedStorage(m_log, m_folder, m_time);
 		
 		m_header_stream = ByteBuffer.allocate(Packet.getHeaderSize());
 		m_checksum_stream = ByteBuffer.allocate(Packet.getChecksumSize());
@@ -267,7 +264,6 @@ public class GroundStation extends Thread
 					+ " | length = " + m_tx_packet.length);
 			m_tx_packet_counter += 1;
 			m_tx_packet.counter = m_tx_packet_counter;
-			m_retransmission_time = m_time.getTimeMillis() + m_rx_packet_timeout;
 		} else {
 			System.out.println("[" + m_time.getTimeMillis() + "][ERROR] Impossible to transmit a packet through the RF ISL Module");
 		}
@@ -571,7 +567,6 @@ public class GroundStation extends Thread
 			if(command != -1) {
 				switch(command) {
 				case 0:	/* connect with balloon */
-					System.out.println("Executing the connection at status " + m_status);
 					if(m_status == GS_STATUS_STANDBY) {
 						establishConnection();
 					} else {

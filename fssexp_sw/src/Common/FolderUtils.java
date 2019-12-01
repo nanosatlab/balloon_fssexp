@@ -18,6 +18,7 @@ public class FolderUtils {
 	public String tx_name;
 	public String rx_name;
 	public String payload_name;
+	public String fed_name;
 	
 	private static String TAG = "[FolderUtils] ";
 	
@@ -128,6 +129,13 @@ public class FolderUtils {
 			if(fl.exists() == false) {
 				fl.createNewFile();
 				System.out.println(TAG + "Created file " + payload_name);
+			}
+			/* check payload packets */
+			fed_name = home_folder + Constants.fed_file + "_" + creation_time;
+			fl = new File(fed_name);
+			if(fl.exists() == false) {
+				fl.createNewFile();
+				System.out.println(TAG + "Created file " + fed_name);
 			}
 			/* The configuration is not created */
 			conf_name = home_folder + Constants.conf_file;

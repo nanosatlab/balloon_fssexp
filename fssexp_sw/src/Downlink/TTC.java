@@ -7,6 +7,8 @@ import java.util.Random;
 import Configuration.ExperimentConf;
 import IPCStack.PacketDispatcher;
 import InterSatelliteCommunications.Packet;
+import Payload.PayloadDataBlock;
+import Storage.FederationPacketsBuffer;
 import Storage.PayloadBuffer;
 import Common.TimeUtils;
 import Common.Constants;
@@ -29,6 +31,7 @@ public class TTC extends Thread {
 	private Random m_rand;
 	private Log m_logger;
 	private PayloadBuffer m_payload_buffer;
+	private FederationPacketsBuffer m_federation_buffer;
 	private int m_sat_id;
 	private int m_gs_id;
 	private int m_dwn_packet_counter;
@@ -45,6 +48,8 @@ public class TTC extends Thread {
 	private int m_alive_max;
 	private int m_rx_packet_backoff;
 	private int m_rx_packet_timeout;
+	private int m_dwn_packet_from;
+	private boolean m_service_available;
 	
 	private Packet m_tx_packet;
 	private Packet m_rx_packet;
@@ -55,7 +60,7 @@ public class TTC extends Thread {
 	
 	private final static String TAG = "[TTC] ";
 	
-	public TTC(TimeUtils time, ExperimentConf conf, Log logger, PacketDispatcher dispatcher, PayloadBuffer payload_buffer) 
+	public TTC(TimeUtils time, ExperimentConf conf, Log logger, PacketDispatcher dispatcher, PayloadBuffer payload_buffer, FederationPacketsBuffer fed_buffer) 
 	{
 		setConfiguration(conf);
 		m_time = time;
@@ -69,6 +74,7 @@ public class TTC extends Thread {
 		m_prot_num = Constants.ttc_prot_num;
 		m_dispatcher.addProtocolBuffer(m_prot_num, m_ttc_buffer);
 		m_payload_buffer = payload_buffer;
+		m_federation_buffer = fed_buffer;
 		m_gs_id = Constants.gs_id;
 		m_sat_id = conf.satellite_id;
 		m_dwn_packet_counter = 0;
@@ -83,6 +89,7 @@ public class TTC extends Thread {
 		m_status = Constants.TTC_STATUS_STANDBY;
 		m_alive_next = 0;
 		m_alive_counter = 0;
+		m_dwn_packet_from = -1;
 	}
 	
 	public void setConfiguration(ExperimentConf conf) 
@@ -274,8 +281,16 @@ public class TTC extends Thread {
 		m_alive_counter = 0;
 	}
 	
+	private void downloadDataBlock(PayloadDataBlock block) 
+	{
+		generateDataDownloadPacket(block.getBytes());
+		downloadPacket();
+		lockForPacket(Constants.PACKET_DWN_ACK, m_rx_packet_timeout);
+	}
+	
 	public void run() 
 	{
+		System.out.println("Started TTC");
 		byte[] data;
 		long backoff;
 		double cntct_start = 0;
@@ -316,14 +331,18 @@ public class TTC extends Thread {
 						/* downlink established */
 						m_status = Constants.TTC_STATUS_CONNECTED;
 						m_real_dwn_contact = true;
-						/* TODO: Evaluate if data can be sent */
-						/* TODO: If no data, force an ALIVE packet in the next loop */
-						m_alive_next = 0;
+						/* If no data, force an ALIVE packet in the next loop */
+						if(m_payload_buffer.getSize() == 0 && m_federation_buffer.getSize() == 0) {
+							m_alive_next = 0;
+						} else {
+							/* Schedule the next ALIVE packet */
+							resetAliveSequence();
+						}
 					}
 				break;
 				case Constants.PACKET_DWN_ALIVE:
 					if(m_status == Constants.TTC_STATUS_CONNECTED) {
-						/* TODO: */
+						/* Reply the ALIVE ACK */
 						generateAliveAckPacket();
 						downloadPacket();
 						/* Wait a reply */
@@ -340,11 +359,21 @@ public class TTC extends Thread {
 				break;
 				case Constants.PACKET_DWN_ACK:
 					if(m_status == Constants.TTC_STATUS_CONNECTED) {
-						/* TODO: Evaluate if data can be sent */
+						/* TODO: Remove the corresponding packet of the buffer (Payload and FSS) */
+						if(m_dwn_packet_from == 0) {
+							m_payload_buffer.deleteBottomData();
+						} else if(m_dwn_packet_from == 1){
+							m_federation_buffer.deleteBottomData();
+						}
+						/* Reset the last downloaded packet */
+						m_dwn_packet_from = -1;
+						/* reset the ALIVE sequence */
+						resetAliveSequence();
 					}
 				break;
 				case Constants.PACKET_DWN_CLOSE:
 					if(m_status == Constants.TTC_STATUS_CONNECTED) {
+						accessToServiceAvailable(false, true);
 						m_status = Constants.TTC_STATUS_TERMINATION;
 						generateCloseAckPacket();
 						downloadPacket();
@@ -376,6 +405,7 @@ public class TTC extends Thread {
 				&& m_time.getTimeMillis() >= m_waiting_next) {
 				/* Connection lost */
 				System.out.println("[" + m_time.getTimeMillis() + "] Maximum reply of Packet type " + m_tx_packet.type + " reached. The connection is dead!");
+				accessToServiceAvailable(false, true);
 				m_status = Constants.TTC_STATUS_STANDBY;
 				m_real_dwn_contact = false;
 				releaseForPacket();
@@ -399,6 +429,26 @@ public class TTC extends Thread {
 					m_status = Constants.TTC_STATUS_STANDBY;
 					m_real_dwn_contact = false;
 					m_logger.info(TAG + "No packet received during " + m_alive_timeout + " ms; Lost of connection with Baloon");
+				}
+			}
+			
+			/* If there is downlink connection, check to download */
+			if(isConnected() == true && m_waiting_packet == false) {
+				/* Check if there is payload data to download */
+				if(m_payload_buffer.getSize() > 0) {
+					System.out.println("Sending from Payload " + m_payload_buffer.getBottomDataBlock().sat_id);
+					downloadDataBlock(m_payload_buffer.getBottomDataBlock());
+					resetAliveSequence();
+					m_dwn_packet_from = 0;
+				} else if(m_federation_buffer.getSize() > 0){
+					System.out.println("Sending from Federation " + m_federation_buffer.getBottomDataBlock().sat_id);
+					/* Check if there is data in the FSS Buffer */
+					downloadDataBlock(m_federation_buffer.getBottomDataBlock());
+					resetAliveSequence();
+					m_dwn_packet_from = 1;
+				} else {
+					/* Downlink is available to be published */
+					accessToServiceAvailable(true, true);
 				}
 			}
 			
@@ -449,7 +499,7 @@ public class TTC extends Thread {
 		
 	}
 	
-	public boolean isContact() 
+	public boolean isConnected() 
 	{
 		return (m_emulated_dwn_contact | m_real_dwn_contact);
 	}
@@ -457,5 +507,15 @@ public class TTC extends Thread {
 	public void controlledStop() 
 	{
 		m_exit = true;
+	}
+
+	public synchronized boolean accessToServiceAvailable(boolean new_avail, boolean write)
+	{
+		boolean available;
+		if(write == true) {
+			m_service_available = new_avail;
+		} 
+		available = m_service_available;
+		return available;
 	}
 }

@@ -35,19 +35,26 @@ public class PayloadDataBlock {
 		}
 	}
 	
-	public int getSize()
+	public void resetValues()
+	{
+		sat_id = -1;
+		timestamp = -1;
+		exp_hk.resetValues();
+	}
+	
+	public static int getSize()
 	{
 		return Constants.data_mtu;
 	}
 	
-	public int getPaddingSize()
+	public static int getPaddingSize()
 	{
-		return getSize() - getUsefulSize();
+		return Constants.data_mtu - getUsefulSize();
 	}
 	
-	public int getUsefulSize()
+	public static int getUsefulSize()
 	{
-		return (4 + 8 + exp_hk.getSize());
+		return ((Integer.SIZE / 8) + (Long.SIZE / 8) + HousekeepingItem.getSize());
 	}
 	
 	public byte[] getBytes()

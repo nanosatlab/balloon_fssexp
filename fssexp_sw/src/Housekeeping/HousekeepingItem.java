@@ -13,6 +13,7 @@ public class HousekeepingItem
 	public int rf_isl_poll;
 	/* Payload hk */
 	public int payload_generated_items;
+	/* TODO: add the buffer size of payload and the buffer size of the federation */
 	/* FSS Protocol */
 	public int fss_status;
 	public int fss_role;
@@ -35,9 +36,28 @@ public class HousekeepingItem
 		m_rf_isl_hk_stream = ByteBuffer.allocate(RFISLHousekeepingItem.getSize());
 	}
 	
-	public int getSize()
+	public void resetValues()
 	{
-		return (8 + 4 * 13 + RFISLHousekeepingItem.getSize());
+		timestamp = -1;
+		exec_status = 0;
+		payload_poll = 0;
+		fss_poll = 0;
+		service_poll = 0;
+		rf_isl_poll = 0;
+		payload_generated_items = 0;
+		fss_status = 0;
+		fss_role = 0;
+		fss_tx = 0;
+		fss_rx = 0;
+		fss_err_rx = 0;
+		isl_buffer_size = 0;
+		isl_buffer_drops = 0;
+		rf_isl_hk.resetValues();
+	}
+	
+	public static int getSize()
+	{
+		return ((Long.SIZE / 8) + (Integer.SIZE / 8) * 13 + RFISLHousekeepingItem.getSize());
 	}
 	
 	public byte[] getBytes()
@@ -116,8 +136,6 @@ public class HousekeepingItem
 		str += isl_buffer_drops + "::";
 		/* RF ISL hk */
 		str += rf_isl_hk.toString();
-		/* EOL */
-		str += "\n";
 		return str;
 	}
 }

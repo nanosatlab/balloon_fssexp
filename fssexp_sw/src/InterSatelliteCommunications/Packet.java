@@ -127,7 +127,7 @@ public class Packet
         return isPacketCorrect(checksum, content);
     }
     
-    public byte[] toBytes() 
+    public byte[] getBytes() 
     {
     	/* Compute checksum */
         computeChecksum();
@@ -143,7 +143,7 @@ public class Packet
         return output;
     }
 
-    public byte[] toBytesNoData() 
+    public byte[] getBytesNoData() 
     {
     	/* header */
     	byte[] header = getHeader();
@@ -214,10 +214,7 @@ public class Packet
     	str += counter + ",";
     	str += type + ",";
     	str += length + ",";
-    	// TODO: include the data
-    	str += packet_data.length + ",";
     	str += checksum;
     	return str;
     }
-    
 }

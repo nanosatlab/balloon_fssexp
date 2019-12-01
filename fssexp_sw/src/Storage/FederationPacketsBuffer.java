@@ -31,6 +31,8 @@ import Common.Constants;
 import Common.FolderUtils;
 import Common.Log;
 import Configuration.ExperimentConf;
+import InterSatelliteCommunications.Packet;
+import Payload.PayloadDataBlock;
 
 public class FederationPacketsBuffer {
 
@@ -42,6 +44,8 @@ public class FederationPacketsBuffer {
     private int m_read_pointer;
     private Log m_logger;
     private ExperimentConf m_conf;
+    private PayloadDataBlock m_packet_container;
+    private ByteBuffer m_packet_stream;
     
     private String TAG = "[FederationPacketsBuffer] ";
     
@@ -49,10 +53,12 @@ public class FederationPacketsBuffer {
     {
         m_logger = log;
         m_conf = conf;
-        m_file_path = folder.payload_name;
+        m_file_path = folder.fed_name;
         m_drop_packets = 0;
         m_read_pointer = 0;
         m_file = new File(m_file_path);
+        m_packet_container = new PayloadDataBlock();
+        m_packet_stream = ByteBuffer.allocate(PayloadDataBlock.getSize());
         setConfiguration();
         resetBuffer();
     }
@@ -100,19 +106,23 @@ public class FederationPacketsBuffer {
         return true;
     }
     
+    public boolean insertData(PayloadDataBlock data)
+    {
+    	return insertData(data.getBytes());
+    }
+    
     public byte[] getBottomData() 
     {
-        
         if(getSize() > 0) {
-
             try {
-                byte[] data = new byte[Constants.data_size];
                 FileInputStream file_stream = new FileInputStream(m_file);
                 BufferedInputStream reader = new BufferedInputStream(file_stream);
                 
                 try {
-                    reader.skip(m_read_pointer * Constants.data_size);
-                    reader.read(data);
+                	m_packet_stream.clear();
+                    reader.skip(m_read_pointer * m_packet_stream.capacity());
+                    reader.read(m_packet_stream.array());
+                    m_packet_stream.rewind();
                 } catch (IOException e) {
                     m_logger.error(e);
                     
@@ -124,7 +134,7 @@ public class FederationPacketsBuffer {
                     m_logger.error(e);
                 }
                 
-                return data;
+                return m_packet_stream.array();
             
             } catch (FileNotFoundException e) {
                 m_logger.error(e);
@@ -132,6 +142,15 @@ public class FederationPacketsBuffer {
         }
         
         return null;
+    }
+    
+    public PayloadDataBlock getBottomDataBlock()
+    {
+    	m_packet_container.resetValues();
+    	if(getSize() > 0) {
+    		m_packet_container.fromBytes(getBottomData());
+    	}
+    	return m_packet_container;
     }
     
     public void deleteBottomData() 

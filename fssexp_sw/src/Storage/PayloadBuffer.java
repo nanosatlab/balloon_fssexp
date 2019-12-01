@@ -31,6 +31,7 @@ import Common.Constants;
 import Common.FolderUtils;
 import Common.Log;
 import Configuration.ExperimentConf;
+import Payload.PayloadDataBlock;
 
 public class PayloadBuffer {
 
@@ -42,6 +43,7 @@ public class PayloadBuffer {
     private int m_read_pointer;
     private Log m_logger;
     private ExperimentConf m_conf;
+    private PayloadDataBlock m_data_container;
     
     private String TAG = "[PayloadBuffer] ";
     
@@ -53,6 +55,7 @@ public class PayloadBuffer {
         m_drop_packets = 0;
         m_read_pointer = 0;
         m_file = new File(m_file_path);
+        m_data_container = new PayloadDataBlock();
         setConfiguration();
         resetBuffer();
     }
@@ -100,11 +103,15 @@ public class PayloadBuffer {
         return true;
     }
     
+    public boolean insertData(PayloadDataBlock data) 
+    {
+    	boolean done = insertData(data.getBytes());
+    	return done;
+    }
+    
     public byte[] getBottomData() 
     {
-        
         if(getSize() > 0) {
-
             try {
                 byte[] data = new byte[Constants.data_size];
                 FileInputStream file_stream = new FileInputStream(m_file);
@@ -132,6 +139,15 @@ public class PayloadBuffer {
         }
         
         return null;
+    }
+    
+    public PayloadDataBlock getBottomDataBlock() 
+    {
+    	m_data_container.resetValues();
+    	if(getSize() > 0) {
+    		m_data_container.fromBytes(getBottomData());
+    	}
+    	return m_data_container;
     }
     
     public void deleteBottomData() 
