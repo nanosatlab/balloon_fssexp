@@ -21,8 +21,8 @@ public class HousekeepingItem
 	public int fss_rx;
 	public int fss_err_rx;
 	/* Buffers */
-	public int isl_buffer_size;
-	public int isl_buffer_drops;
+	public int payload_buffer_size;
+	public int fed_buffer_size;
 	/* RF ISL hk */
 	public RFISLHousekeepingItem rf_isl_hk;
 	
@@ -50,8 +50,8 @@ public class HousekeepingItem
 		fss_tx = 0;
 		fss_rx = 0;
 		fss_err_rx = 0;
-		isl_buffer_size = 0;
-		isl_buffer_drops = 0;
+		payload_buffer_size = 0;
+		fed_buffer_size = 0;
 		rf_isl_hk.resetValues();
 	}
 	
@@ -75,8 +75,8 @@ public class HousekeepingItem
 		stream.putInt(fss_tx);
 		stream.putInt(fss_rx);
 		stream.putInt(fss_err_rx);
-		stream.putInt(isl_buffer_size);
-		stream.putInt(isl_buffer_drops);
+		stream.putInt(payload_buffer_size);
+		stream.putInt(fed_buffer_size);
 		stream.put(rf_isl_hk.getBytes());
 		stream.rewind();
 		return stream.array();
@@ -101,8 +101,8 @@ public class HousekeepingItem
 			fss_tx = stream.getInt();
 			fss_rx = stream.getInt();
 			fss_err_rx = stream.getInt();
-			isl_buffer_size = stream.getInt();
-			isl_buffer_drops = stream.getInt();
+			payload_buffer_size = stream.getInt();
+			fed_buffer_size = stream.getInt();
 			m_rf_isl_hk_stream.clear();
 			stream.get(m_rf_isl_hk_stream.array());
 			m_rf_isl_hk_stream.rewind();
@@ -132,8 +132,8 @@ public class HousekeepingItem
 		str += fss_rx + ",";
 		str += fss_err_rx + "::";
 		/* Buffers */
-		str += isl_buffer_size + ",";
-		str += isl_buffer_drops + "::";
+		str += payload_buffer_size + ",";
+		str += fed_buffer_size + "::";
 		/* RF ISL hk */
 		str += rf_isl_hk.toString();
 		return str;

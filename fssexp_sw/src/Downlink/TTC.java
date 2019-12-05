@@ -15,7 +15,8 @@ import Common.Constants;
 import Common.Log;
 import Common.SynchronizedBuffer;
 
-public class TTC extends Thread {
+public class TTC extends Thread 
+{
 
 	private double cntct_min_period;
 	private double cntct_max_period;
@@ -102,8 +103,10 @@ public class TTC extends Thread {
 		cntct_min_duration = conf.cntct_min_duration;
 		m_alive_max = 2;
 		m_alive_timeout = 60 * 1000;	/* ms */
-		m_rx_packet_backoff = 250;	/* ms */
+		m_rx_packet_backoff = conf.ttc_backoff;	/* ms */
 		m_rx_packet_timeout = 4000;		/* ms */
+		
+		System.out.println("Configuration: " + m_waiting_timeout + ":" + m_waiting_max + ":" + m_rx_packet_backoff);
 	}
 	
 	private void setHeaderPacket(Packet packet, int type, int address, int data_length) 
@@ -186,8 +189,6 @@ public class TTC extends Thread {
             }
     	}
     	if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {
-			/* Update the counter */
-			m_dwn_packet_counter += 1;
 			done = true;
     	}
     	return done;
@@ -211,6 +212,10 @@ public class TTC extends Thread {
 					+ "src = " + m_tx_packet.source + " | dst = " + m_tx_packet.destination
 					+ " | type = " + m_tx_packet.type + " | prot_num = " + m_tx_packet.prot_num
 					+ " | counter = " + m_tx_packet.counter);
+			m_logger.info(TAG + "[" + m_time.getTimeMillis() + "] Transmitted packet with header: "
+					+ "src = " + m_tx_packet.source + " | dst = " + m_tx_packet.destination
+					+ " | type = " + m_tx_packet.type + " | prot_num = " + m_tx_packet.prot_num
+					+ " | counter = " + m_tx_packet.counter);
 		}
 		return done;
 	}
@@ -224,6 +229,10 @@ public class TTC extends Thread {
 			m_ttc_buffer.read(m_header_stream.array());
 			m_rx_packet.setHeader(m_header_stream.array());
 			System.out.println(TAG + "[" + m_time.getTimeMillis() + "] Received packet with header: "
+					+ "src = " + m_rx_packet.source + " | dst = " + m_rx_packet.destination
+					+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
+					+ " | counter = " + m_rx_packet.counter);
+			m_logger.info(TAG + "Received packet with header: "
 					+ "src = " + m_rx_packet.source + " | dst = " + m_rx_packet.destination
 					+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
 					+ " | counter = " + m_rx_packet.counter);
@@ -241,6 +250,7 @@ public class TTC extends Thread {
 				
 			} else {
 				/* Discard the received packet */
+				m_logger.info(TAG + "Discarded packet: " + m_rx_packet.toString());
 				m_rx_packet.resetValues();
 			}		
 		}		
@@ -249,6 +259,7 @@ public class TTC extends Thread {
 	
 	private void releaseForPacket() 
 	{
+		m_logger.info(TAG + "Release the packet " + m_rx_packet_type_waiting);
 		m_waiting_packet = false;
 		m_waiting_counter = 0;
 	}
@@ -272,7 +283,7 @@ public class TTC extends Thread {
 		m_tx_packet.computeChecksum();
 		downloadPacket();
 		/* Compute the next waiting time */
-		lockForPacket(m_tx_packet.type, m_waiting_timeout);
+		lockForPacket(m_rx_packet_type_waiting, m_waiting_timeout);
 	}
 	
 	private void resetAliveSequence()
@@ -288,10 +299,14 @@ public class TTC extends Thread {
 		lockForPacket(Constants.PACKET_DWN_ACK, m_rx_packet_timeout);
 	}
 	
+	private void releaseSimulatedContact()
+	{
+		
+	}
+	
+	
 	public void run() 
 	{
-		System.out.println("Started TTC");
-		byte[] data;
 		long backoff;
 		double cntct_start = 0;
 		double cntct_end = 0;
@@ -305,7 +320,8 @@ public class TTC extends Thread {
 					 * I have received the packet that I was waiting - I can release and keep
 					 * working
 					 */
-					System.out.println("Release packet type " + m_rx_packet.type);
+					/* Update the TX counter - we can send a new one */
+					m_dwn_packet_counter += 1;
 					releaseForPacket();
 					if(m_status == Constants.TTC_STATUS_CONNECTED) {
 						resetAliveSequence();
@@ -393,8 +409,8 @@ public class TTC extends Thread {
 				&& m_waiting_counter < m_waiting_max) {
 				/* schedule retransmission */
 				try {
-					backoff = (long)(m_rand.nextFloat() * m_rx_packet_backoff);
-					m_logger.info(TAG + "Retransmission of packet " + m_tx_packet.type + " scheduled after " + backoff + " ms");
+					backoff = (long)(m_rand.nextFloat() * m_rx_packet_backoff * (m_waiting_counter + 1));
+					m_logger.info(TAG + "Retransmission of packet " + m_tx_packet.type + " scheduled (backoff:" + backoff + " ms)");
 					sleep(backoff);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
@@ -419,7 +435,7 @@ public class TTC extends Thread {
 					/* Transmit ALIVE packet */
 					generateAlivePacket();
 					downloadPacket();
-					lockForPacket(Constants.PACKET_DWN_ALIVE_ACK, m_rx_packet_timeout);
+					lockForPacket(Constants.PACKET_DWN_ALIVE_ACK | Constants.PACKET_DWN_ALIVE, m_rx_packet_timeout);
 					/* Reset Alive counter */
 					resetAliveSequence();
 					m_alive_counter += 1;
@@ -452,29 +468,17 @@ public class TTC extends Thread {
 			
 			// TODO: move to the other site
 			/* Check if real contact */
-			if(m_real_dwn_contact == true) {
-				/* Check if I have payload data */
-				//if(m_payload_buffer.getSize() > 0) {
-				//	data = m_payload_buffer.getBottomData();
-					/* Format the packet to be downloaded */
-				//	generateDataDownloadPacket(data);
-					/* Download the packet */
-				//	if(downloadPacket() == true) {
-						/* Wait the correct reception - If not, retransmit */
-						// TODO:
-				//	}
-				//}
-			} else {
-				/*if(m_time.getTime() >= cntct_end) {
+			if(m_real_dwn_contact == false) {
+				if(m_time.getTime() >= cntct_end) {
 					m_emulated_dwn_contact = false;
 					/* Compute when the next downlink contact will start */
-				/*	cntct_start = m_rand.nextDouble() * cntct_max_period; 
+					cntct_start = m_rand.nextDouble() * cntct_max_period; 
 					if(cntct_start < cntct_min_period) {
 						cntct_start = cntct_min_period;
 					}
 					cntct_start += m_time.getTime();
 					/* Compute when the next downlink contact will stop */
-				/*	cntct_end = m_rand.nextDouble() * cntct_max_duration;
+					cntct_end = m_rand.nextDouble() * cntct_max_duration;
 					if(cntct_end < cntct_min_duration) {
 						cntct_end = cntct_min_duration;
 					}
@@ -483,7 +487,7 @@ public class TTC extends Thread {
 				
 				if(m_emulated_dwn_contact == false && m_time.getTime() >= cntct_start) {
 					m_emulated_dwn_contact = true;
-				}*/
+				}
 			}
 			
 			/* Sleep until waking up again */

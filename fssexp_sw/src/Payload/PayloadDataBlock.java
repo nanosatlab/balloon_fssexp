@@ -28,7 +28,7 @@ public class PayloadDataBlock {
 	{
 		exp_hk = new HousekeepingItem();
 		stream = ByteBuffer.allocate(getSize());
-		m_exp_hk_stream = ByteBuffer.allocate(exp_hk.getSize());
+		m_exp_hk_stream = ByteBuffer.allocate(HousekeepingItem.getSize());
 		padding_data = new byte[getPaddingSize()];
 		for(int i = 0; i < padding_data.length; i ++) {
 			padding_data[i] = (byte)(i & 0xFF);
@@ -91,7 +91,7 @@ public class PayloadDataBlock {
 	{
 		String s = "";
 		s += sat_id + ",";
-		s += timestamp + ",";
+		s += timestamp + "::";
 		s += exp_hk.toString();
 		return s;
 	}

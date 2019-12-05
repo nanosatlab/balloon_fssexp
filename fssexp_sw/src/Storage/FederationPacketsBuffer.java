@@ -65,7 +65,7 @@ public class FederationPacketsBuffer {
     
     public void setConfiguration() 
     {
-    	m_max_size = m_conf.fss_buffer_size;
+    	m_max_size = Constants.fed_buffer_capacity;
     }
     
     public void resetBuffer() 

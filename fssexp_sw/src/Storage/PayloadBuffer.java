@@ -44,6 +44,7 @@ public class PayloadBuffer {
     private Log m_logger;
     private ExperimentConf m_conf;
     private PayloadDataBlock m_data_container;
+    private ByteBuffer m_data_byte_buffer;
     
     private String TAG = "[PayloadBuffer] ";
     
@@ -56,13 +57,14 @@ public class PayloadBuffer {
         m_read_pointer = 0;
         m_file = new File(m_file_path);
         m_data_container = new PayloadDataBlock();
+        m_data_byte_buffer = ByteBuffer.allocate(PayloadDataBlock.getSize());
         setConfiguration();
         resetBuffer();
     }
     
     public void setConfiguration() 
     {
-    	m_max_size = m_conf.fss_buffer_size;
+    	m_max_size = -1;
     }
     
     public void resetBuffer() 
@@ -113,13 +115,12 @@ public class PayloadBuffer {
     {
         if(getSize() > 0) {
             try {
-                byte[] data = new byte[Constants.data_size];
                 FileInputStream file_stream = new FileInputStream(m_file);
                 BufferedInputStream reader = new BufferedInputStream(file_stream);
                 
                 try {
-                    reader.skip(m_read_pointer * Constants.data_size);
-                    reader.read(data);
+                    reader.skip(m_read_pointer * PayloadDataBlock.getSize());
+                    reader.read(m_data_byte_buffer.array());
                 } catch (IOException e) {
                     m_logger.error(e);
                     
@@ -131,7 +132,7 @@ public class PayloadBuffer {
                     m_logger.error(e);
                 }
                 
-                return data;
+                return m_data_byte_buffer.array();
             
             } catch (FileNotFoundException e) {
                 m_logger.error(e);

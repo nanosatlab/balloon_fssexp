@@ -60,7 +60,6 @@ public class ExperimentManager extends Thread{
     /* Internal objects */
     private Log m_logger;
     private ExperimentConf m_conf;
-    private PacketExchangeBuffer m_hk_packets;
     private PayloadBuffer m_payload_buffer;
     private FederationPacketsBuffer m_fss_buffer;
     private FSSProtocol m_fss_protocol;
@@ -78,7 +77,6 @@ public class ExperimentManager extends Thread{
     private boolean m_exit;
     private long m_initial_time;
     private int m_exp_number;
-    private long m_start_time;
     private boolean m_err_finished;
     private String m_err_message;
     private int m_rf_isl_counter;
@@ -94,8 +92,6 @@ public class ExperimentManager extends Thread{
     private long m_next_hk;
     private int m_data_generator_polling;
     private int m_fss_protocol_polling;
-    private int m_command_time = 0;
-    private int m_number_sc_commands = 0;
     private byte[] m_rf_isl_hk;
     
     /* DataBlock */
@@ -117,16 +113,15 @@ public class ExperimentManager extends Thread{
     	/* Internal objects */
     	m_logger = logger;
     	m_time = timer;
-    	m_conf = new ExperimentConf(m_logger);
+    	m_conf = new ExperimentConf(m_logger, folder);
     	m_dispatcher = new PacketDispatcher(m_logger, m_conf, m_time, folder);
-    	m_hk_packets = new PacketExchangeBuffer(m_logger, folder);
     	m_payload_buffer = new PayloadBuffer(m_logger, m_conf, folder);
     	m_fss_buffer = new FederationPacketsBuffer(m_logger, m_conf, folder);
     	m_hk_buffer = new HousekeepingStorage(folder);
     	m_hk_header = ByteBuffer.allocate(Constants.hk_header_size);
     	m_payload_data = new PayloadDataBlock();
     	m_ttc = new TTC(m_time, m_conf, m_logger, m_dispatcher, m_payload_buffer, m_fss_buffer);
-    	m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher, m_ttc);
+    	m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_fss_buffer, m_conf, m_time, m_dispatcher, m_ttc);
     	
     	/* Dispatcher initialization */
     	m_rfisltelemetry_buffer = new SynchronizedBuffer(m_logger, "manager-telemetry");
@@ -141,7 +136,6 @@ public class ExperimentManager extends Thread{
     	m_exit = false;
     	m_initial_time = 0;
     	m_exp_number = 0;
-    	m_start_time = 0;
     	m_err_finished = false;
     	m_err_message = "";
     	m_rf_isl_counter = 0;
@@ -155,8 +149,6 @@ public class ExperimentManager extends Thread{
     	m_next_hk = 0;
     	m_data_generator_polling = 0;
     	m_fss_protocol_polling = 0;
-    	m_command_time = 0;
-    	m_number_sc_commands = 0;
     	m_rf_isl_hk = new byte[Constants.data_rf_isl_hk_size];
     	
     	m_data_generator_error_notification = false;
@@ -254,10 +246,8 @@ public class ExperimentManager extends Thread{
     	/** FSS_BUFFER.data **/
     	m_payload_buffer.resetBuffer();
     	/** RX_PACKETS.data & TX_PACKETS.data **/
-    	m_hk_packets.resetBuffer();
     	
     	/* Indicate the starting time */
-        m_start_time = m_time.getTimeMillis();
         
         /* Clear Uart Buffer */
         //m_uart_rx_buffer.clear();
@@ -265,7 +255,7 @@ public class ExperimentManager extends Thread{
         
     	/* Start Threads */
         //m_generator = new Payload(m_logger, m_conf, m_payload_buffer, m_ipc_stack, m_time);
-        m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_hk_packets, m_conf, m_time, m_dispatcher, m_ttc);
+        m_fss_protocol = new FSSProtocol(m_logger, m_payload_buffer, m_fss_buffer, m_conf, m_time, m_dispatcher, m_ttc);
         
         //m_generator.start();
         m_fss_protocol.start();
@@ -307,25 +297,9 @@ public class ExperimentManager extends Thread{
     {
     	/* Close the Threads */
     	m_fss_protocol.controlledStop();
-       // m_generator.controlledStop();
-    	
+       
     	/* Verify that the Threads are dead */
     	int m_exit_counter = 0;
-        //while(m_generator.getState() != Thread.State.TERMINATED 
-        //   && m_generator.getState() != Thread.State.NEW
-        //   && m_exit_counter < Constants.manager_exit_max) {
-        //    m_logger.info(TAG + "DataGenerator not terminated (status " + m_generator.getState() + "), waiting a little more");
-        //    m_exit_counter ++;
-        //    try {
-        //        Thread.sleep(Constants.manager_sleep);
-        //    } catch (InterruptedException e) {
-        //        m_logger.error(e);
-        //    }
-        // }
-        //if(m_exit_counter == Constants.manager_exit_max) {
-        //	m_logger.error(TAG + "Impossible to courteously terminate DataGenerator (kill it!)");
-        //}
-        
         m_exit_counter = 0;
         while(m_fss_protocol.getState() != Thread.State.TERMINATED 
                 && m_fss_protocol.getState() != Thread.State.NEW
@@ -355,8 +329,8 @@ public class ExperimentManager extends Thread{
     	m_payload_data.exp_hk.fss_tx = m_fss_protocol.getTXs();
     	m_payload_data.exp_hk.fss_rx = m_fss_protocol.getRXs();
     	m_payload_data.exp_hk.fss_err_rx = m_fss_protocol.getErrRXs();
-    	m_payload_data.exp_hk.isl_buffer_size = m_payload_buffer.getSize();
-    	m_payload_data.exp_hk.isl_buffer_drops = m_payload_buffer.getDrops();
+    	m_payload_data.exp_hk.payload_buffer_size = m_payload_buffer.getSize();
+    	m_payload_data.exp_hk.fed_buffer_size = m_fss_buffer.getSize();
     	if(m_rf_isl_hk != null) {
     		m_payload_data.exp_hk.rf_isl_hk.parseFromBytes(m_rf_isl_hk);
     	}
@@ -394,8 +368,6 @@ public class ExperimentManager extends Thread{
     	if(command.equals("") == false) {
     		System.out.println(TAG + "Received Command " + command);
     		m_logger.info(TAG + "Received Command " + command);
-    		m_command_time = (int)(m_time.getTimeMillis() - m_initial_time);
-    		m_number_sc_commands ++;
     		if(command.equalsIgnoreCase(Constants.COMMAND_EXIT) == true) {
             	m_logger.info(TAG + "EXIT command received!");
             	m_exit = true;
@@ -423,6 +395,7 @@ public class ExperimentManager extends Thread{
             
             /* Start other threads */
             m_ttc.start();
+            m_fss_protocol.start();
             
             /* Start the main loop and indicate that we are ready */
             m_logger.info(TAG + "Software version " + Constants.sw_version);
@@ -438,30 +411,6 @@ public class ExperimentManager extends Thread{
                 checkOperationsCommand();
                 
                 if(m_exit == false) {
-                    
-                    /* Pool Generator and FSSProtocol Threads - Only when they should be executing*/
-                    /* Data Generator */
-                    //if(m_generator.getState() != Thread.State.TERMINATED) {
-                    //    
-                    //	if(!m_generator.polling(false)) {
-                    //        m_generator_counter ++;
-                     //       m_data_generator_polling = 1;
-                    //    } else {
-                    //        m_generator_counter = 0;
-                    //        m_data_generator_polling = 0;
-                    //    }
-                    //    
-                     //   if (m_generator_counter >= Constants.generator_max_polling
-                     //   	&& m_data_generator_error_notification == false) {
-                       //     /* ERROR m_generator does not reply */
-                    //    	m_logger.error(TAG + "DataGenerator is not polling");
-                    //    	m_data_generator_error_notification = true;
-                    //    	accessToErrorMessage(true, TAG + "DataGenerator is not polling");
-                   //     }
-                   // } else if(m_data_generator_error_notification == false){
-                   // 	m_logger.warning(TAG + "The DataGenerator is TERMINATED. Is this coherent?");
-                   // 	m_data_generator_error_notification = true;
-                   // }
                     
                     /* FSS Protocol */
                     if(m_fss_protocol.getState() != Thread.State.TERMINATED) {
@@ -496,7 +445,7 @@ public class ExperimentManager extends Thread{
                 
                 /* Retrieve Housekeeping */ 
                 if(m_time_tick >= m_next_hk) {
-                	/* Request dispatcher */
+                	/* Request HK dispatcher */
                 	m_dispatcher.requestHK(m_prot_num);
                 	while(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 0) {
                 		try {
@@ -535,9 +484,9 @@ public class ExperimentManager extends Thread{
                 }
                 
                 if((m_fss_protocol_counter >= Constants.fss_protocol_max_polling || 
-                		m_generator_counter >= Constants.generator_max_polling ||
-        				m_rf_isl_alive == false)) {
-                	transitToErroneousFinished();
+                		m_rf_isl_alive == false)) {
+                	//transitToErroneousFinished();
+                	m_logger.error(TAG + "Detected error - nothing to do;");
                 }
                 
                 /* Flush the LOG */

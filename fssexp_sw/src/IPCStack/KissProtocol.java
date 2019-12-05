@@ -34,7 +34,8 @@ public class KissProtocol {
 		m_uart_driver.close();
 	}
 	
-	public boolean send(byte[] data) {
+	public boolean send(byte[] data) 
+	{
 		
 		byte[] frame;
 		m_frame.clear();

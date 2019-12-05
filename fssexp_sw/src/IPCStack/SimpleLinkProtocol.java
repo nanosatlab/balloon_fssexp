@@ -28,7 +28,7 @@ public class SimpleLinkProtocol {
 	
 	public void setConfiguration() 
 	{
-		m_packet_redundancy = m_conf.rf_isl_redundancy;
+		m_packet_redundancy = Constants.rf_isl_redundancy;
 	}
 	
 	public boolean open() 
@@ -209,7 +209,6 @@ public class SimpleLinkProtocol {
 		boolean correct = false;
 		
 		try {
-			//m_logger.info(TAG + "Sending a RX packet");
 			/* Request the Content */
 			correct = m_kiss.send(createHeader(Constants.SLP_COMMAND_RECEIVE, 0, new byte[0]));
 			

@@ -42,6 +42,7 @@ public class GroundStation extends Thread
 	private long m_waiting_next;
 	private int m_waiting_max;
 	private int m_rx_packet_type_waiting;
+	private byte[] m_empty_data;
 	private RFISLHousekeepingItem m_item;
 	private Packet m_tx_packet;
 	private Packet m_rx_packet;
@@ -65,21 +66,32 @@ public class GroundStation extends Thread
 	private int GS_STATUS_TERMINATION = Constants.TTC_STATUS_TERMINATION;
 	private int m_status;
 	
+	private String TAG = "[GroundStation] ";
 	
 	public GroundStation(TimeUtils time) throws IOException
 	{
 		/* Configuration */
+		m_time = time;
+		System.out.println("[" + m_time.getTimeMillis() + "] Constructing folder tree...");
+		m_folder = new FolderUtils(m_time);
+        System.out.println("[" + m_time.getTimeMillis() + "] Folder tree constructed");
+        m_log = new Log(m_time, m_folder);
+		m_conf = new ExperimentConf(m_log, m_folder);
+		m_gs_id = 1;	/* GS is always 0x01 */
+		m_conf.satellite_id = m_gs_id;
 		m_tx_packet_counter = 0;
-		m_rx_packet_max = 2;
-		m_rx_packet_timeout = 4000;		/* ms */
+		m_rx_packet_max = m_conf.ttc_retries;
+		m_rx_packet_timeout = m_conf.ttc_timeout;		/* ms */
 		m_hello_timeout = 8000;		/* ms */
 		m_alive_timeout = 90 * 1000;	/* ms */
 		m_waiting_timeout = m_rx_packet_timeout;
 		m_waiting_max = m_rx_packet_max;
-		m_alive_max = 2;
-		m_rx_packet_backoff = 250;	/* ms */
+		m_alive_max = m_conf.ttc_retries;
+		m_rx_packet_backoff = m_conf.ttc_backoff;	/* ms */
 		
-		m_gs_id = 1;	/* GS is always 0x01 */
+		/* Set the Dispatcher faster */
+		Constants.dispatcher_sleep = 10;	/* ms */
+		
 		m_prot_num = Constants.ttc_prot_num;
 		m_command = -1;
 		remote_sat = -1;
@@ -93,14 +105,8 @@ public class GroundStation extends Thread
 		m_rx_packet_type_waiting = Constants.FSS_PACKET_NOT_VALID;
 		m_tx_packet = new Packet();
 		m_rx_packet = new Packet();
-		m_time = time;
-		System.out.println("[" + m_time.getTimeMillis() + "] Constructing folder tree...");
-		m_folder = new FolderUtils(m_time);
-        System.out.println("[" + m_time.getTimeMillis() + "] Folder tree constructed");
-		m_log = new Log(m_time, m_folder);
-		m_conf = new ExperimentConf(m_log);
-		m_conf.satellite_id = m_gs_id;
-		m_conf.port_desc = "/dev/ttyS1";
+		m_empty_data = new byte[0];
+		
 		m_dispatcher = new PacketDispatcher(m_log, m_conf, m_time, m_folder);
 		m_rx_buffer = new SynchronizedBuffer(m_log, "rx-buffer-gs");
 		m_dispatcher.addProtocolBuffer(m_prot_num, m_rx_buffer);
@@ -132,6 +138,7 @@ public class GroundStation extends Thread
     	}
 		
 		if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 1) {
+			// TODO: verify why this crashes when a packet is received previously
 			m_header_stream.clear();
 			m_rx_buffer.read(m_header_stream.array());
 			m_telemetry_stream.clear();
@@ -232,6 +239,7 @@ public class GroundStation extends Thread
 	{
 		/* Retransmit */
 		System.out.println("[" + m_time.getTimeMillis() + "] No replication - Retransmit Packet type " + m_tx_packet.type);
+		m_log.info(TAG + "No replication - Retransmit Packet type " + m_tx_packet.type);
 		Packet temp_packet = new Packet(m_tx_packet);
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, temp_packet.type, temp_packet.destination, temp_packet.length);
@@ -264,10 +272,16 @@ public class GroundStation extends Thread
 						+ " | counter = " + m_tx_packet.counter + " | type = " + m_tx_packet.type 
 						+ " | length = " + m_tx_packet.length);
 			}
+			m_log.info(TAG + "Transmitted packet: "
+					+ "src = " + m_tx_packet.source + " | dst = " + m_tx_packet.destination
+					+ " | prot_num = " + m_tx_packet.prot_num + " | timestamp = " + m_tx_packet.timestamp 
+					+ " | counter = " + m_tx_packet.counter + " | type = " + m_tx_packet.type 
+					+ " | length = " + m_tx_packet.length);
 			m_tx_packet_counter += 1;
 			m_tx_packet.counter = m_tx_packet_counter;
 		} else {
 			System.out.println("[" + m_time.getTimeMillis() + "][ERROR] Impossible to transmit a packet through the RF ISL Module");
+			m_log.error(TAG + "Impossible to transmit a packet through the RF ISL Module");
 		}
 		return transmitted;
 	}
@@ -297,7 +311,6 @@ public class GroundStation extends Thread
 			
 			/* Received a packet for me that I am expecting*/
 			if(m_rx_packet.destination == m_gs_id) {
-				//&& m_rx_packet.type == type) {					
 				received = true;
 				if((m_rx_packet.type & (Constants.PACKET_HELLO_ACK | Constants.PACKET_DWN_CLOSE_ACK)) > 0) {
 					System.out.println("[" + m_time.getTimeMillis() + "] Received packet: "
@@ -305,6 +318,10 @@ public class GroundStation extends Thread
 							+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
 							+ " | counter = " + m_rx_packet.counter);
 				}
+				m_log.info(TAG + "Received packet: "
+						+ "src = " + m_rx_packet.source + " | dst = " + m_rx_packet.destination
+						+ " | type = " + m_rx_packet.type + " | prot_num = " + m_rx_packet.prot_num
+						+ " | counter = " + m_rx_packet.counter);
 			} else {
 				System.out.println("[" + m_time.getTimeMillis() + "] Received packet, but discarded; " + m_rx_packet.toString());
 				m_rx_packet.resetValues();

@@ -21,15 +21,13 @@ public class DownlinkTest
 		TimeUtils time = new TimeUtils();
 		FolderUtils folder = new FolderUtils(time);
 		Log log = new Log(time, folder);
-		ExperimentConf conf = new ExperimentConf(log);
+		ExperimentConf conf = new ExperimentConf(log, folder);
 		conf.satellite_id = 2;	/* To perform the test */
-		conf.port_desc = "/dev/ttyACM1";	/* To perform the test */
 		PacketDispatcher dispatcher = new PacketDispatcher(log, conf, time, folder);
 		PayloadBuffer payload_buffer = new PayloadBuffer(log, conf, folder);
 		FederationPacketsBuffer fed_buffer = new FederationPacketsBuffer(log, conf, folder);
-		PacketExchangeBuffer hk_packets = new PacketExchangeBuffer(log, folder);
 		TTC ttc = new TTC(time, conf, log, dispatcher, payload_buffer, fed_buffer);
-		FSSProtocol fss = new FSSProtocol(log, payload_buffer, hk_packets, conf, time, dispatcher, ttc);
+		FSSProtocol fss = new FSSProtocol(log, payload_buffer, fed_buffer, conf, time, dispatcher, ttc);
 		
 		/* Set some data in the payload buffer */
 		PayloadDataBlock payload_data = new PayloadDataBlock();

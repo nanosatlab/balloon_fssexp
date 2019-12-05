@@ -117,7 +117,8 @@ public class Constants {
     public final static int FSS_INTEREST = 1;
     public final static int FSS_NOT_INTEREST = 0;
     
-    public final static int FSS_BROADCAST_ADDR = 3;
+    public final static int FSS_NOONE_ADDR     = 0x0000;
+    public final static int FSS_BROADCAST_ADDR = 0xFFFF;
     
     /* FSS Packet constants */
     public final static int PACKET_TYPE_HK = 1;
@@ -130,7 +131,7 @@ public class Constants {
     public final static int data_timestamp_size = 8;
     public final static int data_reference_size = 155;
     public final static int data_rf_isl_hk_size = 51;
-    public final static int data_mtu = 215;
+    public final static int data_mtu = 170; //215;
     public final static int data_size = data_header_size + 
                                         data_timestamp_size +
                                         data_rf_isl_hk_size +
@@ -140,7 +141,7 @@ public class Constants {
     public final static int fss_buffer_move_block = 1024;
     
     /* ExperimentConf */
-    public final static int conf_parameters_num = 18;
+    public final static int conf_parameters_num = 11;
     
     /* HousekeepingBuffer */
     public final static int hk_header_sw_version = 1;
@@ -192,6 +193,7 @@ public class Constants {
     public final static int SLP_ACCESS_CONF = 3;
     public final static int SLP_max_times_reply_rfisl = 10;
     public final static int SLP_reply_timeout_rfisl = 100;
+    public final static int rf_isl_redundancy = 0;
     
     /* KissProtocol */
     public final static int KISS_FEND = 0xC0;
@@ -202,7 +204,7 @@ public class Constants {
     
     /* Uart Interface */
     public final static int uart_max_buffer_size = 1632; /* Three DATA packets with SimpleLink Protocol Header */
-    public final static int dispatcher_sleep = 50;	/* sleep 200 ms */
+    public static int dispatcher_sleep = 50;	/* sleep 200 ms */
     public final static String uart_port = "/dev/ttyACM0";
     public final static int uart_bps = 115200;
     public final static int uart_max_reply = 100; /* 100 ms */
@@ -224,5 +226,11 @@ public class Constants {
     
     /* Identifiers */
     public final static int gs_id = 1;
-
+    
+    /* FederationPacketsBuffer */
+    public final static int fed_buffer_capacity = 50;
+    
+    /* PayloadBuffer */
+    public final static int ENDLESS_BUFFER = -1;
+    public final static int payload_buffer_capacity = ENDLESS_BUFFER; 
 }

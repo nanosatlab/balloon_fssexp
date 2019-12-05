@@ -35,6 +35,7 @@ public class PacketDispatcher extends Thread
 	private ByteBuffer m_header_stream;
 	private ByteBuffer m_data_stream;	
 	private ByteBuffer m_checksum_stream;
+	private ByteBuffer m_rf_isl_conf_stream;
 	
 	
 	private String TAG = "[PacketDispatcher] ";
@@ -51,7 +52,7 @@ public class PacketDispatcher extends Thread
 		m_prot_status = new Hashtable<Integer, Integer>();
 		m_packet_buffer = new SynchronizedBuffer(log, "DispatcherBuffer");
 		m_hk_buffer = new SynchronizedBuffer(log, "TelemetryBuffer");
-		m_hk_packets = new PacketExchangeBuffer(log, folder);
+		m_hk_packets = new PacketExchangeBuffer(log, folder, timer);
 		m_sniffed_packets = new PacketSnifferBuffer(log, timer, folder);
 		m_header_stream = ByteBuffer.allocate(Packet.getHeaderSize());
 		m_checksum_stream = ByteBuffer.allocate(Packet.getChecksumSize());
@@ -59,6 +60,9 @@ public class PacketDispatcher extends Thread
 		m_sniffer = false;
 		m_broadcast_allowed = true;
 		m_sat_id = conf.satellite_id;
+		m_rf_isl_conf_stream = ByteBuffer.allocate(Float.SIZE / 8);
+		m_rf_isl_conf_stream.putFloat(conf.rf_isl_freq);
+		m_rf_isl_conf_stream.rewind();
 	}
 	
 	public void activateSniffer() { m_sniffer = true; }
@@ -108,31 +112,33 @@ public class PacketDispatcher extends Thread
 	private boolean receivePacket() throws InterruptedException
 	{
 		boolean received = false;
-		int received_checksum;
 		byte[] packet_stream = m_ipc_stack.checkReceptionPacket();
 		if(packet_stream.length > 0) {
 			/* Something has been received */
-			m_rx_packet.fromBytes(packet_stream);
-			received_checksum = m_rx_packet.checksum;
-			m_rx_packet.computeChecksum();
-			/* Store the type of the packet */
-			m_hk_packets.insertRXPacket(m_rx_packet);
-			/* If sniffer mode - store it */
-			if(m_sniffer == true) {
-				m_sniffed_packets.insertRXPacket(m_rx_packet);
-			}
-			/* Check if it has to be forwarded */
-			if(m_broadcast_allowed == false 
-				&& m_rx_packet.destination == m_sat_id
-				&& m_rx_packet.checksum == received_checksum) {
-				received  = true;
-			} else if(m_broadcast_allowed == true
-				&& (m_rx_packet.destination & m_sat_id) > 0
-				&& m_rx_packet.checksum == received_checksum) {
-				received = true;
+			m_logger.info(TAG + "Received something; Check if the packet is correct and can be constructed");
+			if(m_rx_packet.fromBytes(packet_stream) == true) {
+				/* If sniffer mode - store it */
+				if(m_sniffer == true) {
+					m_sniffed_packets.insertRXPacket(m_rx_packet);
+				}
+				/* Check if it has to be forwarded */
+				if(m_broadcast_allowed == false 
+					&& m_rx_packet.destination == m_sat_id) {
+					received  = true;
+					/* Store the type of the packet */
+					m_hk_packets.insertRXPacket(m_rx_packet);
+				} else if(m_broadcast_allowed == true
+					&& (m_rx_packet.destination & m_sat_id) != 0) {
+					received = true;
+					/* Store the type of the packet */
+					m_hk_packets.insertRXPacket(m_rx_packet);
+				} else {
+					/* Discard the packet */
+					m_logger.info(TAG + "Discarded packet: " + m_rx_packet.toString() + " and brds_allw=" + m_broadcast_allowed + " and id=" + m_sat_id);
+					m_rx_packet.resetValues();
+				}
 			} else {
-				/* Discard the packet */
-				m_rx_packet.resetValues();
+				m_logger.info(TAG + "Discarded packet because wrong received checksum: " + m_rx_packet.toString());
 			}
 		}
 		return received;
@@ -150,12 +156,13 @@ public class PacketDispatcher extends Thread
 		if(m_ipc_stack.open() == true) {
 		
 			/* Configure the RF ISL */
-			// TODO:
 			/* Exceptionally, initialize the IPC Stack to retrieve status - the only
 	    	 * configuration parameter is the redundancy, and it is no explicitly needed
 	    	 * to retrieve RF ISL Module status.
 	    	 */
-			//m_ipc_stack.updateConfiguration(conf);
+			m_rf_isl_conf_stream.rewind();
+			m_rf_isl_conf_stream.rewind();
+			m_ipc_stack.updateConfiguration(m_rf_isl_conf_stream.array());
 			
 			/* Nominal loop */
 			while(m_exit == false) {
@@ -165,8 +172,12 @@ public class PacketDispatcher extends Thread
 				/* Check if IPC stack has a RX packet */
 				try {
 					if(receivePacket() ==  true) {
-						/* Forward the packet */
-						m_prot_buffers.get(m_rx_packet.prot_num).write(m_rx_packet.getBytes());
+						if(m_prot_buffers.containsKey(m_rx_packet.prot_num) == true) {
+							/* Forward the packet */
+							m_prot_buffers.get(m_rx_packet.prot_num).write(m_rx_packet.getBytes());
+						} else {
+							m_logger.warning(TAG + "Received a packet with wrong protocol number: " + m_rx_packet.prot_num);
+						}
 						/* Reset container */
 						m_rx_packet.resetValues();
 					}

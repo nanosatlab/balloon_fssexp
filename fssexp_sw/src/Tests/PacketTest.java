@@ -17,7 +17,7 @@ public class PacketTest {
 		packet.computeChecksum();
 		System.out.println("Packet checksum: " + packet.checksum);
 		
-		byte[] stream = packet.toBytes();
+		byte[] stream = packet.getBytes();
 		
 		System.out.println("Packet length: " + stream.length);
 		
@@ -25,6 +25,6 @@ public class PacketTest {
 		boolean good = other_packet.fromBytes(stream);
 		System.out.println("Good packet? " + good);	
 		System.out.println("Packet checksum: " + other_packet.checksum);
-		
+		System.out.println("Packet prot_num: " + other_packet.prot_num);
     }
 }

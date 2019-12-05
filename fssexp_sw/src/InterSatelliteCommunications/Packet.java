@@ -179,7 +179,7 @@ public class Packet
     	checksum = (short) CRC.calculateCRC(CRC.Parameters.CRC16, content.array());
     }
     
-    public boolean isPacketCorrect(short checksum, byte[] content) 
+    public static boolean isPacketCorrect(short checksum, byte[] content) 
     {
         /* Compute checksum */
     	short recv_checksum = (short)CRC.calculateCRC(CRC.Parameters.CRC16, content);

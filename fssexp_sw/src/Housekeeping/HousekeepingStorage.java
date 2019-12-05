@@ -14,7 +14,7 @@ public class HousekeepingStorage {
     }
     
     public void writeHK(HousekeepingItem hk) {
-            m_writer.write(hk.toString());
+            m_writer.write(hk.toString() + "\n");
             m_writer.flush();
     }
     

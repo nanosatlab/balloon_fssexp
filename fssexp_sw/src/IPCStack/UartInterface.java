@@ -31,7 +31,8 @@ public class UartInterface {
 		return m_port.isOpen();
 	}
 	
-	public boolean open() {
+	public boolean open() 
+	{
 		m_port = SerialPort.getCommPort(m_port_desc);
 		if(m_port.openPort() == true) {
 			m_logger.info(TAG + "Port " + m_port_desc + " correctly opened");

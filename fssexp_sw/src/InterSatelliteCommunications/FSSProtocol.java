@@ -4,6 +4,7 @@ package InterSatelliteCommunications;
 
 /* External imports */
 import java.nio.ByteBuffer;
+import java.util.Random;
 
 /* Internal imports */
 import Common.Constants;
@@ -13,7 +14,9 @@ import Common.TimeUtils;
 import Configuration.ExperimentConf;
 import Downlink.TTC;
 import IPCStack.PacketDispatcher;
+import Payload.PayloadDataBlock;
 import Storage.PayloadBuffer;
+import Storage.FederationPacketsBuffer;
 import Storage.PacketExchangeBuffer;
 
 public class FSSProtocol extends Thread {
@@ -21,9 +24,8 @@ public class FSSProtocol extends Thread {
 	private Packet m_tx_packet;
 	private Packet m_rx_packet;
 	
-	private PacketExchangeBuffer m_hk_packets;
-
-	private PayloadBuffer m_fss_buffer;
+	private PayloadBuffer m_payload_buffer;
+	private FederationPacketsBuffer m_fed_buffer;
 	private TTC m_ttc;
 	private boolean m_running;
 	private boolean m_poll_token;
@@ -33,8 +35,6 @@ public class FSSProtocol extends Thread {
 	private int m_rx_err_num;
 	private int m_role;
 
-	private int m_buffer_thr;
-	private int m_fss_interest;
 	private int m_sat_source;
 	private int m_sat_destination;
 
@@ -48,42 +48,45 @@ public class FSSProtocol extends Thread {
 	private int m_waiting_max;
 	private int m_waiting_timeout;
 	private long m_waiting_next;
-
-	private long m_download_start;
-	private long m_download_end;
-	private boolean m_mydata_downloaded;
-	private boolean m_download_contact;
+	private int m_rx_packet_backoff;
+	private Random m_rand;
 
 	private int m_publishing_period;
 	private long m_publishing_next;
 
 	private long m_start_time;
 	private long m_end_time;
-	private int m_download_rate;
-
+	private int m_buffer_thr;
+	
 	private byte[] m_empty_data;
-	private byte[] m_previous_data;
 	private ExperimentConf m_conf;
 
 	private PacketDispatcher m_dispatcher;
 	private SynchronizedBuffer m_isc_buffer;
-	private byte[] m_ipc_header_stream;
-	private byte[] m_ipc_checksum_stream;
+	private ByteBuffer m_data_stream;
+	private ByteBuffer m_ipc_header_stream;
+	private ByteBuffer m_ipc_checksum_stream;
 	private int m_prot_num;
+	
+	private ByteBuffer m_publish_content_stream;
+	private ByteBuffer m_request_content_stream;
+	private PayloadDataBlock m_payload_data;
 	
 	private Log m_logger;
 	private TimeUtils m_time;
 
 	private final static String TAG = "[FSSProtocol] ";
 
-	public FSSProtocol(Log log, PayloadBuffer buffer, PacketExchangeBuffer hk_packets, ExperimentConf conf,
-			TimeUtils timer, PacketDispatcher dispatcher, TTC ttc) {
+	public FSSProtocol(Log log, PayloadBuffer payload_buffer, FederationPacketsBuffer fed_buffer, 
+			ExperimentConf conf, TimeUtils timer, PacketDispatcher dispatcher, TTC ttc) 
+	{
 		super();
 
 		m_logger = log;
 		m_conf = conf;
 		m_time = timer;
 		m_ttc = ttc;
+		m_rand = new Random(m_time.getTimeMillis());
 		
 		/* Init dispatcher */
 		m_dispatcher = dispatcher;
@@ -94,14 +97,13 @@ public class FSSProtocol extends Thread {
 		/* Packet containers */
 		m_tx_packet = new Packet();
 		m_rx_packet = new Packet();
-
+		
 		m_tx_num = 0;
 		m_rx_num = 0;
 		m_rx_err_num = 0;
 
-		m_hk_packets = hk_packets;
-
-		m_fss_buffer = buffer;
+		m_payload_buffer = payload_buffer;
+		m_fed_buffer = fed_buffer;
 		m_received_packet = false;
 		m_waiting_packet = false;
 		m_waiting_type = -1;
@@ -113,42 +115,46 @@ public class FSSProtocol extends Thread {
 		m_end_time = 0;
 
 		m_empty_data = new byte[0];
-
+		m_ipc_header_stream = ByteBuffer.allocate(Packet.getHeaderSize());
+		m_ipc_checksum_stream = ByteBuffer.allocate(Packet.getChecksumSize());
+		
 		m_poll_token = false;
 		m_state = Constants.FSS_NOT_STARTED;
 		m_role = Constants.FSS_ROLE_NOT_DEFINED;
 
-		m_publishing_period = 5000;
+		m_publishing_period = 10 * 1000;
 		m_publishing_next = 0;
 		m_service_type = Constants.FSS_SERVICE_TYPE_NOT_DEFINED;
 		m_service_type_interest = Constants.FSS_SERVICE_TYPE_DOWNLOAD;
-		m_mydata_downloaded = false;
-		m_download_contact = false;
+		
+		m_publish_content_stream = ByteBuffer.allocate(Integer.SIZE * 2 / 8);
+		m_request_content_stream = ByteBuffer.allocate(Integer.SIZE / 8);
+		m_payload_data = new PayloadDataBlock();	
+	
+		setConfiguration();
 	}
 
 	public void setConfiguration() 
 	{
-		m_buffer_thr = m_conf.fss_buffer_thr;
-		m_fss_interest = m_conf.fss_interest;
+		m_buffer_thr = m_fed_buffer.getCapacity();
 		m_sat_destination = Constants.FSS_BROADCAST_ADDR;
 		m_waiting_timeout = m_conf.fss_timeout;
 		m_waiting_max = m_conf.fss_retries;
 		m_sat_source = m_conf.satellite_id;
-		m_download_rate = m_conf.download_rate;
-		if (m_conf.download_experiment_activated == true) {
-			m_service_type_interest = Constants.FSS_SERVICE_TYPE_DOWNLOAD;
-		} else {
-			m_service_type_interest = Constants.FSS_SERVICE_TYPE_STORAGE;
-		}
+		m_service_type_interest = Constants.FSS_SERVICE_TYPE_DOWNLOAD;
+		m_rx_packet_backoff = m_conf.fss_backoff;
 	}
 
 	@Override
-	public void run() {
-		
+	public void run() 
+	{
 		m_running = true;
 		long time_tick;
 		long spent_time;
 		long time_to_sleep;
+	
+		/* Notify the Manager that I am running */
+		polling(true);
 		
 		/* Upload Configuration first */
 		setConfiguration();
@@ -157,18 +163,8 @@ public class FSSProtocol extends Thread {
 		m_logger.info(TAG + "Started Thread");
 		accessToState(true, Constants.FSS_STANDBY);
 
-		// m_start_time = space.golbriak.lang.System.currentTimeMillis();
+		/* Set the start of the execution */
 		m_start_time = m_time.getTimeMillis();
-
-		m_download_start = m_start_time + m_conf.download_start;
-		m_download_end = m_start_time + m_conf.download_end;
-		if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
-			m_logger.info(TAG + "The STORAGE EXPERIMENT is selected");
-		} else if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD) {
-			m_logger.info(TAG + "The DOWNLOAD EXPERIMENT is selected");
-			m_logger.info(TAG + "The download starts at " + m_download_start);
-			m_logger.info(TAG + "The download ends at " + m_download_end);
-		}
 
 		/* main loop */
 		while (m_running == true) {
@@ -276,16 +272,33 @@ public class FSSProtocol extends Thread {
 		m_waiting_counter = 0;
 	}
 
-	private void verifyLinkDead() {
-		if (m_waiting_counter > m_waiting_max) {
+	private void resetStatus()
+	{
+		m_sat_destination = Constants.FSS_NOONE_ADDR;
+		releaseForPacket();
+		accessToState(true, Constants.FSS_STANDBY);
+	}
+	
+	private void verifyLinkDead() 
+	{
+		long backoff;
+		if(m_waiting_counter > m_waiting_max) {
+			/* Lost communication - go back to the standby */
 			m_logger.warning(
 					TAG + "Maximum reply of Packet type " + m_tx_packet.type + " reached. The link is dead!");
-			m_running = false;
+			resetStatus();
 		} else {
-			m_waiting_counter++;
+			try {
+				backoff = (long)(m_rand.nextFloat() * m_rx_packet_backoff * (m_waiting_counter + 1));
+				m_logger.info(TAG + "Retransmission of packet " + m_tx_packet.type + " scheduled (backoff:" + backoff + " ms)");
+				polling(true);
+				sleep(backoff);
+				polling(true);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			retransmitPacket();
-			// m_waiting_next = space.golbriak.lang.System.currentTimeMillis() +
-			// m_waiting_timeout;
+			m_waiting_counter++;
 			m_waiting_next = m_time.getTimeMillis() + m_waiting_timeout;
 
 			m_logger.info(TAG + "No replication - Retransmitted packet " + m_tx_packet.type + "; next at "
@@ -293,65 +306,72 @@ public class FSSProtocol extends Thread {
 		}
 	}
 
-	private void sendPUBLISHPacket(int service_type) {
-		ByteBuffer data = ByteBuffer.allocate(Integer.SIZE * 2 / 8);
+	private void sendPUBLISHPacket(int service_type) 
+	{
+		m_publish_content_stream.clear();
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_SERVICE_PUBLISH, Constants.FSS_BROADCAST_ADDR);
-		data.putInt(service_type);
-		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.length = Integer.SIZE * 2 / 8;
-		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.setData(data.array());
+		m_publish_content_stream.putInt(service_type);
+		m_publish_content_stream.putInt(m_buffer_thr - m_fed_buffer.getSize());
+		m_publish_content_stream.rewind();
+		m_tx_packet.length = m_publish_content_stream.capacity();
+		m_tx_packet.setData(m_publish_content_stream.array());
 		sendPacket();
 	}
 
-	private void sendREQUEST(int service_type) {
-		ByteBuffer data = ByteBuffer.allocate(Integer.SIZE / 8);
+	private void sendREQUEST(int service_type) 
+	{
+		m_request_content_stream.clear();
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_SERVICE_REQUEST, m_sat_destination);
-		data.putInt(service_type);
-		m_tx_packet.length = Integer.SIZE / 8;
-		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.setData(data.array());
+		m_request_content_stream.putInt(service_type);
+		m_request_content_stream.rewind();
+		m_tx_packet.length = m_request_content_stream.capacity();
+		m_tx_packet.setData(m_request_content_stream.array());
 		sendPacket();
 	}
 
-	private void sendACCEPT(int service_type) {
-		ByteBuffer data = ByteBuffer.allocate(Integer.SIZE * 2 / 8);
+	private void sendACCEPT(int service_type) 
+	{
+		m_publish_content_stream.clear();
 		m_tx_packet.resetValues();
 		m_sat_destination = m_rx_packet.source;
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_SERVICE_ACCEPT, m_sat_destination);
-		data.putInt(service_type);
-		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.length = Integer.SIZE * 2 / 8;
-		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.setData(data.array());
+		m_publish_content_stream.putInt(service_type);
+		m_publish_content_stream.putInt(m_payload_buffer.getSize());
+		m_publish_content_stream.rewind();
+		m_tx_packet.length = m_publish_content_stream.capacity();
+		m_tx_packet.setData(m_publish_content_stream.array());
 		sendPacket();
 	}
 
-	private void sendDATAPacket() {
+	private void sendDATAPacket() 
+	{
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_DATA, m_sat_destination);
-		m_previous_data = m_fss_buffer.getBottomData();
-		m_tx_packet.length = m_previous_data.length;
+		m_payload_data = m_payload_buffer.getBottomDataBlock();
+		m_tx_packet.length = PayloadDataBlock.getSize();
 		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.setData(m_previous_data);
+		m_tx_packet.setData(m_payload_data.getBytes());
+		m_tx_packet.computeChecksum();
 		sendPacket();
 	}
 
-	private void sendDATAACKPacket() {
+	private void sendDATAACKPacket() 
+	{
+		m_request_content_stream.clear();
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_DATA_ACK, m_sat_destination);
-		ByteBuffer data;
-		data = ByteBuffer.allocate(Integer.SIZE / 8);
-		data.putInt(m_buffer_thr - m_fss_buffer.getSize());
-		m_tx_packet.length = Integer.SIZE / 8;
+		m_request_content_stream.putInt(m_buffer_thr - m_fed_buffer.getSize());
+		m_request_content_stream.rewind();
+		m_tx_packet.length = m_request_content_stream.capacity();
 		m_tx_packet.prot_num = m_prot_num;
-		m_tx_packet.setData(data.array());
+		m_tx_packet.setData(m_request_content_stream.array());
 		sendPacket();
 	}
 
-	private void sendCLOSEPacket() {
+	private void sendCLOSEPacket() 
+	{
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_CLOSE, m_sat_destination);
 		m_tx_packet.length = 0;
@@ -360,7 +380,8 @@ public class FSSProtocol extends Thread {
 		sendPacket();
 	}
 
-	private void sendCLOSEACKPacket() {
+	private void sendCLOSEACKPacket() 
+	{
 		m_tx_packet.resetValues();
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_CLOSE_ACK, m_sat_destination);
 		m_tx_packet.length = 0;
@@ -369,7 +390,8 @@ public class FSSProtocol extends Thread {
 		sendPacket();
 	}
 
-	private void sendCLOSEDATAACKPacket() {
+	private void sendCLOSEDATAACKPacket() 
+	{
 		m_tx_packet.resetValues();
 		m_sat_destination = m_rx_packet.source;
 		setHeaderPacket(m_tx_packet, Constants.PACKET_FSS_CLOSE_DATA_ACK, m_sat_destination);
@@ -381,6 +403,7 @@ public class FSSProtocol extends Thread {
 
 	private void standbyPhase(boolean isRX) 
 	{
+		//System.out.println("In STANDBY PHASE");
 		/* Verify if my service is available */
 		if(m_ttc.accessToServiceAvailable(false, false) == true) {
 			/* Publish this service */
@@ -403,12 +426,17 @@ public class FSSProtocol extends Thread {
 				m_publisher_capacity = publish_data.getInt();
 				m_sat_destination = m_rx_packet.source;
 				m_logger.info(TAG + "STANDBY PHASE: Received PUBLISH Packet with service " + m_service_type);
+				System.out.println(TAG + "STANDBY PHASE: Received PUBLISH Packet with service " + m_service_type);
 				if(m_ttc.accessToServiceAvailable(false, false) == false
 					&& m_publisher_capacity > 0
-					&& m_fss_buffer.getSize() > 0) {
+					&& m_payload_buffer.getSize() > 0) {
+					/* Take this satellite as the remote one */
+					m_sat_destination = m_rx_packet.source;
 					/* I need and I want the service of storage - send REQUEST */
 					sendREQUEST(m_service_type_interest);
 					m_logger.info(TAG + "STANDBY PHASE: REQUEST Packet sent with service "
+							+ m_service_type_interest);
+					System.out.println(TAG + "STANDBY PHASE: REQUEST Packet sent with service "
 							+ m_service_type_interest);
 					/* Wait ACCEPT packet to be received */
 					lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
@@ -419,10 +447,15 @@ public class FSSProtocol extends Thread {
 			case Constants.PACKET_FSS_SERVICE_REQUEST:
 				/* Check if I have a service to share */
 				if(m_ttc.accessToServiceAvailable(false, false) == true) {
-					m_logger.info(TAG + "NEGOTIATION PHASE: Received REQUEST Packet with service " + m_service_type_interest);
+					m_logger.info(TAG + "STANDBY PHASE: Received REQUEST Packet with service " + m_service_type_interest);
+					System.out.println(TAG + "STANDBY PHASE: Received REQUEST Packet with service " + m_service_type_interest);
+					/* Select this satellite as the destination */
+					m_sat_destination = m_rx_packet.source;
 					/* Send ACCEPT because I have the service and I am interested */
 					sendACCEPT(m_service_type_interest);
 					m_logger.info(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
+							+ m_service_type_interest);
+					System.out.println(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
 							+ m_service_type_interest);
 					/* Wait first DATA to confirm the correct reception */
 					lockForPacket(Constants.PACKET_FSS_DATA | Constants.PACKET_FSS_CLOSE);
@@ -434,195 +467,79 @@ public class FSSProtocol extends Thread {
 		}
 	}
 	
-	private void negotiationPhase(boolean isRX) {
-
-		ByteBuffer data;
+	private void negotiationPhase(boolean isRX) 
+	{
+		System.out.println("In NEGOTIATION PHASE");
 		int service_type;
-
-		if (m_fss_interest == Constants.FSS_INTEREST) {
-			/* Process if a packet has been received */
-			if (isRX == true) {
-				if (m_waiting_packet == true && m_waiting_type == m_rx_packet.type) {
-					/*
-					 * I have received the packet that I was waiting - I can release and keep
-					 * working
-					 */
-					releaseForPacket();
-				}
-
-				switch (m_rx_packet.type) {
-				case Constants.PACKET_FSS_SERVICE_PUBLISH:
-					ByteBuffer publish_data = ByteBuffer.wrap(m_rx_packet.getData());
-					m_service_type = publish_data.getInt();
-					m_publisher_capacity = publish_data.getInt();
-					m_sat_destination = m_rx_packet.source;
-					m_logger.info(TAG + "NEGOTIATION PHASE: Received PUBLISH Packet with service " + m_service_type);
-					break;
-				case Constants.PACKET_FSS_SERVICE_REQUEST:
-					data = ByteBuffer.wrap(m_rx_packet.getData());
-					service_type = data.getInt();
-					data.clear();
-					m_logger.info(TAG + "NEGOTIATION PHASE: Received REQUEST Packet with service " + service_type);
-					if (service_type == m_service_type_interest) {
-						if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
-							if (m_fss_buffer.getSize() < m_buffer_thr) {
-								/* Send ACCEPT because I have the service and I am interested */
-								sendACCEPT(m_service_type_interest);
-								m_logger.info(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
-										+ m_service_type_interest);
-								/* Wait first DATA to confirm the correct reception */
-								lockForPacket(Constants.PACKET_FSS_DATA | Constants.PACKET_FSS_CLOSE);
-							}
-						} else if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD) {
-							if (m_fss_buffer.getSize() < m_buffer_thr && m_download_contact == true
-									&& m_mydata_downloaded == true) {
-								/* Send ACCEPT because I have the service and I am interested */
-								sendACCEPT(m_service_type_interest);
-								m_logger.info(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
-										+ m_service_type_interest);
-								/* Wait first DATA to confirm the correct reception */
-								lockForPacket(Constants.PACKET_FSS_DATA | Constants.PACKET_FSS_CLOSE);
-							}
-						}
-					}
-					break;
-				case Constants.PACKET_FSS_SERVICE_ACCEPT:
-					data = ByteBuffer.wrap(m_rx_packet.getData());
-					service_type = data.getInt();
-					data.clear();
-					m_logger.info(TAG + "NEGOTIATION PHASE: Received ACCEPT Packet with service " + service_type);
-					if (service_type == m_service_type_interest) {
-						m_role = Constants.FSS_ROLE_CUSTOMER;
-						accessToState(true, Constants.FSS_EXCHANGE);
-						m_logger.info(TAG + "I am the CUSTOMER - Transit to FEDERATION PHASE");
-						/*
-						 * In order to not delay so much the DATA transmission, it is sent directly from
-						 * here. Although it is part of the federationPhase function, it has been
-						 * considered to do it here to clarify the code. The next iteration will be
-						 * performed with the federationPhase function.
-						 */
-						sendDATAPacket();
-						m_logger.info(TAG + "FEDERATION PHASE: DATA Packet sent");
-						lockForPacket(Constants.PACKET_FSS_DATA_ACK | Constants.PACKET_FSS_CLOSE
-								| Constants.PACKET_FSS_CLOSE_DATA_ACK);
-					} else {
-						lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
-					}
-					break;
-				case Constants.PACKET_FSS_DATA:
-					m_logger.info(TAG + "NEGOTIATION PHASE: Received DATA Packet");
-					m_role = Constants.FSS_ROLE_SUPPLIER;
-					accessToState(true, Constants.FSS_EXCHANGE);
-					m_logger.info(TAG + "I am the SUPPLIER - Transit to FEDERATION PHASE");
-					/*
-					 * In order to not delay so much the DATA ACK transmission, the execution of the
-					 * federationPhase function is performed. As the input is true (packet
-					 * received), it will directly send a DATA ACK packet. Note that after this, it
-					 * will expect the DATA, then it will not enter in the condition bellow
-					 * (m_waiting_packet = true). After this, in the next iteration, the
-					 * federationPhase will be directly executed.
-					 */
-					federationPhase(true);
-					break;
-				}
-			} else if (m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
+		/* Process if a packet has been received */
+		if (isRX == true) {
+			if (m_waiting_packet == true && m_waiting_type == m_rx_packet.type) {
 				/*
-				 * No reply has been received, and the timeout has passed - retransmit or exit
+				 * I have received the packet that I was waiting - I can release and keep
+				 * working
 				 */
-				verifyLinkDead();
+				releaseForPacket();
 			}
 
-			/* If not waiting a packet, I will do other things */
-			if (m_waiting_packet == false) {
-				if (getFederationStatus() != Constants.FSS_EXCHANGE) {
-					if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
-						/* Do I have to publish? */
-						if (m_fss_buffer.getSize() < m_buffer_thr
-								// && (space.golbriak.lang.System.currentTimeMillis() >= m_publishing_next ||
-								// m_publishing_next == 0)) {
-								&& (m_time.getTimeMillis() >= m_publishing_next || m_publishing_next == 0)) {
-
-							/* Send PUBLISH packet */
-							sendPUBLISHPacket(Constants.FSS_SERVICE_TYPE_STORAGE);
-							m_logger.info(TAG + "NEGOTIATION PHASE: PUBLISH Packet sent with service "
-									+ Constants.FSS_SERVICE_TYPE_STORAGE);
-							m_publishing_next = m_time.getTimeMillis() + m_publishing_period;
-
-						} else if (m_service_type_interest == m_service_type && m_publisher_capacity > 0
-								&& m_fss_buffer.getSize() >= m_buffer_thr) {
-
-							/* I need and I want the service of storage - send REQUEST */
-							sendREQUEST(m_service_type_interest);
-							m_logger.info(TAG + "NEGOTIATION PHASE: REQUEST Packet sent with service "
-									+ m_service_type_interest);
-
-							/* Wait ACCEPT packet to be received */
-							lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
-						}
-
-					} else if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD) {
-
-						/* If first time, download all my data */
-						if (m_mydata_downloaded == false && m_download_contact == true) {
-							m_logger.info(
-									TAG + "First, download my data: " + m_fss_buffer.getSize() + " packets remaining");
-
-							/*
-							 * There is data to be download, then download following the corresponding rate
-							 */
-							int packet_count = 0;
-							while (m_fss_buffer.getSize() > 0 && packet_count < m_download_rate) {
-								m_fss_buffer.deleteBottomData();
-								packet_count++;
-							}
-
-							if (m_fss_buffer.getSize() == 0) {
-								m_logger.info(TAG + "All my data has been download");
-								m_mydata_downloaded = true;
-							}
-						}
-
-						/*
-						 * when I have download all my data, I have to perform the federation protocol
-						 */
-						if (m_mydata_downloaded == true && m_download_contact == true
-								&& (m_time.getTimeMillis() >= m_publishing_next || m_publishing_next == 0)) {
-							/*
-							 * To publish, the download shall be available, sand data to download - send
-							 * PUBLISH
-							 */
-							sendPUBLISHPacket(Constants.FSS_SERVICE_TYPE_DOWNLOAD);
-							m_logger.info(TAG + "NEGOTIATION PHASE: PUBLISH Packet sent with service "
-									+ Constants.FSS_SERVICE_TYPE_DOWNLOAD);
-							m_publishing_next = m_time.getTimeMillis() + m_publishing_period;
-						}
-
-						/* I should evaluate if I want the published service */
-						if (m_mydata_downloaded == false && m_download_contact == false
-								&& m_service_type_interest == m_service_type && m_publisher_capacity > 0
-								&& m_fss_buffer.getSize() > 0) {
-							/* I want the download capacity - send REQUEST */
-							sendREQUEST(m_service_type_interest);
-							m_logger.info(TAG + "NEGOTIATION PHASE: REQUEST Packet sent with service "
-									+ m_service_type_interest);
-							/* Wait Request */
-							lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
-						}
-					}
+			switch (m_rx_packet.type) {
+			case Constants.PACKET_FSS_SERVICE_ACCEPT:
+				m_publish_content_stream.clear();
+				m_publish_content_stream.put(m_rx_packet.getData());
+				m_publish_content_stream.rewind();
+				service_type = m_publish_content_stream.getInt();
+				m_logger.info(TAG + "NEGOTIATION PHASE: Received ACCEPT Packet with service " + service_type);
+				System.out.println(TAG + "NEGOTIATION PHASE: Received ACCEPT Packet with service " + service_type);
+				if (service_type == m_service_type_interest) {
+					m_role = Constants.FSS_ROLE_CUSTOMER;
+					accessToState(true, Constants.FSS_EXCHANGE);
+					m_logger.info(TAG + "I am the CUSTOMER - Transit to FEDERATION PHASE");
+					/*
+					 * In order to not delay so much the DATA transmission, it is sent directly from
+					 * here. Although it is part of the federationPhase function, it has been
+					 * considered to do it here to clarify the code. The next iteration will be
+					 * performed with the federationPhase function.
+					 */
+					sendDATAPacket();
+					m_logger.info(TAG + "FEDERATION PHASE: DATA Packet sent");
+					System.out.println(TAG + "FEDERATION PHASE: DATA Packet sent");
+					lockForPacket(Constants.PACKET_FSS_DATA_ACK | Constants.PACKET_FSS_CLOSE
+							| Constants.PACKET_FSS_CLOSE_DATA_ACK);
+				} else {
+					lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
 				}
+				break;
+			case Constants.PACKET_FSS_DATA:
+				m_logger.info(TAG + "NEGOTIATION PHASE: Received DATA Packet");
+				System.out.println(TAG + "NEGOTIATION PHASE: Received DATA Packet");
+				m_role = Constants.FSS_ROLE_SUPPLIER;
+				accessToState(true, Constants.FSS_EXCHANGE);
+				m_logger.info(TAG + "I am the SUPPLIER - Transit to FEDERATION PHASE");
+				System.out.println(TAG + "I am the SUPPLIER - Transit to FEDERATION PHASE");
+				/*
+				 * In order to not delay so much the DATA ACK transmission, the execution of the
+				 * federationPhase function is performed. As the input is true (packet
+				 * received), it will directly send a DATA ACK packet. Note that after this, it
+				 * will expect the DATA, then it will not enter in the condition bellow
+				 * (m_waiting_packet = true). After this, in the next iteration, the
+				 * federationPhase will be directly executed.
+				 */
+				federationPhase(true);
+				break;
 			}
+		} else if (m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
+			/*
+			 * No reply has been received, and the timeout has passed - retransmit or exit
+			 */
+			verifyLinkDead();
 		}
-
 	}
 
-	private void federationPhase(boolean isRX) {
-
+	private void federationPhase(boolean isRX) 
+	{
+		System.out.println("In FEDERATION phase");
 		if (getFederationRole() == Constants.FSS_ROLE_CUSTOMER) {
-
 			if (isRX == true) {
-
-				m_logger.info(TAG + "Something received in the CUSTOMER");
-
+				m_logger.info(TAG + "Something received in the CUSTOMER with packet type " + m_rx_packet.type);
 				if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
@@ -630,9 +547,7 @@ public class FSSProtocol extends Thread {
 					 */
 					releaseForPacket();
 				}
-
 				switch (m_rx_packet.type) {
-
 				case Constants.PACKET_FSS_CLOSE:
 					m_logger.info(TAG + "FEDERATION PHASE: Received CLOSE Packet");
 					accessToState(true, Constants.FSS_CLOSURE);
@@ -641,16 +556,16 @@ public class FSSProtocol extends Thread {
 					lockForPacket(Constants.PACKET_FSS_CLOSE_ACK); /* Wait the CLOSE ACK */
 					/* Next iteration will be the closurePhase function */
 					break;
-
 				case Constants.PACKET_FSS_DATA_ACK:
 					m_logger.info(TAG + "FEDERATION PHASE: Received DATA ACK Packet");
 					/*
 					 * Remove the packet from the queue, because it has been correctly acknowledged.
 					 */
-					m_fss_buffer.deleteBottomData();
+					m_payload_buffer.deleteBottomData();
 
 					/* Verify if I can keep sending, or if I have sent everything */
-					if (m_fss_buffer.getSize() == 0) {
+					if (m_payload_buffer.getSize() == 0) {
+						m_logger.info(TAG + "No more data in the payload buffer, I do not need the federation");
 						accessToState(true, Constants.FSS_CLOSURE);
 						sendCLOSEPacket();
 						m_logger.info(TAG + "FEDERATION PHASE: CLOSE Packet sent");
@@ -662,13 +577,12 @@ public class FSSProtocol extends Thread {
 								| Constants.PACKET_FSS_CLOSE_DATA_ACK);
 					}
 					break;
-
 				case Constants.PACKET_FSS_CLOSE_DATA_ACK:
 					m_logger.info(TAG + "FEDERATION PHASE: Received CLOSE DATA ACK Packet");
 					/*
 					 * Remove the packet from the queue, because it has been correctly acknowledged.
 					 */
-					m_fss_buffer.deleteBottomData();
+					m_payload_buffer.deleteBottomData();
 					accessToState(true, Constants.FSS_CLOSURE);
 					sendCLOSEACKPacket();
 					m_logger.info(TAG + "FEDERATION PHASE: CLOSE ACK Packet sent");
@@ -676,37 +590,15 @@ public class FSSProtocol extends Thread {
 					/* Next iteration will be the closurePhase function */
 					break;
 				}
-
-				// } else if(m_waiting_packet == true &&
-				// space.golbriak.lang.System.currentTimeMillis() >= m_waiting_next) {
 			} else if (m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
 				/*
 				 * No reply has been received, and the timeout has passed - retransmit or exit
 				 */
 				verifyLinkDead();
 			}
-
 		} else if (getFederationRole() == Constants.FSS_ROLE_SUPPLIER) {
-
-			if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD && m_download_contact == true
-					&& m_fss_buffer.getSize() > 0) {
-				/*
-				 * Try to download packets. In this implementation, a packet is download when it
-				 * is removed from the buffer. Note that this deletion is just an illusion, all
-				 * the packets are stored in a dedicated file. Note that after download, a DATA
-				 * ACK is sent to confirm the correct transference.
-				 */
-				m_fss_buffer.deleteBottomData();
-				m_logger.info("FEDERATION PHASE: Packet downloaded");
-				sendDATAACKPacket();
-				m_logger.info(TAG + "FEDERATION PHASE: DATA ACK Packet sent");
-				lockForPacket(Constants.PACKET_FSS_DATA);
-			}
-
 			if (isRX == true) {
-
 				m_logger.info(TAG + "Something received in the SUPPLIER");
-
 				if(m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 					/*
 					 * I have received the packet that I was waiting - I can release and keep
@@ -714,9 +606,7 @@ public class FSSProtocol extends Thread {
 					 */
 					releaseForPacket();
 				}
-
 				switch (m_rx_packet.type) {
-
 				case Constants.PACKET_FSS_CLOSE:
 					m_logger.info(TAG + "FEDERATION PHASE: Received CLOSE Packet");
 					accessToState(true, Constants.FSS_CLOSURE);
@@ -724,56 +614,31 @@ public class FSSProtocol extends Thread {
 					m_logger.info(TAG + "FEDERATION PHASE: CLOSE ACK Packet sent");
 					lockForPacket(Constants.PACKET_FSS_CLOSE_ACK);
 					break;
-
 				case Constants.PACKET_FSS_DATA:
 					m_logger.info(TAG + "FEDERATION PHASE: Received DATA Packet " + m_rx_packet.counter);
-
-					if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_STORAGE) {
-
-						/* Verify if there are space to store the packet */
-						if (m_fss_buffer.getSize() < m_buffer_thr) {
-							/* Store the packet */
-							m_fss_buffer.insertData(m_rx_packet.getData());
-
-							/* Verify if the service can still be provided */
-							if (m_fss_buffer.getSize() >= m_buffer_thr) {
-								accessToState(true, Constants.FSS_CLOSURE);
-								sendCLOSEDATAACKPacket();
-								m_logger.info(TAG + "FEDERATION PHASE: CLOSE DATA ACK Packet sent");
-								lockForPacket(Constants.PACKET_FSS_CLOSE_ACK);
-							} else {
-								sendDATAACKPacket();
-								m_logger.info(TAG + "FEDERATION PHASE: DATA ACK Packet sent");
-								lockForPacket(Constants.PACKET_FSS_DATA);
-							}
-						} else {
-							accessToState(true, Constants.FSS_CLOSURE);
-							sendCLOSEPacket();
-							m_logger.info(TAG + "FEDERATION PHASE: CLOSE Packet sent");
-							/* In the next iteration the closePhase will be executed */
-							lockForPacket(Constants.PACKET_FSS_CLOSE_ACK); /* Wait the CLOSE ACK */
-						}
-
-					} else if (m_service_type_interest == Constants.FSS_SERVICE_TYPE_DOWNLOAD) {
-
-						if (m_download_contact == false || m_fss_buffer.getSize() >= m_buffer_thr) {
-							/*
-							 * The download slot is over, then I have to close the federation. Or my buffer
-							 * is full. I do not have the service any more.
-							 */
-							accessToState(true, Constants.FSS_CLOSURE);
-							sendCLOSEPacket();
-							m_logger.info(TAG + "FEDERATION PHASE: CLOSE Packet sent");
-							lockForPacket(Constants.PACKET_FSS_CLOSE_ACK); /* Wait the CLOSE ACK */
-						} else if (m_download_contact == true) {
-							m_fss_buffer.insertData(m_rx_packet.getData());
-						}
+					/* The TTC task will download it later */
+					m_fed_buffer.insertData(m_rx_packet.getData());
+					m_logger.info(TAG + "FEDERATION PHASE: Packet stored in the buffer to be downloaded");
+					
+					/* Notify the customer of the reception */
+					if (m_ttc.accessToServiceAvailable(false, false) == false) {
+						/*
+						 * The download slot is over, then I have to close the federation. Or my buffer
+						 * is full. I do not have the service any more.
+						 */
+						m_logger.info(TAG + "FEDERATION PHASE: Service no longer available");
+						accessToState(true, Constants.FSS_CLOSURE);
+						sendCLOSEDATAACKPacket();
+						m_logger.info(TAG + "FEDERATION PHASE: CLOSE DATA ACK Packet sent");
+						lockForPacket(Constants.PACKET_FSS_CLOSE_ACK); /* Wait the CLOSE ACK */
+					} else {
+						/* Keep sending more data */
+						sendDATAACKPacket();
+						m_logger.info(TAG + "FEDERATION PHASE: DATA ACK Packet sent");
+						lockForPacket(Constants.PACKET_FSS_DATA);
 					}
 					break;
 				}
-
-				// } else if(m_waiting_packet == true &&
-				// space.golbriak.lang.System.currentTimeMillis() >= m_waiting_next) {
 			} else if (m_waiting_packet == true && m_time.getTimeMillis() >= m_waiting_next) {
 				/*
 				 * No reply has been received, and the timeout has passed - retransmit or exit
@@ -781,39 +646,35 @@ public class FSSProtocol extends Thread {
 				verifyLinkDead();
 			}
 		}
-
 	}
 
-	private void closurePhase(boolean isRX) {
-
-		if (isRX == true) {
-
-			if (m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
+	private void closurePhase(boolean isRX) 
+	{
+		System.out.println("In CLOSURE PHASE");
+		if(isRX == true) {
+			if(m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 				/*
 				 * I have received the packet that I was waiting - I can release and keep
 				 * working
 				 */
 				releaseForPacket();
 			}
-
-			if (m_rx_packet.type == Constants.PACKET_FSS_CLOSE_ACK) {
+			switch(m_rx_packet.type) {
+			case Constants.PACKET_FSS_CLOSE_ACK:
 				m_logger.info(TAG + "CLOSURE PHASE: Received CLOSE ACK Packet");
-
-				if (m_tx_packet.type == Constants.PACKET_FSS_CLOSE) {
+				if(m_tx_packet.type == Constants.PACKET_FSS_CLOSE) {
+					/* Reply the other to stop */
 					sendCLOSEACKPacket();
-					m_logger.info(TAG + "CLOSURE PHASE: CLOSE ACK Packet sent");
-					lockForPacket(Constants.PACKET_FSS_CLOSE_ACK);
-				}
-
-				/* I have correctly closed everything, I just exit */
-				m_running = false;
+				} 
+				resetStatus();
+				break;
+			case Constants.PACKET_FSS_CLOSE:
+				sendCLOSEACKPacket();
+				m_logger.info(TAG + "CLOSURE PHASE: CLOSE ACK Packet sent");
+				lockForPacket(Constants.PACKET_FSS_CLOSE_ACK);
+				break;
 			}
-
-		}
-
-		// if(m_running == true && space.golbriak.lang.System.currentTimeMillis() >=
-		// m_waiting_next) {
-		if (m_running == true && m_time.getTimeMillis() >= m_waiting_next) {
+		} else if(m_running == true && m_time.getTimeMillis() >= m_waiting_next) {
 			/*
 			 * No reply has been received, and the timeout has passed - retransmit or exit
 			 */
@@ -821,10 +682,10 @@ public class FSSProtocol extends Thread {
 		}
 	}
 
-	private void setHeaderPacket(Packet packet, int type, int address) {
-		// packet.setTimestamp(space.golbriak.lang.System.currentTimeMillis());
+	private void setHeaderPacket(Packet packet, int type, int address) 
+	{
 		packet.timestamp = m_time.getTimeMillis();
-
+		packet.prot_num = m_prot_num;
 		packet.source = m_sat_source;
 		packet.destination = address;
 		packet.type = type;
@@ -843,26 +704,30 @@ public class FSSProtocol extends Thread {
 
 	private boolean receivePacket() 
 	{
-		byte[] content;
 		if(m_isc_buffer.bytesAvailable() > 0) {
-			m_isc_buffer.read(m_ipc_header_stream);
-			m_rx_packet.setHeader(m_ipc_header_stream);
-			content = new byte[m_rx_packet.length];
-			m_isc_buffer.read(content);
-			m_isc_buffer.read(m_ipc_checksum_stream);
-			m_rx_packet.setChecksum(m_ipc_checksum_stream);
-			// TODO: Interesting to include the time in which it is received...
-			m_hk_packets.insertRXPacket(m_rx_packet);
-			if(m_rx_packet.isPacketCorrect(m_rx_packet.checksum, content) == false) {
-				m_logger.warning(TAG + "IPC Stack has bytes, but the received packet is not correct");
-				accessToErrRXs(true, 1, 1);
-				return false;
-			} else if (m_rx_packet.destination != Constants.FSS_BROADCAST_ADDR
-					&& m_rx_packet.destination != m_sat_source) {
-				/* The packet is not for me; I should remove it */
-				m_rx_packet.resetValues();
-				return false;
+			m_rx_packet.resetValues();
+			m_ipc_header_stream.clear();
+			m_isc_buffer.read(m_ipc_header_stream.array());
+			m_rx_packet.setHeader(m_ipc_header_stream.array());
+			if(m_rx_packet.length > 0) {
+				m_data_stream = ByteBuffer.allocate(m_rx_packet.length);
+				m_isc_buffer.read(m_data_stream.array());
+				m_rx_packet.setData(m_data_stream.array());
 			}
+			m_ipc_checksum_stream.clear();
+			m_isc_buffer.read(m_ipc_checksum_stream.array());
+			m_rx_packet.setChecksum(m_ipc_checksum_stream.array());
+			// TODO: Put the statistics of the Erroneous packets in the PacketDispatcher
+			//if(m_rx_packet.checksum != rx_checksum) {
+			//	m_logger.warning(TAG + "IPC Stack has bytes, but the received packet is not correct");
+			//	accessToErrRXs(true, 1, 1);
+			//	return false;
+			//} else if (m_rx_packet.destination != Constants.FSS_BROADCAST_ADDR
+			//		&& m_rx_packet.destination != m_sat_source) {
+				/* The packet is not for me; I should remove it */
+			//	m_rx_packet.resetValues();
+			//	return false;
+			//}
 		} else {
 			/* No packet has been received */
 			return false;
@@ -870,13 +735,11 @@ public class FSSProtocol extends Thread {
 		return true;
 	}
 
-	private boolean sendPacket() {
-
+	private boolean sendPacket() 
+	{
 		int counter = 0;
-		
 		/* Sending packet */
 		m_logger.info(TAG + "Sending packet " + m_tx_packet.type + " count " + m_tx_packet.counter);
-		
 		do {
 			m_dispatcher.transmitPacket(m_prot_num, m_tx_packet);
 			while(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 0) {
@@ -887,7 +750,6 @@ public class FSSProtocol extends Thread {
 	            	m_logger.error(e);
 	            }
 			}
-			
 			if(m_dispatcher.accessRequestStatus(m_prot_num, 0, false) == 2) {
 				counter ++;
 	    		m_logger.warning(TAG + "Failed to send a FSS Packet to the RF ISL; Try number " + counter);
@@ -900,7 +762,6 @@ public class FSSProtocol extends Thread {
 		} else {
 			m_logger.info(TAG + "Packet sent correctly; type " + m_tx_packet.type + " count "
 					+ m_tx_packet.counter);
-			m_hk_packets.insertTXPacket(m_tx_packet);
 			accessToTXs(true, 1, 1);
 		}
 		
