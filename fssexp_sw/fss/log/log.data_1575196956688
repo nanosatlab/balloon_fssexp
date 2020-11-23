@@ -1,0 +1,26 @@
+1575196956700 - [INFO] [FSSProtocol] Started Thread
+1575196956700 - [INFO] [FSSProtocol] Changed to Federation state 0
+1575196956700 - [INFO] [FSSProtocol] The STORAGE EXPERIMENT is selected
+1575196956700 - [INFO] [FSSProtocol] Sending packet 0 count 0
+1575196957710 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575196958020 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 0
+1575196958021 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196958021 - [INFO] [FSSProtocol] No sleep, the process consumed 1321
+1575196963022 - [INFO] [FSSProtocol] Sending packet 0 count 1
+1575196963135 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 1
+1575196963135 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196968524 - [INFO] [FSSProtocol] Sending packet 0 count 2
+1575196968656 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 2
+1575196968656 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196974025 - [INFO] [FSSProtocol] Sending packet 0 count 3
+1575196974167 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 3
+1575196974167 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196979527 - [INFO] [FSSProtocol] Sending packet 0 count 4
+1575196979691 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 4
+1575196979691 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196985029 - [INFO] [FSSProtocol] Sending packet 0 count 5
+1575196985202 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 5
+1575196985202 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196990531 - [INFO] [FSSProtocol] Sending packet 0 count 6
+1575196990724 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 6
+1575196990724 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0

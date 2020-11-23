@@ -53,9 +53,10 @@ public class GroundSegment {
         System.out.println("    - CHECK-CONNECTION");
         System.out.println("    - CHECK-TRANSCEIVER");
         System.out.println("    - HK-TRANSCEIVER");
+        System.out.println("    - RESET");
         System.out.println("    - BYE - Close the Ground Station");
         while(exit == false) {
-            System.out.println("Please, insert the telecommand to be sent: HELLO::address | CLOSE | CHECK-CONNECTION | CHECK-TRANSCEIVER | HK-TRANSCEIVER | BYE");
+            System.out.println("Please, insert the telecommand to be sent: HELLO::address | CLOSE | CHECK-CONNECTION | CHECK-TRANSCEIVER | HK-TRANSCEIVER | RESET | BYE");
             System.out.print("Telecommand to send: ");
             String s = bufferRead.readLine().toUpperCase();
             if(s.contains("HELLO")) {
@@ -98,6 +99,9 @@ public class GroundSegment {
         	} else if(s.contains("HK-TRANSCEIVER")) {
         		item = ground_station.requestTelemetry();
         		System.out.println("[" + timer.getTimeMillis() + "] " + item.toString());
+        	} else if(s.contains("RESET")) {
+            	ground_station.reset();
+            	System.out.println("[" + timer.getTimeMillis() + "] Connection reset; You can try to connect to a balloon");
         	} else if(s.contains("BYE")) {
         		ground_station.controlledStop();
         		while(ground_station.getState() != Thread.State.TERMINATED) {

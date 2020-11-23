@@ -1,0 +1,7 @@
+1575296616194 - [INFO] [TCPInterface] ********* FSSExp SOFTWARE STARTED *********
+1575296616195 - [INFO] [ExperimentManager] Software version 10
+1575296616195 - [INFO] [ExperimentManager] Start Main Loop
+1575296616196 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575296616198 - [INFO] [TCPInterface] Waiting connections...
+1575296617207 - [ERROR][UartInterface] Impossible to open Port /tty/ttyACM1
+1575296617207 - [ERROR][PacketDispatcher] Impossible to open the IPC Stack - exit the thread

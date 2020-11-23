@@ -12,17 +12,20 @@ import Storage.FederationPacketsBuffer;
 import Storage.PayloadBuffer;
 import Common.TimeUtils;
 import Common.Constants;
+import Common.FolderUtils;
 import Common.Log;
 import Common.SynchronizedBuffer;
 
 public class TTC extends Thread 
 {
 
-	private double cntct_min_period;
-	private double cntct_max_period;
-	private double cntct_max_duration;
-	private double cntct_min_duration;
-	private boolean m_emulated_dwn_contact;
+	private double m_cntct_min_period;
+	private double m_cntct_max_period;
+	private double m_cntct_max_duration;
+	private double m_cntct_min_duration;
+	private double m_cntct_start;
+	private double m_cntct_end;
+	private boolean m_simulated_dwn_contact;
 	private boolean m_real_dwn_contact;
 	private boolean m_exit;
 	private TimeUtils m_time;
@@ -33,6 +36,7 @@ public class TTC extends Thread
 	private Log m_logger;
 	private PayloadBuffer m_payload_buffer;
 	private FederationPacketsBuffer m_federation_buffer;
+	private DownloadedStorage m_dwn_buffer;
 	private int m_sat_id;
 	private int m_gs_id;
 	private int m_dwn_packet_counter;
@@ -61,12 +65,12 @@ public class TTC extends Thread
 	
 	private final static String TAG = "[TTC] ";
 	
-	public TTC(TimeUtils time, ExperimentConf conf, Log logger, PacketDispatcher dispatcher, PayloadBuffer payload_buffer, FederationPacketsBuffer fed_buffer) 
+	public TTC(TimeUtils time, ExperimentConf conf, Log logger, PacketDispatcher dispatcher, PayloadBuffer payload_buffer, FederationPacketsBuffer fed_buffer, FolderUtils folder) 
 	{
 		setConfiguration(conf);
 		m_time = time;
 		m_rand = new Random(m_time.getTimeMillis());
-		m_emulated_dwn_contact = false;
+		m_simulated_dwn_contact = false;
 		m_real_dwn_contact = false;
 		m_exit = false;
 		m_logger = logger;
@@ -91,16 +95,18 @@ public class TTC extends Thread
 		m_alive_next = 0;
 		m_alive_counter = 0;
 		m_dwn_packet_from = -1;
+		m_dwn_buffer = new DownloadedStorage(m_logger, folder, m_time);
+		releaseSimulatedContact();
 	}
 	
 	public void setConfiguration(ExperimentConf conf) 
 	{
 		m_waiting_timeout = conf.ttc_timeout;
 		m_waiting_max = conf.ttc_retries;
-		cntct_max_period = conf.cntct_max_period;
-		cntct_min_period = conf.cntct_min_period;
-		cntct_max_duration = conf.cntct_max_duration;
-		cntct_min_duration = conf.cntct_min_duration;
+		m_cntct_max_period = conf.cntct_max_period;
+		m_cntct_min_period = conf.cntct_min_period;
+		m_cntct_max_duration = conf.cntct_max_duration;
+		m_cntct_min_duration = conf.cntct_min_duration;
 		m_alive_max = 2;
 		m_alive_timeout = 60 * 1000;	/* ms */
 		m_rx_packet_backoff = conf.ttc_backoff;	/* ms */
@@ -295,22 +301,49 @@ public class TTC extends Thread
 	private void downloadDataBlock(PayloadDataBlock block) 
 	{
 		generateDataDownloadPacket(block.getBytes());
-		downloadPacket();
-		lockForPacket(Constants.PACKET_DWN_ACK, m_rx_packet_timeout);
+		if(m_real_dwn_contact == true) {
+			downloadPacket();
+			lockForPacket(Constants.PACKET_DWN_ACK, m_rx_packet_timeout);
+			resetAliveSequence();
+		} else {
+			/* Simulated contact, then store it in the buffer */
+			m_dwn_buffer.writePacket(m_tx_packet);
+			m_dwn_packet_counter ++;
+			/* Remove from the FSS Buffer */
+			if(m_dwn_packet_from == 0) {
+				m_payload_buffer.deleteBottomData();
+			} else if(m_dwn_packet_from == 1){
+				m_federation_buffer.deleteBottomData();
+			}
+			/* Reset the last downloaded packet */
+			m_dwn_packet_from = -1;
+		}
 	}
 	
 	private void releaseSimulatedContact()
 	{
-		
+		m_cntct_start = -1;
+		m_cntct_end = -1;
+		m_simulated_dwn_contact = false;
+		m_logger.info(TAG + "RELEASED simulated contact");
+	}
+	
+	private void scheduleSimulatedContact()
+	{
+		m_logger.info(TAG + "" + m_cntct_min_period + ":" + m_cntct_max_period + ":" + m_cntct_min_duration + ":" + m_cntct_max_duration);
+		/* Compute when the next downlink contact will start */
+		m_logger.info(TAG + m_rand.nextDouble() * (m_cntct_max_period - m_cntct_min_period));
+		m_cntct_start = m_time.getTimeMillis() + m_cntct_min_period + m_rand.nextDouble() * (m_cntct_max_period - m_cntct_min_period); 
+		/* Compute when the next downlink contact will stop */
+		m_logger.info(TAG + m_rand.nextDouble() * (m_cntct_max_duration - m_cntct_min_duration));
+		m_cntct_end = m_cntct_start + m_cntct_min_duration + m_rand.nextDouble() * (m_cntct_max_duration - m_cntct_min_duration);
+		m_logger.info(TAG + "Scheduled a new SIMULATED contact (" + m_cntct_start + ", " + m_cntct_end + ")");
 	}
 	
 	
 	public void run() 
 	{
 		long backoff;
-		double cntct_start = 0;
-		double cntct_end = 0;
-		
 		while(m_exit == false) {
 			
 			/* Check if something is received */
@@ -347,6 +380,8 @@ public class TTC extends Thread
 						/* downlink established */
 						m_status = Constants.TTC_STATUS_CONNECTED;
 						m_real_dwn_contact = true;
+						/* Release the simulated contact */
+						releaseSimulatedContact();
 						/* If no data, force an ALIVE packet in the next loop */
 						if(m_payload_buffer.getSize() == 0 && m_federation_buffer.getSize() == 0) {
 							m_alive_next = 0;
@@ -401,6 +436,8 @@ public class TTC extends Thread
 						/* Reset the counter */
 						m_status = Constants.TTC_STATUS_STANDBY;
 						m_real_dwn_contact = false;
+						/* Schedule a new simulated contact */
+						scheduleSimulatedContact();
 					}
 				break;
 				}
@@ -425,6 +462,8 @@ public class TTC extends Thread
 				m_status = Constants.TTC_STATUS_STANDBY;
 				m_real_dwn_contact = false;
 				releaseForPacket();
+				/* Schedule a new simulated contact */
+				scheduleSimulatedContact();
 			}
 			
 			/* Execute the mode if connected */
@@ -452,41 +491,33 @@ public class TTC extends Thread
 			if(isConnected() == true && m_waiting_packet == false) {
 				/* Check if there is payload data to download */
 				if(m_payload_buffer.getSize() > 0) {
-					downloadDataBlock(m_payload_buffer.getBottomDataBlock());
-					resetAliveSequence();
 					m_dwn_packet_from = 0;
+					downloadDataBlock(m_payload_buffer.getBottomDataBlock());
 				} else if(m_federation_buffer.getSize() > 0){
 					/* Check if there is data in the FSS Buffer */
-					downloadDataBlock(m_federation_buffer.getBottomDataBlock());
-					resetAliveSequence();
 					m_dwn_packet_from = 1;
+					downloadDataBlock(m_federation_buffer.getBottomDataBlock());
 				} else {
 					/* Downlink is available to be published */
 					accessToServiceAvailable(true, true);
 				}
 			}
 			
-			// TODO: move to the other site
 			/* Check if real contact */
 			if(m_real_dwn_contact == false) {
-				if(m_time.getTime() >= cntct_end) {
-					m_emulated_dwn_contact = false;
-					/* Compute when the next downlink contact will start */
-					cntct_start = m_rand.nextDouble() * cntct_max_period; 
-					if(cntct_start < cntct_min_period) {
-						cntct_start = cntct_min_period;
-					}
-					cntct_start += m_time.getTime();
-					/* Compute when the next downlink contact will stop */
-					cntct_end = m_rand.nextDouble() * cntct_max_duration;
-					if(cntct_end < cntct_min_duration) {
-						cntct_end = cntct_min_duration;
-					}
-					cntct_end += cntct_start;
-				}
-				
-				if(m_emulated_dwn_contact == false && m_time.getTime() >= cntct_start) {
-					m_emulated_dwn_contact = true;
+				if(m_cntct_end == -1 && m_cntct_start == -1) {
+					/* Schedule a new simulated contact */
+					scheduleSimulatedContact();
+				} else if(m_simulated_dwn_contact == true && m_time.getTimeMillis() >= m_cntct_end) {
+					/* Stop the Simulated contact */
+					m_simulated_dwn_contact = false;
+					m_logger.info(TAG + "Stopped SIMULATED contact");
+				} else if(m_simulated_dwn_contact == false && m_time.getTimeMillis() >= m_cntct_start) {
+					/* Start the simulated contact */
+					m_simulated_dwn_contact = true;
+					/* release any possible ALIVE packet */
+					releaseForPacket();
+					m_logger.info(TAG + "Started SIMULATED contact");
 				}
 			}
 			
@@ -503,7 +534,7 @@ public class TTC extends Thread
 	
 	public boolean isConnected() 
 	{
-		return (m_emulated_dwn_contact | m_real_dwn_contact);
+		return (m_simulated_dwn_contact | m_real_dwn_contact);
 	}
 	
 	public void controlledStop() 

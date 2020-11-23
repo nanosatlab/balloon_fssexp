@@ -373,6 +373,19 @@ public class GroundStation extends Thread
 		return m_reply;
 	}
 	
+	public boolean reset()
+	{
+		m_reply = false;
+		accessToCommand(4, true);
+		try {
+			/* wait to reply the thread */
+			m_mutex.acquire();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return m_reply;
+	}
+	
 	public boolean disconnectWithBalloon()
 	{
 		m_reply = false;
@@ -614,6 +627,12 @@ public class GroundStation extends Thread
 					break;
 				case 3: /* request telemetry */
 					m_item = getTransceiverTelemetry();
+					/* Notify the Ground Segment */
+					m_mutex.release();
+					break;
+				case 4: /* reset the status */
+					m_status = GS_STATUS_STANDBY;
+					m_reply = true;
 					/* Notify the Ground Segment */
 					m_mutex.release();
 					break;

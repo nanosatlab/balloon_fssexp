@@ -1,0 +1,8 @@
+1575189780615 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575189781137 - [INFO] [TTC] Expecting to receive packet type 256 before 1575189785136
+1575189785149 - [INFO] [TTC] Retransmission of packet 256 scheduled after 78 ms
+1575189785227 - [INFO] [TTC] No replication - Retransmit Packet type 256
+1575189785350 - [INFO] [TTC] Expecting to receive packet type 256 before 1575189790350
+1575189790365 - [INFO] [TTC] Retransmission of packet 256 scheduled after 216 ms
+1575189790581 - [INFO] [TTC] No replication - Retransmit Packet type 256
+1575189790765 - [INFO] [TTC] Expecting to receive packet type 256 before 1575189795764

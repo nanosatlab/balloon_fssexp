@@ -1,0 +1,2 @@
+1575198961287 - [ERROR][UartInterface] Impossible to open Port /dev/ttyS1
+1575198961287 - [ERROR][PacketDispatcher] Impossible to open the IPC Stack - exit the thread

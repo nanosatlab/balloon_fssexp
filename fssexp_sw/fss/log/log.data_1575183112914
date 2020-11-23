@@ -1,0 +1,2 @@
+1575183113933 - [ERROR][UartInterface] Impossible to open Port /dev/ttyACM1
+1575183113933 - [ERROR][PacketDispatcher] Impossible to open the IPC Stack - exit the thread

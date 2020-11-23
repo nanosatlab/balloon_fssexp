@@ -1,0 +1,8 @@
+1575296816232 - [WARN] [ExperimentConf] No configuration file found. Default configuration used.
+1575296816240 - [INFO] [TCPInterface] ********* FSSExp SOFTWARE STARTED *********
+1575296816240 - [INFO] [ExperimentManager] Software version 10
+1575296816240 - [INFO] [ExperimentManager] Start Main Loop
+1575296816240 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575296816243 - [INFO] [TCPInterface] Waiting connections...
+1575296817250 - [ERROR][UartInterface] Impossible to open Port /tty/ttyACM1
+1575296817250 - [ERROR][PacketDispatcher] Impossible to open the IPC Stack - exit the thread

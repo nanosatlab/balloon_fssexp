@@ -1,0 +1,14 @@
+1575101469248 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575101479390 - [INFO] [TTC] Expecting to receive packet type 256 before 1575101483390
+1575101480898 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101484898
+1575101542379 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101546379
+1575101542683 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101546683
+1575101546695 - [INFO] [TTC] Retransmission of packet 16384 scheduled after 164 ms
+1575101546859 - [INFO] [TTC] No replication - Retransmit Packet type 16384
+1575101546992 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101551992
+1575101552005 - [INFO] [TTC] Retransmission of packet 16384 scheduled after 128 ms
+1575101552133 - [INFO] [TTC] No replication - Retransmit Packet type 16384
+1575101552306 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101557306
+1575101557321 - [INFO] [TTC] Retransmission of packet 16384 scheduled after 181 ms
+1575101557502 - [INFO] [TTC] No replication - Retransmit Packet type 16384
+1575101557624 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575101562624

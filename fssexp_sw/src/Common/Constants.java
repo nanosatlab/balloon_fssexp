@@ -131,7 +131,7 @@ public class Constants {
     public final static int data_timestamp_size = 8;
     public final static int data_reference_size = 155;
     public final static int data_rf_isl_hk_size = 51;
-    public final static int data_mtu = 170; //215;
+    public final static int data_mtu = 190; //215;
     public final static int data_size = data_header_size + 
                                         data_timestamp_size +
                                         data_rf_isl_hk_size +
@@ -141,7 +141,7 @@ public class Constants {
     public final static int fss_buffer_move_block = 1024;
     
     /* ExperimentConf */
-    public final static int conf_parameters_num = 11;
+    public final static int conf_parameters_num = 15;
     
     /* HousekeepingBuffer */
     public final static int hk_header_sw_version = 1;

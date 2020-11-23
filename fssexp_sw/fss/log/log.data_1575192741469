@@ -1,0 +1,743 @@
+1575192741481 - [INFO] [TCPInterface] ********* FSSExp SOFTWARE STARTED *********
+1575192741482 - [INFO] [ExperimentManager] Software version 10
+1575192741482 - [INFO] [ExperimentManager] Start Main Loop
+1575192741482 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192741484 - [INFO] [TCPInterface] Waiting connections...
+1575192742492 - [INFO] [UartInterface] Port /tty/ttyACM1 correctly opened
+1575192742908 - [INFO] [ExperimentManager] No sleep, the process consumed 1426
+1575192742908 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192743408 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192743909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192744409 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192744909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192745409 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192745909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192746409 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192746909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192746909 - [ERROR][ExperimentManager] FSSProtocol is not polling
+1575192746910 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192746910 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192746910 - [INFO] [ExperimentManager] Final HK buffered
+1575192747409 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192747409 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192747410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192747410 - [INFO] [ExperimentManager] Final HK buffered
+1575192747909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192747909 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192747909 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192747910 - [INFO] [ExperimentManager] Final HK buffered
+1575192748409 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192748409 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192748409 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192748409 - [INFO] [ExperimentManager] Final HK buffered
+1575192748909 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192748909 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192748909 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192748909 - [INFO] [ExperimentManager] Final HK buffered
+1575192749410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192749410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192749410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192749410 - [INFO] [ExperimentManager] Final HK buffered
+1575192749910 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192749910 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192749910 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192749911 - [INFO] [ExperimentManager] Final HK buffered
+1575192750410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192750410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192750410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192750410 - [INFO] [ExperimentManager] Final HK buffered
+1575192750910 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192750911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192750911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192750911 - [INFO] [ExperimentManager] Final HK buffered
+1575192751410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192751410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192751410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192751411 - [INFO] [ExperimentManager] Final HK buffered
+1575192751910 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192752033 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192752033 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192752033 - [INFO] [ExperimentManager] Final HK buffered
+1575192752410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192752410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192752411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192752411 - [INFO] [ExperimentManager] Final HK buffered
+1575192752910 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192752910 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192752910 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192752911 - [INFO] [ExperimentManager] Final HK buffered
+1575192753410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192753410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192753410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192753411 - [INFO] [ExperimentManager] Final HK buffered
+1575192753910 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192753910 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192753910 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192753911 - [INFO] [ExperimentManager] Final HK buffered
+1575192754410 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192754410 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192754410 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192754410 - [INFO] [ExperimentManager] Final HK buffered
+1575192754911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192754911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192754911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192754911 - [INFO] [ExperimentManager] Final HK buffered
+1575192755411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192755411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192755411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192755412 - [INFO] [ExperimentManager] Final HK buffered
+1575192755911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192755911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192755911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192755912 - [INFO] [ExperimentManager] Final HK buffered
+1575192756411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192756411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192756411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192756412 - [INFO] [ExperimentManager] Final HK buffered
+1575192756911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192756911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192756911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192756912 - [INFO] [ExperimentManager] Final HK buffered
+1575192757411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192757411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192757411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192757411 - [INFO] [ExperimentManager] Final HK buffered
+1575192757911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192757911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192757911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192757912 - [INFO] [ExperimentManager] Final HK buffered
+1575192758411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192758411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192758411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192758412 - [INFO] [ExperimentManager] Final HK buffered
+1575192758911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192758911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192758911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192758911 - [INFO] [ExperimentManager] Final HK buffered
+1575192759057 - [INFO] [TTC] Expecting to receive packet type 256 before 1575192763057
+1575192759411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192759411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192759412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192759412 - [INFO] [ExperimentManager] Final HK buffered
+1575192759911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192759911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192759911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192759912 - [INFO] [ExperimentManager] Final HK buffered
+1575192760411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192760411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192760411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192760411 - [INFO] [ExperimentManager] Final HK buffered
+1575192760657 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192764657
+1575192760911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192760911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192760911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192760912 - [INFO] [ExperimentManager] Final HK buffered
+1575192761411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192761411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192761411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192761411 - [INFO] [ExperimentManager] Final HK buffered
+1575192761911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192762064 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192762064 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192762065 - [INFO] [ExperimentManager] Final HK buffered
+1575192762411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192762411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192762411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192762411 - [INFO] [ExperimentManager] Final HK buffered
+1575192762869 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192766869
+1575192762911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192762912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192762912 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192762912 - [INFO] [ExperimentManager] Final HK buffered
+1575192763411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192763411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192763411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192763411 - [INFO] [ExperimentManager] Final HK buffered
+1575192763911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192763912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192763912 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192763912 - [INFO] [ExperimentManager] Final HK buffered
+1575192764411 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192764411 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192764411 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192764412 - [INFO] [ExperimentManager] Final HK buffered
+1575192764879 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192768879
+1575192764911 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192764911 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192764911 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192764911 - [INFO] [ExperimentManager] Final HK buffered
+1575192765412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192765412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192765412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192765412 - [INFO] [ExperimentManager] Final HK buffered
+1575192765912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192765912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192765912 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192765913 - [INFO] [ExperimentManager] Final HK buffered
+1575192766412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192766412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192766412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192766413 - [INFO] [ExperimentManager] Final HK buffered
+1575192766912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192766912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192766912 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192766912 - [INFO] [ExperimentManager] Final HK buffered
+1575192767412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192767412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192767412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192767412 - [INFO] [ExperimentManager] Final HK buffered
+1575192767912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192767912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192767913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192767913 - [INFO] [ExperimentManager] Final HK buffered
+1575192768412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192768412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192768412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192768412 - [INFO] [ExperimentManager] Final HK buffered
+1575192768912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192768912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192768913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192768913 - [INFO] [ExperimentManager] Final HK buffered
+1575192769412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192769412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192769412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192769412 - [INFO] [ExperimentManager] Final HK buffered
+1575192769912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192769913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192769913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192769913 - [INFO] [ExperimentManager] Final HK buffered
+1575192770412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192770412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192770412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192770413 - [INFO] [ExperimentManager] Final HK buffered
+1575192770912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192770912 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192770912 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192770912 - [INFO] [ExperimentManager] Final HK buffered
+1575192771412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192771413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192771413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192771413 - [INFO] [ExperimentManager] Final HK buffered
+1575192771912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192772096 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192772096 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192772096 - [INFO] [ExperimentManager] Final HK buffered
+1575192772305 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192776305
+1575192772412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192772412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192772412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192772412 - [INFO] [ExperimentManager] Final HK buffered
+1575192772912 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192772913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192772913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192772913 - [INFO] [ExperimentManager] Final HK buffered
+1575192773412 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192773412 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192773412 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192773412 - [INFO] [ExperimentManager] Final HK buffered
+1575192773913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192773913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192773913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192773913 - [INFO] [ExperimentManager] Final HK buffered
+1575192774413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192774413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192774413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192774413 - [INFO] [ExperimentManager] Final HK buffered
+1575192774914 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192774914 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192774914 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192774914 - [INFO] [ExperimentManager] Final HK buffered
+1575192775413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192775413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192775413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192775413 - [INFO] [ExperimentManager] Final HK buffered
+1575192775913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192775913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192775913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192775914 - [INFO] [ExperimentManager] Final HK buffered
+1575192776413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192776413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192776413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192776413 - [INFO] [ExperimentManager] Final HK buffered
+1575192776913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192776914 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192776914 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192776914 - [INFO] [ExperimentManager] Final HK buffered
+1575192777413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192777413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192777413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192777413 - [INFO] [ExperimentManager] Final HK buffered
+1575192777913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192777913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192777913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192777914 - [INFO] [ExperimentManager] Final HK buffered
+1575192778413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192778413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192778413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192778413 - [INFO] [ExperimentManager] Final HK buffered
+1575192778913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192778913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192778913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192778913 - [INFO] [ExperimentManager] Final HK buffered
+1575192779414 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192779414 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192779414 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192779414 - [INFO] [ExperimentManager] Final HK buffered
+1575192779913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192779913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192779913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192779913 - [INFO] [ExperimentManager] Final HK buffered
+1575192780413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192780413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192780413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192780414 - [INFO] [ExperimentManager] Final HK buffered
+1575192780913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192780913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192780913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192780913 - [INFO] [ExperimentManager] Final HK buffered
+1575192781413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192781413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192781413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192781414 - [INFO] [ExperimentManager] Final HK buffered
+1575192781913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192782025 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192782025 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192782025 - [INFO] [ExperimentManager] Final HK buffered
+1575192782228 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192786228
+1575192782413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192782414 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192782414 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192782414 - [INFO] [ExperimentManager] Final HK buffered
+1575192782913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192782913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192782913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192782913 - [INFO] [ExperimentManager] Final HK buffered
+1575192783413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192783413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192783413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192783414 - [INFO] [ExperimentManager] Final HK buffered
+1575192783913 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192783913 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192783913 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192783913 - [INFO] [ExperimentManager] Final HK buffered
+1575192784413 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192784413 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192784413 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192784413 - [INFO] [ExperimentManager] Final HK buffered
+1575192784914 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192784914 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192784914 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192784914 - [INFO] [ExperimentManager] Final HK buffered
+1575192785414 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192785414 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192785414 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192785414 - [INFO] [ExperimentManager] Final HK buffered
+1575192785914 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192785914 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192785914 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192785915 - [INFO] [ExperimentManager] Final HK buffered
+1575192786414 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192786414 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192786414 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192786414 - [INFO] [ExperimentManager] Final HK buffered
+1575192786914 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192786914 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192786914 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192786914 - [INFO] [ExperimentManager] Final HK buffered
+1575192787415 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192787415 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192787415 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192787415 - [INFO] [ExperimentManager] Final HK buffered
+1575192787915 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192787915 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192787915 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192787915 - [INFO] [ExperimentManager] Final HK buffered
+1575192788416 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192788416 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192788416 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192788416 - [INFO] [ExperimentManager] Final HK buffered
+1575192788916 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192788916 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192788916 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192788916 - [INFO] [ExperimentManager] Final HK buffered
+1575192789416 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192789416 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192789417 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192789417 - [INFO] [ExperimentManager] Final HK buffered
+1575192789916 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192789916 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192789916 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192789916 - [INFO] [ExperimentManager] Final HK buffered
+1575192790416 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192790416 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192790416 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192790417 - [INFO] [ExperimentManager] Final HK buffered
+1575192790916 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192790916 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192790916 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192790916 - [INFO] [ExperimentManager] Final HK buffered
+1575192791416 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192791416 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192791416 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192791416 - [INFO] [ExperimentManager] Final HK buffered
+1575192791917 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192792059 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192792059 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192792059 - [INFO] [ExperimentManager] Final HK buffered
+1575192792260 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192796260
+1575192792417 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192792418 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192792418 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192792418 - [INFO] [ExperimentManager] Final HK buffered
+1575192792917 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192792917 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192792917 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192792917 - [INFO] [ExperimentManager] Final HK buffered
+1575192793417 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192793417 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192793417 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192793418 - [INFO] [ExperimentManager] Final HK buffered
+1575192793917 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192793917 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192793917 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192793917 - [INFO] [ExperimentManager] Final HK buffered
+1575192794417 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192794417 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192794417 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192794417 - [INFO] [ExperimentManager] Final HK buffered
+1575192794918 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192794918 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192794918 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192794918 - [INFO] [ExperimentManager] Final HK buffered
+1575192795418 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192795418 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192795418 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192795418 - [INFO] [ExperimentManager] Final HK buffered
+1575192795918 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192795918 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192795919 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192795919 - [INFO] [ExperimentManager] Final HK buffered
+1575192796418 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192796418 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192796418 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192796418 - [INFO] [ExperimentManager] Final HK buffered
+1575192796918 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192796918 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192796918 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192796918 - [INFO] [ExperimentManager] Final HK buffered
+1575192797419 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192797419 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192797419 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192797419 - [INFO] [ExperimentManager] Final HK buffered
+1575192797919 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192797919 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192797919 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192797919 - [INFO] [ExperimentManager] Final HK buffered
+1575192798419 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192798420 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192798420 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192798420 - [INFO] [ExperimentManager] Final HK buffered
+1575192798919 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192798919 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192798919 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192798919 - [INFO] [ExperimentManager] Final HK buffered
+1575192799419 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192799419 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192799419 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192799420 - [INFO] [ExperimentManager] Final HK buffered
+1575192799919 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192799919 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192799919 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192799919 - [INFO] [ExperimentManager] Final HK buffered
+1575192800419 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192800419 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192800419 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192800419 - [INFO] [ExperimentManager] Final HK buffered
+1575192800920 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192800920 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192800920 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192800920 - [INFO] [ExperimentManager] Final HK buffered
+1575192801420 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192801420 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192801420 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192801420 - [INFO] [ExperimentManager] Final HK buffered
+1575192801921 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192802083 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192802083 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192802083 - [INFO] [ExperimentManager] Final HK buffered
+1575192802285 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192806285
+1575192802421 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192802422 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192802422 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192802422 - [INFO] [ExperimentManager] Final HK buffered
+1575192802921 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192802921 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192802921 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192802921 - [INFO] [ExperimentManager] Final HK buffered
+1575192803421 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192803421 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192803421 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192803421 - [INFO] [ExperimentManager] Final HK buffered
+1575192803922 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192803922 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192803922 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192803922 - [INFO] [ExperimentManager] Final HK buffered
+1575192804422 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192804422 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192804422 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192804422 - [INFO] [ExperimentManager] Final HK buffered
+1575192804922 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192804923 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192804923 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192804923 - [INFO] [ExperimentManager] Final HK buffered
+1575192805422 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192805422 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192805422 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192805422 - [INFO] [ExperimentManager] Final HK buffered
+1575192805922 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192805922 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192805922 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192805923 - [INFO] [ExperimentManager] Final HK buffered
+1575192806422 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192806422 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192806422 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192806422 - [INFO] [ExperimentManager] Final HK buffered
+1575192806922 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192806922 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192806922 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192806922 - [INFO] [ExperimentManager] Final HK buffered
+1575192807423 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192807423 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192807423 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192807423 - [INFO] [ExperimentManager] Final HK buffered
+1575192807923 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192807923 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192807923 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192807923 - [INFO] [ExperimentManager] Final HK buffered
+1575192808423 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192808423 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192808423 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192808423 - [INFO] [ExperimentManager] Final HK buffered
+1575192808924 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192808924 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192808924 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192808924 - [INFO] [ExperimentManager] Final HK buffered
+1575192809424 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192809424 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192809424 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192809424 - [INFO] [ExperimentManager] Final HK buffered
+1575192809925 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192809925 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192809925 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192809925 - [INFO] [ExperimentManager] Final HK buffered
+1575192810425 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192810425 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192810425 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192810425 - [INFO] [ExperimentManager] Final HK buffered
+1575192810925 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192810925 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192810925 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192810925 - [INFO] [ExperimentManager] Final HK buffered
+1575192811426 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192811426 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192811426 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192811426 - [INFO] [ExperimentManager] Final HK buffered
+1575192811926 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192812109 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192812109 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192812109 - [INFO] [ExperimentManager] Final HK buffered
+1575192812308 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192816308
+1575192812426 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192812426 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192812426 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192812426 - [INFO] [ExperimentManager] Final HK buffered
+1575192812927 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192812927 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192812927 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192812927 - [INFO] [ExperimentManager] Final HK buffered
+1575192813427 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192813427 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192813427 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192813427 - [INFO] [ExperimentManager] Final HK buffered
+1575192813927 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192813927 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192813927 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192813928 - [INFO] [ExperimentManager] Final HK buffered
+1575192814427 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192814427 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192814427 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192814427 - [INFO] [ExperimentManager] Final HK buffered
+1575192814927 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192814927 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192814927 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192814927 - [INFO] [ExperimentManager] Final HK buffered
+1575192815427 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192815427 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192815427 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192815427 - [INFO] [ExperimentManager] Final HK buffered
+1575192815927 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192815927 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192815927 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192815928 - [INFO] [ExperimentManager] Final HK buffered
+1575192816427 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192816427 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192816427 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192816427 - [INFO] [ExperimentManager] Final HK buffered
+1575192816927 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192816927 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192816927 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192816927 - [INFO] [ExperimentManager] Final HK buffered
+1575192817427 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192817427 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192817427 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192817427 - [INFO] [ExperimentManager] Final HK buffered
+1575192817928 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192817928 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192817928 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192817928 - [INFO] [ExperimentManager] Final HK buffered
+1575192818428 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192818428 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192818428 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192818428 - [INFO] [ExperimentManager] Final HK buffered
+1575192818928 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192818928 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192818928 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192818929 - [INFO] [ExperimentManager] Final HK buffered
+1575192819428 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192819428 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192819428 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192819428 - [INFO] [ExperimentManager] Final HK buffered
+1575192819928 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192819928 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192819928 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192819928 - [INFO] [ExperimentManager] Final HK buffered
+1575192820428 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192820429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192820429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192820429 - [INFO] [ExperimentManager] Final HK buffered
+1575192820928 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192820928 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192820928 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192820929 - [INFO] [ExperimentManager] Final HK buffered
+1575192821428 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192821428 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192821428 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192821428 - [INFO] [ExperimentManager] Final HK buffered
+1575192821928 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192822132 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192822132 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192822132 - [INFO] [ExperimentManager] Final HK buffered
+1575192822331 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575192826331
+1575192822428 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192822428 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192822428 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192822428 - [INFO] [ExperimentManager] Final HK buffered
+1575192822929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192822929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192822929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192822929 - [INFO] [ExperimentManager] Final HK buffered
+1575192823429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192823429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192823429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192823429 - [INFO] [ExperimentManager] Final HK buffered
+1575192823929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192823930 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192823930 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192823930 - [INFO] [ExperimentManager] Final HK buffered
+1575192824429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192824429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192824429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192824429 - [INFO] [ExperimentManager] Final HK buffered
+1575192824929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192824929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192824929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192824929 - [INFO] [ExperimentManager] Final HK buffered
+1575192825429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192825429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192825429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192825429 - [INFO] [ExperimentManager] Final HK buffered
+1575192825929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192825929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192825929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192825929 - [INFO] [ExperimentManager] Final HK buffered
+1575192826429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192826429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192826429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192826430 - [INFO] [ExperimentManager] Final HK buffered
+1575192826929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192826929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192826929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192826929 - [INFO] [ExperimentManager] Final HK buffered
+1575192827429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192827429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192827429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192827429 - [INFO] [ExperimentManager] Final HK buffered
+1575192827929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192827929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192827929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192827930 - [INFO] [ExperimentManager] Final HK buffered
+1575192828351 - [INFO] [TTC] Expecting to receive packet type 4096 before 1575192832351
+1575192828429 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192828429 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192828429 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192828429 - [INFO] [ExperimentManager] Final HK buffered
+1575192828929 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192828929 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192828929 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192828929 - [INFO] [ExperimentManager] Final HK buffered
+1575192829430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192829430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192829430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192829430 - [INFO] [ExperimentManager] Final HK buffered
+1575192829930 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192829930 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192829930 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192829930 - [INFO] [ExperimentManager] Final HK buffered
+1575192830430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192830430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192830430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192830430 - [INFO] [ExperimentManager] Final HK buffered
+1575192830931 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192830931 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192830931 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192830931 - [INFO] [ExperimentManager] Final HK buffered
+1575192831430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192831430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192831430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192831430 - [INFO] [ExperimentManager] Final HK buffered
+1575192831930 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192832063 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192832063 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192832063 - [INFO] [ExperimentManager] Final HK buffered
+1575192832430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192832430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192832430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192832430 - [INFO] [ExperimentManager] Final HK buffered
+1575192832930 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192832930 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192832931 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192832931 - [INFO] [ExperimentManager] Final HK buffered
+1575192833430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192833430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192833430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192833431 - [INFO] [ExperimentManager] Final HK buffered
+1575192833930 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192833930 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192833930 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192833930 - [INFO] [ExperimentManager] Final HK buffered
+1575192834430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192834430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192834430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192834430 - [INFO] [ExperimentManager] Final HK buffered
+1575192834931 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192834931 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192834931 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192834931 - [INFO] [ExperimentManager] Final HK buffered
+1575192835430 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192835430 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192835430 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192835430 - [INFO] [ExperimentManager] Final HK buffered
+1575192835930 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575192835930 - [INFO] [ExperimentManager] An Error detected, transition to erroneous FINISHED
+1575192835930 - [INFO] [ExperimentManager] Transition from RUNNING to FINISHED
+1575192835930 - [INFO] [ExperimentManager] Final HK buffered

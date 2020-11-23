@@ -73,8 +73,9 @@ public class ExperimentConf {
         parseConf();
     }
     
-    private void defaultValues() {
-        
+    private void defaultValues() 
+    {
+        System.out.println("defaultValues");
         /* Common */
         version = 0;
         satellite_id = 2;
@@ -191,15 +192,50 @@ public class ExperimentConf {
                         	m_logger.warning(TAG + "FSS Retransmission backoff out of bounds: " + fss_backoff);
                         	correct = false;
                         }
+                    } else if(line.contains("cntct_min_period") == true) {
+                    	cntct_min_period = Integer.parseInt(line.split(":")[1]);
+                    	counter ++;
+                    	if(cntct_min_period < 0) {
+                        	m_logger.warning(TAG + "Simulated Contact min-period out of bounds: " + cntct_min_period);
+                        	correct = false;
+                        }
+                    } else if(line.contains("cntct_max_period") == true) {
+                    	cntct_max_period = Integer.parseInt(line.split(":")[1]);
+                    	counter ++;
+                    	if(cntct_max_period < 0) {
+                        	m_logger.warning(TAG + "Simulated Contact max-period out of bounds: " + cntct_max_period);
+                        	correct = false;
+                        }
+                    } else if(line.contains("cntct_min_duration") == true) {
+                    	cntct_min_duration = Integer.parseInt(line.split(":")[1]);
+                    	counter ++;
+                    	if(cntct_min_duration < 0) {
+                        	m_logger.warning(TAG + "Simulated Contact min-duration out of bounds: " + cntct_min_duration);
+                        	correct = false;
+                        }
+                    } else if(line.contains("cntct_max_duration") == true) {
+                    	cntct_max_duration = Integer.parseInt(line.split(":")[1]);
+                    	counter ++;
+                    	if(cntct_max_duration < 0) {
+                        	m_logger.warning(TAG + "Simulated Contact max-duration out of bounds: " + cntct_max_duration);
+                        	correct = false;
+                        }
                     }
-                    
-                    
                     line = m_conf_stream.readLine();
                 }
                 
                 if(counter != Constants.conf_parameters_num) {
                 	m_logger.warning(TAG + "Not enough configuration parameters: " 
                 						+ counter + "/" + Constants.conf_parameters_num);
+                	correct = false;
+                }
+                
+                if(cntct_max_duration < cntct_min_duration) {
+                	m_logger.warning(TAG + "cntct_max_duration:" + cntct_max_duration + " < cntct_min_duration: " + cntct_min_duration);
+                	correct = false;
+                }
+                if(cntct_max_period < cntct_min_period) {
+                	m_logger.warning(TAG + "cntct_max_period: " + cntct_max_duration + " < cntct_min_period: " + cntct_min_duration);
                 	correct = false;
                 }
                 

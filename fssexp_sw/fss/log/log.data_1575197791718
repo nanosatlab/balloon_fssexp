@@ -1,0 +1,62 @@
+1575197791732 - [INFO] [FSSProtocol] Started Thread
+1575197791733 - [INFO] [FSSProtocol] Changed to Federation state 4
+1575197791733 - [INFO] [FSSProtocol] The STORAGE EXPERIMENT is selected
+1575197792743 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575197808104 - [INFO] [TTC] Expecting to receive packet type 256 before 1575197812104
+1575197809714 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197813714
+1575197812025 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197816025
+1575197814225 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197818225
+1575197816436 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197820436
+1575197818547 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197822547
+1575197820758 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197824758
+1575197822757 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197826757
+1575197824968 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575197828968
+1575197827243 - [INFO] [FSSProtocol] Sending packet 0 count 0
+1575197827375 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 0
+1575197827376 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197832743 - [INFO] [FSSProtocol] Sending packet 0 count 1
+1575197832896 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 1
+1575197832896 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197838245 - [INFO] [FSSProtocol] Sending packet 0 count 2
+1575197838407 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 2
+1575197838407 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197843746 - [INFO] [FSSProtocol] Sending packet 0 count 3
+1575197843919 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 3
+1575197843919 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197849248 - [INFO] [FSSProtocol] Sending packet 0 count 4
+1575197849431 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 4
+1575197849431 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197854750 - [INFO] [FSSProtocol] Sending packet 0 count 5
+1575197854953 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 5
+1575197854953 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197860252 - [INFO] [FSSProtocol] Sending packet 0 count 6
+1575197860364 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 6
+1575197860364 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197865754 - [INFO] [FSSProtocol] Sending packet 0 count 7
+1575197865876 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 7
+1575197865876 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197871256 - [INFO] [FSSProtocol] Sending packet 0 count 8
+1575197871388 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 8
+1575197871388 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197876757 - [INFO] [FSSProtocol] Sending packet 0 count 9
+1575197876909 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 9
+1575197876909 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197882259 - [INFO] [FSSProtocol] Sending packet 0 count 10
+1575197882422 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 10
+1575197882422 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197887031 - [INFO] [TTC] Expecting to receive packet type 16384 before 1575197891031
+1575197887762 - [INFO] [FSSProtocol] Sending packet 0 count 11
+1575197887934 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 11
+1575197887935 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197891042 - [INFO] [TTC] Retransmission of packet 8192 scheduled after 206 ms
+1575197891249 - [INFO] [TTC] No replication - Retransmit Packet type 8192
+1575197891448 - [INFO] [TTC] Expecting to receive packet type 8192 before 1575197896448
+1575197893263 - [INFO] [FSSProtocol] Sending packet 0 count 12
+1575197893456 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 12
+1575197893457 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1
+1575197896470 - [INFO] [TTC] Retransmission of packet 8192 scheduled after 66 ms
+1575197896537 - [INFO] [TTC] No replication - Retransmit Packet type 8192
+1575197896671 - [INFO] [TTC] Expecting to receive packet type 8192 before 1575197901670
+1575197898764 - [INFO] [FSSProtocol] Sending packet 0 count 13
+1575197898876 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 13
+1575197898876 - [INFO] [FSSProtocol] STANDBY PHASE: PUBLISH Packet sent with service 1

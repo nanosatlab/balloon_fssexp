@@ -1,0 +1,29 @@
+1575196359697 - [INFO] [FSSProtocol] Started Thread
+1575196359697 - [INFO] [FSSProtocol] Changed to Federation state 0
+1575196359697 - [INFO] [FSSProtocol] The STORAGE EXPERIMENT is selected
+1575196359697 - [INFO] [FSSProtocol] Sending packet 0 count 0
+1575196360724 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575196361131 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 0
+1575196361132 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196361132 - [INFO] [FSSProtocol] No sleep, the process consumed 1435
+1575196366134 - [INFO] [FSSProtocol] Sending packet 0 count 1
+1575196366256 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 1
+1575196366256 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196371636 - [INFO] [FSSProtocol] Sending packet 0 count 2
+1575196371768 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 2
+1575196371769 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196377138 - [INFO] [FSSProtocol] Sending packet 0 count 3
+1575196377280 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 3
+1575196377280 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196382640 - [INFO] [FSSProtocol] Sending packet 0 count 4
+1575196382803 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 4
+1575196382803 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196388142 - [INFO] [FSSProtocol] Sending packet 0 count 5
+1575196388315 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 5
+1575196388315 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196393644 - [INFO] [FSSProtocol] Sending packet 0 count 6
+1575196393827 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 6
+1575196393827 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575196399145 - [INFO] [FSSProtocol] Sending packet 0 count 7
+1575196399338 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 7
+1575196399338 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0

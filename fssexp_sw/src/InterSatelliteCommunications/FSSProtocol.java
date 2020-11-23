@@ -403,7 +403,6 @@ public class FSSProtocol extends Thread {
 
 	private void standbyPhase(boolean isRX) 
 	{
-		//System.out.println("In STANDBY PHASE");
 		/* Verify if my service is available */
 		if(m_ttc.accessToServiceAvailable(false, false) == true) {
 			/* Publish this service */
@@ -426,7 +425,6 @@ public class FSSProtocol extends Thread {
 				m_publisher_capacity = publish_data.getInt();
 				m_sat_destination = m_rx_packet.source;
 				m_logger.info(TAG + "STANDBY PHASE: Received PUBLISH Packet with service " + m_service_type);
-				System.out.println(TAG + "STANDBY PHASE: Received PUBLISH Packet with service " + m_service_type);
 				if(m_ttc.accessToServiceAvailable(false, false) == false
 					&& m_publisher_capacity > 0
 					&& m_payload_buffer.getSize() > 0) {
@@ -435,8 +433,6 @@ public class FSSProtocol extends Thread {
 					/* I need and I want the service of storage - send REQUEST */
 					sendREQUEST(m_service_type_interest);
 					m_logger.info(TAG + "STANDBY PHASE: REQUEST Packet sent with service "
-							+ m_service_type_interest);
-					System.out.println(TAG + "STANDBY PHASE: REQUEST Packet sent with service "
 							+ m_service_type_interest);
 					/* Wait ACCEPT packet to be received */
 					lockForPacket(Constants.PACKET_FSS_SERVICE_ACCEPT);
@@ -448,14 +444,11 @@ public class FSSProtocol extends Thread {
 				/* Check if I have a service to share */
 				if(m_ttc.accessToServiceAvailable(false, false) == true) {
 					m_logger.info(TAG + "STANDBY PHASE: Received REQUEST Packet with service " + m_service_type_interest);
-					System.out.println(TAG + "STANDBY PHASE: Received REQUEST Packet with service " + m_service_type_interest);
 					/* Select this satellite as the destination */
 					m_sat_destination = m_rx_packet.source;
 					/* Send ACCEPT because I have the service and I am interested */
 					sendACCEPT(m_service_type_interest);
 					m_logger.info(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
-							+ m_service_type_interest);
-					System.out.println(TAG + "NEGOTIATION PHASE: ACCEPT Packet sent with service "
 							+ m_service_type_interest);
 					/* Wait first DATA to confirm the correct reception */
 					lockForPacket(Constants.PACKET_FSS_DATA | Constants.PACKET_FSS_CLOSE);
@@ -469,7 +462,6 @@ public class FSSProtocol extends Thread {
 	
 	private void negotiationPhase(boolean isRX) 
 	{
-		System.out.println("In NEGOTIATION PHASE");
 		int service_type;
 		/* Process if a packet has been received */
 		if (isRX == true) {
@@ -488,7 +480,6 @@ public class FSSProtocol extends Thread {
 				m_publish_content_stream.rewind();
 				service_type = m_publish_content_stream.getInt();
 				m_logger.info(TAG + "NEGOTIATION PHASE: Received ACCEPT Packet with service " + service_type);
-				System.out.println(TAG + "NEGOTIATION PHASE: Received ACCEPT Packet with service " + service_type);
 				if (service_type == m_service_type_interest) {
 					m_role = Constants.FSS_ROLE_CUSTOMER;
 					accessToState(true, Constants.FSS_EXCHANGE);
@@ -501,7 +492,6 @@ public class FSSProtocol extends Thread {
 					 */
 					sendDATAPacket();
 					m_logger.info(TAG + "FEDERATION PHASE: DATA Packet sent");
-					System.out.println(TAG + "FEDERATION PHASE: DATA Packet sent");
 					lockForPacket(Constants.PACKET_FSS_DATA_ACK | Constants.PACKET_FSS_CLOSE
 							| Constants.PACKET_FSS_CLOSE_DATA_ACK);
 				} else {
@@ -510,11 +500,9 @@ public class FSSProtocol extends Thread {
 				break;
 			case Constants.PACKET_FSS_DATA:
 				m_logger.info(TAG + "NEGOTIATION PHASE: Received DATA Packet");
-				System.out.println(TAG + "NEGOTIATION PHASE: Received DATA Packet");
 				m_role = Constants.FSS_ROLE_SUPPLIER;
 				accessToState(true, Constants.FSS_EXCHANGE);
 				m_logger.info(TAG + "I am the SUPPLIER - Transit to FEDERATION PHASE");
-				System.out.println(TAG + "I am the SUPPLIER - Transit to FEDERATION PHASE");
 				/*
 				 * In order to not delay so much the DATA ACK transmission, the execution of the
 				 * federationPhase function is performed. As the input is true (packet
@@ -536,7 +524,6 @@ public class FSSProtocol extends Thread {
 
 	private void federationPhase(boolean isRX) 
 	{
-		System.out.println("In FEDERATION phase");
 		if (getFederationRole() == Constants.FSS_ROLE_CUSTOMER) {
 			if (isRX == true) {
 				m_logger.info(TAG + "Something received in the CUSTOMER with packet type " + m_rx_packet.type);
@@ -650,7 +637,6 @@ public class FSSProtocol extends Thread {
 
 	private void closurePhase(boolean isRX) 
 	{
-		System.out.println("In CLOSURE PHASE");
 		if(isRX == true) {
 			if(m_waiting_packet == true && (m_waiting_type & m_rx_packet.type) != 0) {
 				/*

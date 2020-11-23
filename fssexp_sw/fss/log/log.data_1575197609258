@@ -1,0 +1,71 @@
+1575197609270 - [INFO] [FSSProtocol] Started Thread
+1575197609270 - [INFO] [FSSProtocol] Changed to Federation state 0
+1575197609271 - [INFO] [FSSProtocol] The STORAGE EXPERIMENT is selected
+1575197609271 - [INFO] [FSSProtocol] Sending packet 0 count 0
+1575197610285 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575197610690 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 0
+1575197610691 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197610691 - [INFO] [FSSProtocol] No sleep, the process consumed 1420
+1575197615692 - [INFO] [FSSProtocol] Sending packet 0 count 1
+1575197615814 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 1
+1575197615815 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197621194 - [INFO] [FSSProtocol] Sending packet 0 count 2
+1575197621326 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 2
+1575197621326 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197626696 - [INFO] [FSSProtocol] Sending packet 0 count 3
+1575197626848 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 3
+1575197626849 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197632197 - [INFO] [FSSProtocol] Sending packet 0 count 4
+1575197632361 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 4
+1575197632361 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197637699 - [INFO] [FSSProtocol] Sending packet 0 count 5
+1575197637872 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 5
+1575197637872 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197643201 - [INFO] [FSSProtocol] Sending packet 0 count 6
+1575197643394 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 6
+1575197643395 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197648701 - [INFO] [FSSProtocol] Sending packet 0 count 7
+1575197648904 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 7
+1575197648905 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197654202 - [INFO] [FSSProtocol] Sending packet 0 count 8
+1575197654324 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 8
+1575197654325 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197659704 - [INFO] [FSSProtocol] Sending packet 0 count 9
+1575197659836 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 9
+1575197659836 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197665206 - [INFO] [FSSProtocol] Sending packet 0 count 10
+1575197665348 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 10
+1575197665349 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197670707 - [INFO] [FSSProtocol] Sending packet 0 count 11
+1575197670860 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 11
+1575197670860 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197676209 - [INFO] [FSSProtocol] Sending packet 0 count 12
+1575197676381 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 12
+1575197676382 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197681711 - [INFO] [FSSProtocol] Sending packet 0 count 13
+1575197681894 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 13
+1575197681894 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197687213 - [INFO] [FSSProtocol] Sending packet 0 count 14
+1575197687406 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 14
+1575197687406 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197692715 - [INFO] [FSSProtocol] Sending packet 0 count 15
+1575197692918 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 15
+1575197692918 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197698217 - [INFO] [FSSProtocol] Sending packet 0 count 16
+1575197698339 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 16
+1575197698339 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197703719 - [INFO] [FSSProtocol] Sending packet 0 count 17
+1575197703851 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 17
+1575197703852 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197709221 - [INFO] [FSSProtocol] Sending packet 0 count 18
+1575197709363 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 18
+1575197709363 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197714723 - [INFO] [FSSProtocol] Sending packet 0 count 19
+1575197714875 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 19
+1575197714876 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197720224 - [INFO] [FSSProtocol] Sending packet 0 count 20
+1575197720386 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 20
+1575197720387 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0
+1575197725725 - [INFO] [FSSProtocol] Sending packet 0 count 21
+1575197725908 - [INFO] [FSSProtocol] Packet sent correctly; type 0 count 21
+1575197725908 - [INFO] [FSSProtocol] NEGOTIATION PHASE: PUBLISH Packet sent with service 0

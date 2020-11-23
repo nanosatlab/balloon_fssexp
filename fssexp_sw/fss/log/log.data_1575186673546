@@ -1,0 +1,11 @@
+1575186674575 - [INFO] [UartInterface] Port /dev/ttyACM1 correctly opened
+1575186679598 - [INFO] [TTC] Expecting to receive packet type 256 before 1575186683598
+1575186681107 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186685107
+1575186683219 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186687219
+1575186685330 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186689330
+1575186687541 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186691541
+1575186689652 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186693652
+1575186691751 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186695751
+1575186693861 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186697861
+1575186695971 - [INFO] [TTC] Expecting to receive packet type 1024 before 1575186699971
+1575186705803 - [INFO] [TTC] Expecting to receive packet type 4096 before 1575186709803

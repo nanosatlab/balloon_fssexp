@@ -1,0 +1,14 @@
+1575191949969 - [INFO] [TCPInterface] ********* FSSExp SOFTWARE STARTED *********
+1575191949970 - [INFO] [ExperimentManager] Software version 10
+1575191949970 - [INFO] [ExperimentManager] Start Main Loop
+1575191949970 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575191949972 - [INFO] [TCPInterface] Waiting connections...
+1575191950983 - [INFO] [UartInterface] Port /tty/ttyACM1 correctly opened
+1575191951394 - [INFO] [ExperimentManager] No sleep, the process consumed 1424
+1575191951394 - [ERROR][ExperimentManager] FSSProtocol pol down - Try again
+1575191951495 - [WARN] [SynchronizedBuffer][manager-telemetry]Trying to read the buffer when it is empty
+1575191951497 - [ERROR] java.lang.IndexOutOfBoundsException: [SynchronizedBuffer][manager-telemetry]Trying to read the buffer when it is empty
+Common.SynchronizedBuffer.read(SynchronizedBuffer.java:56)
+FSS_experiment.ExperimentManager.run(ExperimentManager.java:513)
+1575191951498 - [INFO] [ExperimentManager] PacketDispatcher not terminated (status TIMED_WAITING), waiting a little more
+1575191951695 - [INFO] [UartInterface] UART port closed

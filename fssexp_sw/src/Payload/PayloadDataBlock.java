@@ -21,6 +21,9 @@ public class PayloadDataBlock {
 	/* Experiment hk + RF ISL hk */
 	public HousekeepingItem exp_hk;
 	
+	/* Amateur Signal */
+	public String amateur_id;
+	
 	/* Padding data */
 	public byte[] padding_data; 
 	
@@ -29,6 +32,7 @@ public class PayloadDataBlock {
 		exp_hk = new HousekeepingItem();
 		stream = ByteBuffer.allocate(getSize());
 		m_exp_hk_stream = ByteBuffer.allocate(HousekeepingItem.getSize());
+		amateur_id = "operator: RAIU1MYV";
 		padding_data = new byte[getPaddingSize()];
 		for(int i = 0; i < padding_data.length; i ++) {
 			padding_data[i] = (byte)(i & 0xFF);
@@ -49,12 +53,13 @@ public class PayloadDataBlock {
 	
 	public static int getPaddingSize()
 	{
+		System.out.println(getUsefulSize());
 		return Constants.data_mtu - getUsefulSize();
 	}
 	
 	public static int getUsefulSize()
 	{
-		return ((Integer.SIZE / 8) + (Long.SIZE / 8) + HousekeepingItem.getSize());
+		return ((Integer.SIZE / 8) + (Long.SIZE / 8) + HousekeepingItem.getSize() + 18);	/* amateur ID is 18 Bytes */ 
 	}
 	
 	public byte[] getBytes()
@@ -93,6 +98,7 @@ public class PayloadDataBlock {
 		s += sat_id + ",";
 		s += timestamp + "::";
 		s += exp_hk.toString();
+		s += "::" + amateur_id;
 		return s;
 	}
 }
